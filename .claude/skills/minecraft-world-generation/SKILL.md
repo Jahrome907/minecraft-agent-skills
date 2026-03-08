@@ -394,14 +394,83 @@ public class ModWorldgen {
 }
 ```
 
-### Datagen: ConfiguredFeature provider
+### Datagen: NeoForge (`DatapackBuiltinEntriesProvider`)
+
 ```java
-public class ModConfiguredFeatureProvider extends FabricDynamicRegistryProvider {
-    // Or extend net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider for NeoForge
+public class ModWorldgenProvider extends DatapackBuiltinEntriesProvider {
+
+    private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
+        .add(Registries.CONFIGURED_FEATURE, ModWorldgenProvider::bootstrapConfigured)
+        .add(Registries.PLACED_FEATURE, ModWorldgenProvider::bootstrapPlaced);
+
+    public ModWorldgenProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries, BUILDER, Set.of(MyMod.MOD_ID));
+    }
+
+    private static void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        ctx.register(
+            ModWorldgen.MY_ORE_CONFIGURED,
+            new ConfiguredFeature<>(Feature.ORE, new OreConfiguration(
+                OreConfiguration.target(
+                    new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES),
+                    ModBlocks.MY_ORE.get().defaultBlockState()
+                ),
+                9  // vein size
+            ))
+        );
+    }
+
+    private static void bootstrapPlaced(BootstrapContext<PlacedFeature> ctx) {
+        HolderGetter<ConfiguredFeature<?, ?>> configured =
+            ctx.lookup(Registries.CONFIGURED_FEATURE);
+        ctx.register(
+            ModWorldgen.MY_ORE_PLACED,
+            new PlacedFeature(
+                configured.getOrThrow(ModWorldgen.MY_ORE_CONFIGURED),
+                List.of(
+                    HeightRangePlacement.triangle(
+                        VerticalAnchor.absolute(-64),
+                        VerticalAnchor.absolute(32)
+                    ),
+                    CountPlacement.of(8),
+                    InSquarePlacement.spread(),
+                    BiomeFilter.biome()
+                )
+            )
+        );
+    }
+}
+```
+
+Register in your `GatherDataEvent` handler:
+```java
+@SubscribeEvent
+public static void onGatherData(GatherDataEvent event) {
+    DataGenerator gen = event.getGenerator();
+    PackOutput output = gen.getPackOutput();
+    gen.addProvider(event.includeServer(),
+        new ModWorldgenProvider(output, event.getLookupProvider()));
+}
+```
+
+### Datagen: Fabric (`FabricDynamicRegistryProvider`)
+
+```java
+public class ModWorldgenProvider extends FabricDynamicRegistryProvider {
+
+    public ModWorldgenProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries);
+    }
 
     @Override
-    protected void generate(FabricDataOutput output, RegistryWrapper.WrapperLookup registries) {
-        // NeoForge: use RegistrySetBuilder to add entries to worldgen registries
+    protected void configure(HolderLookup.Provider registries, Entries entries) {
+        entries.addAll(registries.lookupOrThrow(Registries.CONFIGURED_FEATURE));
+        entries.addAll(registries.lookupOrThrow(Registries.PLACED_FEATURE));
+    }
+
+    @Override
+    public String getName() {
+        return "Worldgen";
     }
 }
 ```

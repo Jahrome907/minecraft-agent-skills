@@ -260,6 +260,34 @@ misc:
 
 ---
 
+## `bukkit.yml` Key Settings
+
+```yaml
+spawn-limits:
+  monsters: 70               # max monsters per world (lower = better TPS)
+  animals: 10
+  water-animals: 5
+  water-ambient: 20
+  water-underground-creature: 5
+  axolotls: 5
+  ambient: 15
+
+ticks-per:
+  animal-spawns: 400           # how often animals try to spawn (higher = less frequent)
+  monster-spawns: 1
+  water-spawns: 1
+  water-ambient-spawns: 1
+  water-underground-creature-spawns: 1
+  axolotl-spawns: 1
+  ambient-spawns: 1
+  autosave: 6000               # ticks between autosaves (6000 = 5 min)
+
+chunk-gc:
+  period-in-ticks: 600        # how often to unload unused chunks
+```
+
+---
+
 ## `spigot.yml` Key Settings
 
 ```yaml
@@ -451,6 +479,7 @@ motd = "<aqua>My Network"
 show-max-players = 100
 online-mode = true
 player-info-forwarding-mode = "MODERN"   # "LEGACY" for BungeeCord compat
+forwarding-secret-file = "forwarding.secret"  # auto-generated; share with backends
 
 [servers]
 lobby   = "127.0.0.1:25565"
@@ -482,6 +511,91 @@ And in `server.properties`:
 ```properties
 online-mode=false   # Velocity handles auth
 ```
+
+---
+
+## Geyser (Bedrock Crossplay)
+
+Geyser allows Bedrock Edition players to join Java Edition servers.
+
+```bash
+# Download Geyser-Spigot plugin
+# https://geysermc.org/download
+# Place in plugins/ folder and restart
+```
+
+### `plugins/Geyser-Spigot/config.yml` (key settings)
+```yaml
+bedrock:
+  port: 19132              # Bedrock default port
+  clone-remote-port: false
+  motd1: "My Server"
+  motd2: "Bedrock Welcome"
+
+remote:
+  address: auto            # auto-detect for same-server
+  port: 25565
+  auth-type: online        # online = require MS auth; floodgate = no Java account needed
+
+# For auth-type: floodgate, also install Floodgate plugin
+# https://geysermc.org/download#floodgate
+```
+
+### Firewall for Geyser
+```bash
+# Expose Bedrock port (UDP)
+sudo ufw allow 19132/udp
+```
+
+> **Tip**: Install Floodgate alongside Geyser so Bedrock players don't need a Java account. Bedrock players get a `*` prefix by default.
+
+---
+
+## Pterodactyl Deployment
+
+Pterodactyl is a web-based game server management panel.
+
+### Install with Docker (Pterodactyl Wings)
+```bash
+# Wings is the daemon that runs on game server nodes.
+# Install Docker first, then:
+curl -L -o /usr/local/bin/wings \
+  "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64"
+chmod u+x /usr/local/bin/wings
+```
+
+### Key Setup Steps
+1. **Panel**: Deploy the Pterodactyl Panel (web UI) on a separate host or the same machine.
+2. **Node**: Add a node in the Panel pointing to the Wings daemon.
+3. **Egg**: Use the built-in "Paper" egg (or import a custom egg for Purpur/Fabric).
+4. **Allocation**: Assign ports (25565 for MC, 19132/udp for Geyser if needed).
+5. **Server**: Create a server from the Panel UI — it auto-downloads Paper and sets JVM flags.
+
+### Custom Startup Command (in Egg config)
+```
+java -Xms{{SERVER_MEMORY}}M -Xmx{{SERVER_MEMORY}}M -XX:+UseG1GC \
+  -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 \
+  -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC \
+  -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 \
+  -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M \
+  -Dterminal.jline=false -Dterminal.ansi=true \
+  -jar {{SERVER_JARFILE}} --nogui
+```
+
+> Pterodactyl docs: https://pterodactyl.io/project/introduction.html
+
+---
+
+## Plugin Management Best Practices
+
+- **Source plugins from trusted sites only**: Modrinth, Hangar (PaperMC), SpigotMC, or GitHub releases.
+- **Keep plugins updated**: Use `/version <plugin>` to check versions; subscribe to update notifications.
+- **Minimize plugin count**: Each plugin adds tick overhead. Remove unused plugins rather than disabling them.
+- **Test updates in staging**: Copy your server to a test environment before updating plugins on production.
+- **Use a plugin manager** (optional): [Spark](https://spark.lucko.me/) can identify which plugins consume the most tick time.
+- **Check compatibility**: After a Minecraft version upgrade, verify each plugin supports the new version before updating the server JAR.
+- **Back up before changes**: Always take a full backup before adding, removing, or updating plugins.
+- **Avoid `/reload`**: Use `/restart` or stop/start the server. `/reload` causes memory leaks and unpredictable plugin behavior.
 
 ---
 
