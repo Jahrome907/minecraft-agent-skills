@@ -5,7 +5,10 @@ import crypto from "node:crypto";
 
 const ROOT = process.cwd();
 const CANONICAL = path.join(ROOT, ".agents", "skills");
-const MIRROR = path.join(ROOT, ".codex", "skills");
+const MIRRORS = [
+  { dir: path.join(ROOT, ".codex", "skills"), label: ".codex/skills" },
+  { dir: path.join(ROOT, ".claude", "skills"), label: ".claude/skills" },
+];
 
 const errors = [];
 
@@ -137,24 +140,26 @@ if (!fs.existsSync(CANONICAL)) {
   }
 }
 
-if (!fs.existsSync(MIRROR)) {
-  addError(".codex/skills", "mirror skills directory is missing");
-} else if (fs.existsSync(CANONICAL)) {
-  const canonicalFiles = walkFiles(CANONICAL).map((p) => path.relative(CANONICAL, p)).sort();
-  const mirrorFiles = walkFiles(MIRROR).map((p) => path.relative(MIRROR, p)).sort();
+for (const { dir: MIRROR, label: mirrorLabel } of MIRRORS) {
+  if (!fs.existsSync(MIRROR)) {
+    addError(mirrorLabel, "mirror skills directory is missing");
+  } else if (fs.existsSync(CANONICAL)) {
+    const canonicalFiles = walkFiles(CANONICAL).map((p) => path.relative(CANONICAL, p)).sort();
+    const mirrorFiles = walkFiles(MIRROR).map((p) => path.relative(MIRROR, p)).sort();
 
-  const onlyCanonical = canonicalFiles.filter((f) => !mirrorFiles.includes(f));
-  const onlyMirror = mirrorFiles.filter((f) => !canonicalFiles.includes(f));
+    const onlyCanonical = canonicalFiles.filter((f) => !mirrorFiles.includes(f));
+    const onlyMirror = mirrorFiles.filter((f) => !canonicalFiles.includes(f));
 
-  for (const f of onlyCanonical) addError(`.agents/skills/${f}`, "missing from mirror .codex/skills");
-  for (const f of onlyMirror) addError(`.codex/skills/${f}`, "missing from canonical .agents/skills");
+    for (const f of onlyCanonical) addError(`.agents/skills/${f}`, `missing from mirror ${mirrorLabel}`);
+    for (const f of onlyMirror) addError(`${mirrorLabel}/${f}`, "missing from canonical .agents/skills");
 
-  for (const f of canonicalFiles) {
-    if (!mirrorFiles.includes(f)) continue;
-    const cf = path.join(CANONICAL, f);
-    const mf = path.join(MIRROR, f);
-    if (hashFile(cf) !== hashFile(mf)) {
-      addError(`.codex/skills/${f}`, "content drift from canonical .agents/skills");
+    for (const f of canonicalFiles) {
+      if (!mirrorFiles.includes(f)) continue;
+      const cf = path.join(CANONICAL, f);
+      const mf = path.join(MIRROR, f);
+      if (hashFile(cf) !== hashFile(mf)) {
+        addError(`${mirrorLabel}/${f}`, "content drift from canonical .agents/skills");
+      }
     }
   }
 }

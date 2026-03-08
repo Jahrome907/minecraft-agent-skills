@@ -68,6 +68,38 @@ Compatibility mirror (kept in sync by script/CI):
     └── SKILL.md
 ```
 
+Claude Code mirror (kept in sync by script/CI):
+
+```text
+.claude/skills/
+├── minecraft-modding/            ← NeoForge + Fabric mod development
+│   ├── SKILL.md
+│   ├── references/
+│   │   ├── neoforge-api.md
+│   │   ├── fabric-api.md
+│   │   └── common-patterns.md
+│   └── scripts/
+│       └── check-build.sh
+├── minecraft-plugin-dev/         ← Paper/Bukkit server plugin development
+│   └── SKILL.md
+├── minecraft-datapack/           ← Vanilla datapack authoring (no Java)
+│   └── SKILL.md
+├── minecraft-commands-scripting/ ← Vanilla commands, scoreboards, NBT, RCON
+│   └── SKILL.md
+├── minecraft-multiloader/        ← Architectury NeoForge + Fabric multiloader
+│   └── SKILL.md
+├── minecraft-testing/            ← JUnit 5, MockBukkit, GameTests, CI
+│   └── SKILL.md
+├── minecraft-ci-release/         ← GitHub Actions, Modrinth/CurseForge publishing
+│   └── SKILL.md
+├── minecraft-world-generation/   ← Custom biomes, dimensions, structures
+│   └── SKILL.md
+├── minecraft-resource-pack/      ← Textures, models, sounds, shaders
+│   └── SKILL.md
+└── minecraft-server-admin/       ← Server setup, JVM tuning, Docker, Velocity
+    └── SKILL.md
+```
+
 ## Skill Selection Guide
 
 Codex selects skills automatically from the `description` field in each `SKILL.md`.

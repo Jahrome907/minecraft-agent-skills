@@ -1,12 +1,12 @@
 # minecraft-codex-skills
 
-An open-source collection of **10 OpenAI Codex skills** covering every major area
+An open-source collection of **10 AI coding agent skills** covering every major area
 of Minecraft development — mods, plugins, datapacks, commands, testing, CI/CD,
 world generation, resource packs, and server administration.
 
-Drop the `.agents/` folder into any Minecraft project and Codex (via Codex CLI,
-ChatGPT Codex, or any IDE integration) will automatically select the right skill
-for every task you assign it.
+Drop the `.agents/` folder (for Codex), `.claude/` folder (for Claude Code),
+or `.codex/` folder into any Minecraft project and your AI agent will
+automatically select the right skill for every task you assign it.
 
 ---
 
@@ -18,8 +18,8 @@ assign it a task. Each `SKILL.md` file defines the skill's `name`, `description`
 and detailed instructions. Codex selects relevant skills automatically based on
 the description field and your task.
 
-This repository also keeps a compatibility mirror at `.codex/skills/`.  
-Canonical source of truth is `.agents/skills/`.
+This repository also keeps compatibility mirrors at `.codex/skills/` and
+`.claude/skills/`. Canonical source of truth is `.agents/skills/`.
 
 ---
 
@@ -109,9 +109,12 @@ your-project/
         └── minecraft-server-admin/
             └── SKILL.md
 
-# Optional compatibility mirror used by some legacy setups:
+# Compatibility mirrors (same content, synced by script):
 your-project/
-└── .codex/
+├── .codex/
+│   └── skills/
+│       └── ... (mirrors .agents/skills)
+└── .claude/
     └── skills/
         └── ... (mirrors .agents/skills)
 ```
