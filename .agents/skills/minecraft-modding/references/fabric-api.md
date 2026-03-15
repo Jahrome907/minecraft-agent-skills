@@ -350,8 +350,8 @@ org.gradle.jvmargs=-Xmx2G
 
 minecraft_version=1.21.1
 yarn_mappings=1.21.1+build.3
-loader_version=0.15.11
-fabric_version=0.103.0+1.21.1
+loader_version=0.16.9
+fabric_version=0.114.0+1.21.1
 
 mod_version=1.0.0
 maven_group=com.example

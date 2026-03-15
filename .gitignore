@@ -14,3 +14,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Secrets and local environment
+.env
+.env.*
+.secrets
+.secrets.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt

@@ -1,0 +1,11 @@
+{
+  "type": "mypack:missing_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "mypack:missing_noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    }
+  }
+}

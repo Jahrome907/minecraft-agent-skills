@@ -27,4 +27,12 @@ This repository uses `.agents/skills/` as canonical. `.codex/skills/` is a gener
 1. Edit only in `.agents/skills/`.
 2. Run `./scripts/sync-skills-layout.sh sync`.
 3. Run `node ./scripts/audit-skills.mjs`.
-4. Commit both canonical and mirror changes.
+4. Run `node ./scripts/validate-doc-snippets.mjs`.
+5. Commit both canonical and mirror changes.
+
+## Versioning Policy
+
+- Use `{mod_version}+{mc_version}` for mod release examples.
+- Keep validator commands mirror-safe by using `./scripts/...` from the installed skill directory.
+- Bundled skill validators must ship any parser/runtime code they need inside the skill directory.
+- Do not make bundled validators depend on repo-root `node_modules`; that is only acceptable for repo-only maintainer scripts.

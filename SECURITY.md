@@ -12,7 +12,15 @@ Security-sensitive issues are primarily:
 ## Reporting
 
 If you discover a security issue, open a private security advisory on GitHub (preferred).
-If that is unavailable, open an issue with minimal reproduction details and avoid posting any sensitive data.
+If private advisories are unavailable, do not open a public issue. Contact the maintainer privately
+through the repository owner's GitHub profile contact options:
+`https://github.com/Jahrome907`
+
+### Response Targets
+
+- Initial triage response: within 7 days
+- Status update after confirmation: within 14 days
+- Public disclosure only after a fix or agreed mitigation is available
 
 ## Secret Handling
 

@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a new skill capability, validation rule, or repository improvement.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for new skills, validator improvements, documentation additions, and repository automation requests.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or gap
+      description: Explain the current limitation or missing capability.
+      placeholder: The repo does not document a consistent public release process for maintainers.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the change you want and the expected outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and affected areas
+      description: List the skill(s), scripts, docs, or workflows that should change.
+      placeholder: README, CONTRIBUTING, .github/workflows/skills-audit.yml
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note any workarounds or alternate approaches you considered.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Link examples, prior issues, or external references if they help.
+    validations:
+      required: false

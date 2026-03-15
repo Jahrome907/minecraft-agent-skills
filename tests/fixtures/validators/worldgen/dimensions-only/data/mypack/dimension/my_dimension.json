@@ -1,0 +1,11 @@
+{
+  "type": "mypack:my_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "mypack:skylands",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    }
+  }
+}

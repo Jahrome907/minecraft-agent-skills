@@ -122,7 +122,7 @@ The table below maps task types to which skill(s) to load:
 
 - **Do not** run Minecraft, Gradle, or Paper server commands here; there is no game project to build.
 - When editing skill files, keep examples accurate for **Minecraft 1.21.x**.
-- All Java examples must compile against **Java 21**.
+- Keep Java examples correct for **Java 21** and verify changed examples in their target project context.
 - Keep JSON snippets valid and pretty-printed with 2-space indentation.
 - Mark platform-specific patterns (NeoForge / Fabric / Paper) clearly.
 - Prefer complete, runnable code snippets over pseudo-code.

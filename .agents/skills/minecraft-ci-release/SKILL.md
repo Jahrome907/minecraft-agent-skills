@@ -415,12 +415,16 @@ echo "Push with: git push && git push --tags"
 Use the bundled validator script to keep `SKILL.md` workflow snippets copy-paste safe:
 
 ```bash
-# Run from the skill directory:
-.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh --root .
+# Run from the installed skill directory:
+./scripts/validate-workflow-snippets.sh --root .
 
 # Strict mode treats warnings as failures:
-.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh --root . --strict
+./scripts/validate-workflow-snippets.sh --root . --strict
 ```
+
+The validator is bundled and self-contained. Run it from a copied `.agents/`,
+`.codex/`, or `.claude/` `minecraft-ci-release` skill directory without relying
+on repo-root `node_modules`.
 
 What it checks:
 - YAML snippet structure for workflow-like blocks (`name`, `on`, `jobs`)

@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible problem in a skill, validator, or repository workflow.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem.
+        Use this form for incorrect examples, broken validators, CI problems, and documentation regressions.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the problem and the affected skill, script, or workflow.
+      placeholder: The worldgen validator rejects a valid tags-only datapack in strict mode.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide exact steps, commands, and files needed to reproduce the problem.
+      placeholder: |
+        1. Copy ...
+        2. Run ./scripts/run-skill-validator-fixtures.sh
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe the behavior you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, Node version, and any relevant tool versions or Minecraft version details.
+      placeholder: Ubuntu 24.04, Node 20.19.0, jq 1.7
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste the relevant output or attach screenshots if helpful.
+      render: shell
+    validations:
+      required: false

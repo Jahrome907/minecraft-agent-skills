@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:custom_missing",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "minecraft:custom_missing_noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    }
+  }
+}

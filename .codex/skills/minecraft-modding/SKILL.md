@@ -337,7 +337,7 @@ When adding a **new entity**:
 ## 11. Open-Source Conventions
 
 - **License**: MIT or LGPL-3.0 — include `LICENSE` file and `SPDX-License-Identifier` header
-- **Versioning**: `<mc_version>-<mod_version>` (e.g., `1.21.1-2.0.0`)
+- **Versioning**: `{mod_version}+{mc_version}` (e.g., `2.0.0+1.21.1`)
 - **Changelog**: Keep `CHANGELOG.md` up to date with semver notes
 - **Publishing**: Use `gradle-modrinth` or `curseforgegradle` plugins for CurseForge / Modrinth
 - **CI**: GitHub Actions with `./gradlew build` and `./gradlew runGameTestServer`

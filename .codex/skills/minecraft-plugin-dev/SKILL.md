@@ -122,7 +122,7 @@ main: com.example.myplugin.MyPlugin
 description: An example Paper plugin
 author: YourName
 website: https://github.com/example/my-plugin
-api-version: '1.21'
+api-version: '1.21.11'
 
 commands:
   myplugin:
@@ -140,13 +140,16 @@ permissions:
     default: op
 ```
 
-> Use `api-version: '1.21'` (not `'1.21.11'`) for broader server compatibility.
-> For exact version matching add the patch: `api-version: '1.21.11'`.
+> Paper 1.20.5+ supports major/minor/patch `api-version` values.
+> Use `api-version: '1.21.11'` when you target that Paper patch specifically, or `api-version: '1.21'`
+> only when you intentionally support the broader 1.21.x line.
 
 ### Main Plugin Class
 ```java
 package com.example.myplugin;
 
+import com.example.myplugin.commands.MyCommand;
+import com.example.myplugin.listeners.PlayerListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class MyPlugin extends JavaPlugin {
@@ -624,11 +627,11 @@ if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
 Use the bundled validator before publishing a Paper plugin:
 
 ```bash
-# From a plugin project root:
-.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh --root .
+# Run from the installed skill directory (for example `.agents/skills/minecraft-plugin-dev`):
+./scripts/validate-plugin-layout.sh --root /path/to/plugin-project
 
 # Strict mode treats warnings as failures:
-.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh --root . --strict
+./scripts/validate-plugin-layout.sh --root /path/to/plugin-project --strict
 ```
 
 What it checks:

@@ -372,7 +372,7 @@ org.gradle.daemon=false
 
 minecraft_version=1.21.1
 minecraft_version_range=[1.21.1,1.22)
-neo_version=21.1.93
+neo_version=21.1.172
 neo_version_range=[21.1,)
 loader_version_range=[1,)
 

@@ -1,0 +1,6 @@
+# Default maintainer ownership for the public repository.
+* @Jahrome907
+
+# Keep release/governance changes explicitly maintainer-owned.
+.github/ @Jahrome907
+scripts/ @Jahrome907

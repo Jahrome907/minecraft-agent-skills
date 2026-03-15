@@ -469,11 +469,11 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 Use the bundled validator script before shipping a resource-pack update:
 
 ```bash
-# From a resource-pack project root:
-.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh --root .
+# Run from the installed skill directory (for example `.claude/skills/minecraft-resource-pack`):
+./scripts/validate-resource-pack.sh --root /path/to/resource-pack
 
 # Strict mode treats warnings as failures:
-.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh --root . --strict
+./scripts/validate-resource-pack.sh --root /path/to/resource-pack --strict
 ```
 
 What it checks:

@@ -61,7 +61,8 @@ cp -r .skills-src/.agents .
 
 ### Option C — Manual download
 
-Download the latest release from your repository's `.../releases/latest` page
+Download the latest release from
+`https://github.com/Jahrome907/minecraft-codex-skills/releases/latest`
 and extract the `.agents/` folder into your project root.
 
 ---
@@ -123,21 +124,39 @@ your-project/
 
 ## Maintainers
 
+Repo maintainer tooling requires **Node 20+**. The copied skill directories do not
+need the repo-root Node install.
+
 ```bash
 # One-time: install/check local dev tools
 ./scripts/setup-dev-tools.sh
 
+# Install pinned Node-based maintainer tooling
+npm ci
+
 # Edit canonical skills only
 $EDITOR .agents/skills/<skill>/SKILL.md
 
-# Sync compatibility mirror
+# Sync compatibility mirrors
 ./scripts/sync-skills-layout.sh sync
 
 # Run repository skill audit
 node ./scripts/audit-skills.mjs
 
+# Validate markdown/JSON/YAML doc snippets
+node ./scripts/validate-doc-snippets.mjs
+
 # Run validator fixture tests
 ./scripts/run-skill-validator-fixtures.sh
+
+# Run repo policy fixtures
+./scripts/test-repo-policy-fixtures.sh
+
+# Validate GitHub community files
+node ./scripts/check-github-community-files.mjs
+
+# Run markdown lint from the pinned local dependency
+npm run lint:md
 ```
 
 ---
@@ -194,7 +213,7 @@ API versions, JSON schemas, and build commands automatically.
 
 PRs are welcome! Before opening one:
 
-1. Verify all Java examples compile against **Java 21**
+1. Verify Java examples you change remain correct for **Java 21** in their target project context
 2. Validate all JSON with `jq . < file.json`
 3. Test against the stated Minecraft / platform version
 4. Add a `CHANGELOG.md` entry describing what changed
@@ -202,6 +221,7 @@ PRs are welcome! Before opening one:
 
 See [AGENTS.md](AGENTS.md) and [docs/skill-authoring-standard.md](docs/skill-authoring-standard.md) for guidance on editing skill files.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow and quality gates.
+Public issues should use the GitHub issue templates, and security reports should follow [SECURITY.md](SECURITY.md).
 
 ---
 

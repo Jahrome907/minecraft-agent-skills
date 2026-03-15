@@ -1,0 +1,13 @@
+name: Skills Audit
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout
+      - uses: gitleaks/gitleaks-action@v2

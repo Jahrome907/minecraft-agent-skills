@@ -84,10 +84,16 @@ function checkPathConventions(file, text) {
     ["tags/items", "use `tags/item` for 1.21.x conventions"],
     ["biome_modifiers", "use `biome_modifier` for NeoForge biome modifier path"],
     ["max-player-count", "use `max-players` (server.properties key)"],
+    ["<mc_version>-<mod_version>", "use `{mod_version}+{mc_version}` for mod version examples"],
+    ["1.21.1-2.0.0", "use `{mod_version}+{mc_version}` for mod version examples"],
   ];
 
   for (const [needle, msg] of banned) {
     if (text.includes(needle)) addError(file, msg);
+  }
+
+  if (/\.agents\/skills\/[^/\s]+\/scripts\/[^\s`]+/.test(text)) {
+    addError(file, "hardcoded `.agents/skills/.../scripts/...` path in docs; use mirror-safe `./scripts/...` guidance or document all mirrors explicitly");
   }
 }
 

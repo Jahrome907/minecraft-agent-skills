@@ -533,11 +533,11 @@ Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 Use the bundled validator script before shipping a datapack update:
 
 ```bash
-# From a datapack project root:
-.agents/skills/minecraft-datapack/scripts/validate-datapack.sh --root .
+# Run from the installed skill directory (for example `.codex/skills/minecraft-datapack`):
+./scripts/validate-datapack.sh --root /path/to/datapack
 
 # Strict mode treats warnings as failures:
-.agents/skills/minecraft-datapack/scripts/validate-datapack.sh --root . --strict
+./scripts/validate-datapack.sh --root /path/to/datapack --strict
 ```
 
 What it checks:

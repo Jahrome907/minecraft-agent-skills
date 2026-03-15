@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security disclosure
+    url: https://github.com/Jahrome907/minecraft-codex-skills/security/policy
+    about: Report vulnerabilities privately using the repository security policy.

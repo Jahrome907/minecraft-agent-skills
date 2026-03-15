@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- Made the `plugin-dev` validator's valid Java fixture self-contained by adding a minimal `org.bukkit.plugin.java.JavaPlugin` stub, preventing editor diagnostics in the repo without changing validator behavior
+- Hardened bundled validators and fixture coverage for malformed workflow YAML, missing workflow action refs, PR gitleaks token wiring, empty worldgen roots, legacy `biome_modifiers` paths, worldgen dimension reference checks across local namespaces, invalid dimension JSON handling, invalid `tags/worldgen` layouts, and strict-mode tag-only / dimension-only packs
+- Replaced mirror-unsafe `.agents/...` validator command examples with mirror-safe `./scripts/...` usage
+- Standardized public versioning guidance on `{mod_version}+{mc_version}` and aligned bundled Fabric / NeoForge version snippets
+- Clarified Paper `api-version` guidance and fixed missing imports in the main plugin example
+- Added pinned Node maintainer tooling, CI doc-snippet validation, and a dedicated secret-scan workflow
+- Improved CONTRIBUTING / SECURITY guidance for both compatibility mirrors and private vulnerability reporting
+- Added GitHub community health files (`CODEOWNERS`, PR template, issue forms) plus CI-enforced validation that those public repo files remain present and structured
+- Documented the intended protected-branch policy for `main` so GitHub settings match the repo's local release and audit workflow
+
 ## [2.1.0] - 2026-03-07
 
 ### Added (2.1.0)
@@ -36,7 +50,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Reworked README install commands to avoid hardcoded `yourname` URLs
 - Added validator script usage sections in affected skills and wired fixture tests into CI
 
-## [2.0.0] - 2025-07-27
+## [2.0.0] - 2026-03-07
 
 ### Added (2.0.0)
 
@@ -70,7 +84,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `AGENTS.md` — Updated to cover full 10-skill collection with skill selection table
 - `README.md` — Rewritten as collection overview with all 10 skills and examples
 
-## [1.0.0] - 2026-03-07
+## [1.0.0] - 2025-07-27
 
 ### Added (1.0.0)
 
