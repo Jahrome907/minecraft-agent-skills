@@ -27,7 +27,7 @@ case "$MODE" in
         FAILED=1
         continue
       fi
-      DIFF_OUTPUT="$(rsync -ani --delete "$CANONICAL_DIR/" "$MIRROR_DIR/")"
+      DIFF_OUTPUT="$(rsync -rlpcni --delete "$CANONICAL_DIR/" "$MIRROR_DIR/")"
       if [[ -n "$DIFF_OUTPUT" ]]; then
         echo "[FAIL] Mirror drift detected between $CANONICAL_DIR and $MIRROR_DIR" >&2
         echo "$DIFF_OUTPUT" >&2
