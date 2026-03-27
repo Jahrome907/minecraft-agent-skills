@@ -32,13 +32,22 @@ function readJson(file) {
   }
 }
 
+function readText(file) {
+  if (!fs.existsSync(file)) {
+    addError(file, "missing required text file");
+    return null;
+  }
+
+  return fs.readFileSync(file, "utf8");
+}
+
 const pkg = readJson(PACKAGE_JSON);
 const codexManifest = readJson(CODEX_MANIFEST);
 const claudeManifest = readJson(CLAUDE_MANIFEST);
 const marketplace = readJson(MARKETPLACE);
+const pluginReadme = readText(PLUGIN_README);
 
 if (!fs.existsSync(PLUGIN_ROOT)) addError(PLUGIN_ROOT, "plugin root directory is missing");
-if (!fs.existsSync(PLUGIN_README)) addError(PLUGIN_README, "plugin README.md is missing");
 if (!fs.existsSync(PLUGIN_SKILLS)) addError(PLUGIN_SKILLS, "plugin skills directory is missing");
 
 const releaseVersion = pkg?.version;
@@ -74,6 +83,21 @@ if (marketplace) {
     }
     if (pluginEntry.policy?.authentication !== "ON_INSTALL") {
       addError(MARKETPLACE, "expected plugin policy.authentication to be `ON_INSTALL`");
+    }
+  }
+}
+
+if (pluginReadme) {
+  const requiredReadmeSnippets = [
+    "plugins/minecraft-codex-skills/",
+    ".agents/plugins/marketplace.json",
+    "Open `/plugins` and install `minecraft-codex-skills` from the repo marketplace.",
+    "claude --plugin-dir ./plugins/minecraft-codex-skills",
+  ];
+
+  for (const snippet of requiredReadmeSnippets) {
+    if (!pluginReadme.includes(snippet)) {
+      addError(PLUGIN_README, `missing required install guidance snippet: ${snippet}`);
     }
   }
 }

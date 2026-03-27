@@ -5,17 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added
+## [2.3.0] - 2026-03-27
+
+### Added (2.3.0)
 
 - Dual-target plugin bundle at `plugins/minecraft-codex-skills/` with `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json`, and a synced shared `skills/` tree
 - `.agents/plugins/marketplace.json` so Codex can load the local plugin bundle from a repo marketplace entry
 - `.gitattributes` to keep Markdown, shell, JSON, and workflow checkouts consistent for contributors across platforms
 
-### Changed
+### Changed (2.3.0)
 
 - Made `scripts/audit-skills.mjs` tolerant of CRLF and BOM-prefixed files so the skill audit behaves consistently across Windows and Linux checkouts
 - Extended mirror-sync validation to cover the plugin bundle in addition to `.codex/skills/` and `.claude/skills/`
-- Added `scripts/validate-plugin-bundle.mjs` and wired it into `npm run check` plus GitHub Actions so plugin manifests, marketplace metadata, and the plugin README cannot drift silently
+- Added `scripts/validate-plugin-bundle.mjs` and wired it into `npm run check` plus GitHub Actions so plugin manifests, marketplace metadata, and required plugin README install guidance cannot drift silently
 - Removed the remaining mirror-unsafe `.agents/skills/...` references from bundled skill documentation
 - Updated README, plugin README, and CONTRIBUTING guidance to document the repo-marketplace Codex install flow, plugin installs, and Windows maintainer prerequisites more accurately
 

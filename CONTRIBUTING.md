@@ -59,9 +59,9 @@ Thanks for contributing to `minecraft-codex-skills`.
 ## Maintainer Release Flow
 
 1. Land release-ready changes on a branch.
-2. Run the full local verification suite on the exact commit you plan to publish.
-3. Open a PR to `main` and wait for the GitHub-hosted audit workflow to pass.
-4. Bump `package.json` to the intended release version; plugin bundle validation enforces that both plugin manifests match it.
+2. Bump `package.json` to the intended release version; plugin bundle validation enforces that both plugin manifests match it.
+3. Run the full local verification suite on the exact commit you plan to publish.
+4. Open a PR to `main` and wait for the GitHub-hosted audit workflow to pass.
 5. Merge the PR, create an annotated `vX.Y.Z` tag from the merge commit on `main`, and publish the GitHub Release from that tag.
 
 ## Maintainer GitHub Settings
