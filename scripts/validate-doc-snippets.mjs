@@ -11,6 +11,7 @@ const TARGETS = [
   path.join(ROOT, "AGENTS.md"),
   path.join(ROOT, "docs"),
   path.join(ROOT, ".agents", "skills"),
+  path.join(ROOT, "plugins"),
 ];
 
 const errors = [];

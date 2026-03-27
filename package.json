@@ -1,16 +1,18 @@
 {
   "name": "minecraft-codex-skills",
   "private": true,
+  "version": "2.3.0",
   "type": "module",
   "scripts": {
     "audit:skills": "node ./scripts/audit-skills.mjs",
-    "test:validators": "./scripts/run-skill-validator-fixtures.sh",
-    "test:repo-policy": "./scripts/test-repo-policy-fixtures.sh",
+    "test:validators": "bash ./scripts/run-skill-validator-fixtures.sh",
+    "test:repo-policy": "bash ./scripts/test-repo-policy-fixtures.sh",
     "test:docs": "node ./scripts/validate-doc-snippets.mjs",
+    "check:plugin-bundle": "node ./scripts/validate-plugin-bundle.mjs",
     "check:workflow-pins": "node ./scripts/check-workflow-action-pins.mjs",
     "check:community": "node ./scripts/check-github-community-files.mjs",
-    "lint:md": "markdownlint-cli2 \"README.md\" \"AGENTS.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CHANGELOG.md\" \".github/**/*.md\" \"docs/**/*.md\" \".agents/**/*.md\" \".codex/**/*.md\" \".claude/**/*.md\" \"tests/**/*.md\"",
-    "check": "npm run audit:skills && npm run test:docs && npm run test:validators && npm run test:repo-policy && npm run check:workflow-pins && npm run check:community && npm run lint:md"
+    "lint:md": "markdownlint-cli2 \"README.md\" \"AGENTS.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CHANGELOG.md\" \".github/**/*.md\" \"docs/**/*.md\" \".agents/**/*.md\" \".codex/**/*.md\" \".claude/**/*.md\" \"plugins/**/*.md\" \"tests/**/*.md\"",
+    "check": "npm run check:plugin-bundle && npm run audit:skills && npm run test:docs && npm run test:validators && npm run test:repo-policy && npm run check:workflow-pins && npm run check:community && npm run lint:md"
   },
   "engines": {
     "node": ">=20"

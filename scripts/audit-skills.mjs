@@ -8,6 +8,7 @@ const CANONICAL = path.join(ROOT, ".agents", "skills");
 const MIRRORS = [
   { dir: path.join(ROOT, ".codex", "skills"), label: ".codex/skills" },
   { dir: path.join(ROOT, ".claude", "skills"), label: ".claude/skills" },
+  { dir: path.join(ROOT, "plugins", "minecraft-codex-skills", "skills"), label: "plugins/minecraft-codex-skills/skills" },
 ];
 
 const errors = [];
@@ -17,7 +18,7 @@ function addError(file, message) {
 }
 
 function readText(file) {
-  return fs.readFileSync(file, "utf8");
+  return fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
 }
 
 function walkFiles(dir) {

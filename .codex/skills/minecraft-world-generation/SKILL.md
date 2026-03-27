@@ -557,7 +557,7 @@ execute in <namespace>:my_dimension run tp @s 0 100 0
 Use the bundled validator before shipping worldgen JSON changes:
 
 ```bash
-# Run from the installed skill directory (for example `.agents/skills/minecraft-world-generation`):
+# Run from the installed skill directory:
 ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources
 
 # Strict mode treats warnings as failures:

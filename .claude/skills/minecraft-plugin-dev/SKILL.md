@@ -627,7 +627,7 @@ if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
 Use the bundled validator before publishing a Paper plugin:
 
 ```bash
-# Run from the installed skill directory (for example `.agents/skills/minecraft-plugin-dev`):
+# Run from the installed skill directory:
 ./scripts/validate-plugin-layout.sh --root /path/to/plugin-project
 
 # Strict mode treats warnings as failures:

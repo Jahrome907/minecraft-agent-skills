@@ -32,6 +32,9 @@ jobs:
       - name: Validate mirror sync
         run: ./scripts/sync-skills-layout.sh check
 
+      - name: Validate plugin bundle
+        run: node ./scripts/validate-plugin-bundle.mjs
+
       - name: Run skill audit
         run: node ./scripts/audit-skills.mjs
 

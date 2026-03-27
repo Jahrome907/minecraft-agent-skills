@@ -5,23 +5,27 @@ Thanks for contributing to `minecraft-codex-skills`.
 ## Repository Model
 
 - Canonical skills live in `.agents/skills/`.
-- `.codex/skills/` and `.claude/skills/` are compatibility mirrors and must stay in sync.
+- `.codex/skills/`, `.claude/skills/`, and `plugins/minecraft-codex-skills/skills/` are synced mirrors and must stay in sync.
+- `.agents/plugins/marketplace.json` exposes the local Codex plugin bundle for repo-based installs.
 
 ## Development Workflow
 
 1. Edit canonical files in `.agents/skills/`.
 2. Ensure local tooling:
    - Node `20+`
+   - Bash, `jq`, and `rsync` for the shell-based fixture checks
    - `./scripts/setup-dev-tools.sh`
    - `npm ci`
-3. Sync mirror:
+   - On Windows, prefer WSL or Git Bash for the shell-based validation steps
+3. Sync mirrors and plugin bundle:
    - `./scripts/sync-skills-layout.sh sync`
 4. Run validation:
    - `./scripts/sync-skills-layout.sh check`
+   - `node ./scripts/validate-plugin-bundle.mjs`
    - `node ./scripts/audit-skills.mjs`
    - `node ./scripts/validate-doc-snippets.mjs`
-   - `./scripts/run-skill-validator-fixtures.sh`
-   - `./scripts/test-repo-policy-fixtures.sh`
+   - `bash ./scripts/run-skill-validator-fixtures.sh`
+   - `bash ./scripts/test-repo-policy-fixtures.sh`
    - `node ./scripts/check-workflow-action-pins.mjs`
    - `node ./scripts/check-github-community-files.mjs`
    - `npm run lint:md`
@@ -44,7 +48,7 @@ Thanks for contributing to `minecraft-codex-skills`.
 - Include rationale for behavior/structure changes.
 - Use the PR template to summarize scope, verification, and rollout impact.
 - Update `CHANGELOG.md` for any user-facing or maintainer-facing behavior change.
-- If you changed canonical skill content, sync `.codex/skills/` and `.claude/skills/` before review.
+- If you changed canonical skill content, sync `.codex/skills/`, `.claude/skills/`, and `plugins/minecraft-codex-skills/skills/` before review.
 - Ensure CI passes before requesting review.
 
 ## Issues
@@ -57,7 +61,8 @@ Thanks for contributing to `minecraft-codex-skills`.
 1. Land release-ready changes on a branch.
 2. Run the full local verification suite on the exact commit you plan to publish.
 3. Open a PR to `main` and wait for the GitHub-hosted audit workflow to pass.
-4. Merge the PR, create an annotated `vX.Y.Z` tag from the merge commit on `main`, and publish the GitHub Release from that tag.
+4. Bump `package.json` to the intended release version; plugin bundle validation enforces that both plugin manifests match it.
+5. Merge the PR, create an annotated `vX.Y.Z` tag from the merge commit on `main`, and publish the GitHub Release from that tag.
 
 ## Maintainer GitHub Settings
 

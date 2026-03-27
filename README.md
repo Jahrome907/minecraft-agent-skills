@@ -9,13 +9,14 @@ An open-source collection of **10 AI coding agent skills** covering every major 
 of Minecraft development — mods, plugins, datapacks, commands, testing, CI/CD,
 world generation, resource packs, and server administration.
 
-Drop the `.agents/` folder (for Codex), `.claude/` folder (for Claude Code),
-or `.codex/` folder into any Minecraft project and your AI agent will
-automatically select the right skill for every task you assign it.
+Use it either as raw skill folders for Codex or Claude Code, or as a dual-target
+plugin bundle under `plugins/minecraft-codex-skills/` for plugin-based installs.
 
+<!-- markdownlint-disable MD033 -->
 <p align="center">
   <img src="docs/assets/how-it-works.svg" alt="How It Works — 3-step flow: drop skills in, assign a task, skill activates" width="100%"/>
 </p>
+<!-- markdownlint-enable MD033 -->
 
 ---
 
@@ -27,8 +28,9 @@ assign it a task. Each `SKILL.md` file defines the skill's `name`, `description`
 and detailed instructions. Codex selects relevant skills automatically based on
 the description field and your task.
 
-This repository also keeps compatibility mirrors at `.codex/skills/` and
-`.claude/skills/`. Canonical source of truth is `.agents/skills/`.
+This repository keeps `.agents/skills/` as the canonical source of truth and
+syncs exact mirrors to `.codex/skills/`, `.claude/skills/`, and the shared plugin
+bundle at `plugins/minecraft-codex-skills/skills/`.
 
 ---
 
@@ -51,16 +53,51 @@ This repository also keeps compatibility mirrors at `.codex/skills/` and
 
 ## Installation
 
-### Option A — Clone and copy
+### Option A — Raw skills for Codex
 
 ```bash
-# From your Minecraft project root:
 REPO_URL="https://github.com/Jahrome907/minecraft-codex-skills"
 git clone "$REPO_URL" /tmp/mc-skills
 cp -r /tmp/mc-skills/.agents .
 ```
 
-### Option B — Git submodule
+Codex can read the canonical `.agents/skills/` tree directly. The `.codex/skills/`
+mirror is kept byte-for-byte identical if you prefer that layout.
+
+### Option B — Raw skills for Claude Code
+
+```bash
+REPO_URL="https://github.com/Jahrome907/minecraft-codex-skills"
+git clone "$REPO_URL" /tmp/mc-skills
+cp -r /tmp/mc-skills/.claude .
+```
+
+### Option C — Dual-target plugin bundle
+
+The repository now ships a plugin bundle that both Codex and Claude Code can load:
+
+```text
+plugins/minecraft-codex-skills/
+├── .codex-plugin/plugin.json
+├── .claude-plugin/plugin.json
+└── skills/
+```
+
+For Codex local marketplace installs:
+
+1. Keep the repository layout intact so `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/` stay under the same repo root.
+2. Start Codex from that repo root.
+3. Open the plugins surface with `/plugins`.
+4. Install `minecraft-codex-skills` from the repo marketplace discovered at `.agents/plugins/marketplace.json`.
+5. Restart Codex after plugin changes so the local cached copy refreshes.
+
+For Claude Code local plugin testing:
+
+```bash
+claude --plugin-dir ./plugins/minecraft-codex-skills
+```
+
+### Option D — Git submodule
 
 ```bash
 REPO_URL="https://github.com/Jahrome907/minecraft-codex-skills"
@@ -68,11 +105,15 @@ git submodule add "$REPO_URL" .skills-src
 cp -r .skills-src/.agents .
 ```
 
-### Option C — Manual download
+### Option E — Manual download
 
 Download the latest release from
-`https://github.com/Jahrome907/minecraft-codex-skills/releases/latest`
-and extract the `.agents/` folder into your project root.
+`https://github.com/Jahrome907/minecraft-codex-skills/releases/latest`.
+
+- Use `.agents/` or `.codex/` for Codex raw-skill installs.
+- Use `.claude/` for Claude Code raw-skill installs.
+- Use `plugins/minecraft-codex-skills/` for Claude Code plugin installs.
+- For Codex plugin installs, keep the full release layout intact so `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/` remain together under the same repo root.
 
 ---
 
@@ -127,6 +168,17 @@ your-project/
 └── .claude/
     └── skills/
         └── ... (mirrors .agents/skills)
+
+# Dual-target plugin bundle (same skills, plugin manifests for both platforms):
+your-project/
+└── plugins/
+      └── minecraft-codex-skills/
+            ├── .codex-plugin/
+            │   └── plugin.json
+            ├── .claude-plugin/
+            │   └── plugin.json
+            └── skills/
+                  └── ... (mirrors .agents/skills)
 ```
 
 ---
@@ -136,9 +188,12 @@ your-project/
 Repo maintainer tooling requires **Node 20+**. The copied skill directories do not
 need the repo-root Node install.
 
+The shell-based fixture scripts require **bash**, **jq**, and **rsync**. On Windows,
+run those maintainer checks from WSL or Git Bash with those tools available on `PATH`.
+
 ```bash
 # One-time: install/check local dev tools
-./scripts/setup-dev-tools.sh
+bash ./scripts/setup-dev-tools.sh
 
 # Install pinned Node-based maintainer tooling
 npm ci
@@ -146,8 +201,11 @@ npm ci
 # Edit canonical skills only
 $EDITOR .agents/skills/<skill>/SKILL.md
 
-# Sync compatibility mirrors
-./scripts/sync-skills-layout.sh sync
+# Sync compatibility mirrors and plugin bundle
+bash ./scripts/sync-skills-layout.sh sync
+
+# Validate plugin manifests and marketplace metadata
+node ./scripts/validate-plugin-bundle.mjs
 
 # Run repository skill audit
 node ./scripts/audit-skills.mjs
@@ -156,10 +214,10 @@ node ./scripts/audit-skills.mjs
 node ./scripts/validate-doc-snippets.mjs
 
 # Run validator fixture tests
-./scripts/run-skill-validator-fixtures.sh
+bash ./scripts/run-skill-validator-fixtures.sh
 
 # Run repo policy fixtures
-./scripts/test-repo-policy-fixtures.sh
+bash ./scripts/test-repo-policy-fixtures.sh
 
 # Validate GitHub community files
 node ./scripts/check-github-community-files.mjs
@@ -195,6 +253,24 @@ codex "Generate a docker-compose.yml for a Paper 1.21.1 server with Aikar's \
 
 Codex reads the appropriate `SKILL.md` and picks up platform patterns, correct
 API versions, JSON schemas, and build commands automatically.
+
+If you prefer plugin installs in Codex, start Codex from the repository root,
+open `/plugins`, and install `minecraft-codex-skills` from the repo marketplace
+defined in `.agents/plugins/marketplace.json`.
+
+---
+
+## Usage with Claude Code Plugins
+
+Use the bundled plugin for local testing or team distribution:
+
+```bash
+claude --plugin-dir ./plugins/minecraft-codex-skills
+```
+
+The plugin exposes the same 10 skills under the `minecraft-codex-skills` plugin
+namespace while keeping the shared `skills/` content synchronized with the raw
+skill trees.
 
 ---
 

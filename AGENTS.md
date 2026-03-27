@@ -1,8 +1,9 @@
 # AGENTS.md — minecraft-codex-skills Repository
 
-This repository is a collection of **10 OpenAI Codex skills** for Minecraft development.
-It is NOT itself a Minecraft project — it contains skill files that get copied into
-Minecraft mod, plugin, or server-admin projects.
+This repository is a collection of **10 Minecraft development skills** plus a
+dual-target plugin bundle for Codex and Claude Code.
+It is NOT itself a Minecraft project — it contains skill files and plugin packaging
+that get copied into Minecraft mod, plugin, or server-admin projects.
 
 ## What this repo contains
 
@@ -100,6 +101,27 @@ Claude Code mirror (kept in sync by script/CI):
     └── SKILL.md
 ```
 
+Dual-target plugin bundle (kept in sync by script/CI):
+
+```text
+plugins/minecraft-codex-skills/
+├── .codex-plugin/
+│   └── plugin.json
+├── .claude-plugin/
+│   └── plugin.json
+└── skills/
+    ├── minecraft-modding/
+    ├── minecraft-plugin-dev/
+    ├── minecraft-datapack/
+    ├── minecraft-commands-scripting/
+    ├── minecraft-multiloader/
+    ├── minecraft-testing/
+    ├── minecraft-ci-release/
+    ├── minecraft-world-generation/
+    ├── minecraft-resource-pack/
+    └── minecraft-server-admin/
+```
+
 ## Skill Selection Guide
 
 Codex selects skills automatically from the `description` field in each `SKILL.md`.
@@ -121,6 +143,7 @@ The table below maps task types to which skill(s) to load:
 ## When working in this repository
 
 - **Do not** run Minecraft, Gradle, or Paper server commands here; there is no game project to build.
+- Edit `.agents/skills/` only; sync mirrors and the plugin bundle after canonical changes.
 - When editing skill files, keep examples accurate for **Minecraft 1.21.x**.
 - Keep Java examples correct for **Java 21** and verify changed examples in their target project context.
 - Keep JSON snippets valid and pretty-printed with 2-space indentation.

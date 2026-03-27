@@ -56,7 +56,7 @@ try {
   process.exit(1);
 }
 
-const text = fs.readFileSync(skillFile, 'utf8');
+const text = fs.readFileSync(skillFile, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
 
 let failures = 0;
 let warnings = 0;

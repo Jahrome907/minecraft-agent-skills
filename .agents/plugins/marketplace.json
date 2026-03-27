@@ -1,0 +1,20 @@
+{
+  "name": "minecraft-codex-skills",
+  "interface": {
+    "displayName": "Minecraft Codex Skills"
+  },
+  "plugins": [
+    {
+      "name": "minecraft-codex-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/minecraft-codex-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

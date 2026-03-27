@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CANONICAL_DIR=".agents/skills"
-MIRROR_DIRS=(".codex/skills" ".claude/skills")
+MIRROR_DIRS=(".codex/skills" ".claude/skills" "plugins/minecraft-codex-skills/skills")
 MODE="${1:-sync}"
 
 if [[ ! -d "$CANONICAL_DIR" ]]; then

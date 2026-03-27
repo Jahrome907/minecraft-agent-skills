@@ -1,0 +1,11 @@
+{
+  "name": "minecraft-codex-skills",
+  "description": "A dual-target Minecraft development skills bundle for Claude Code and Codex.",
+  "version": "2.3.0",
+  "author": {
+    "name": "Jahrome907"
+  },
+  "homepage": "https://github.com/Jahrome907/minecraft-codex-skills",
+  "repository": "https://github.com/Jahrome907/minecraft-codex-skills",
+  "license": "MIT"
+}

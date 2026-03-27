@@ -50,6 +50,9 @@ fail() { echo "$FAIL $*"; FAILURES=$((FAILURES + 1)); }
 
 trim() {
   local s="$1"
+  s="${s//$'\r'/}"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
   s="${s#\"}"
   s="${s%\"}"
   s="${s#\'}"

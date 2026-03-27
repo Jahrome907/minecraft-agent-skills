@@ -347,9 +347,9 @@ When adding a **new entity**:
 
 ## 12. References
 
-- NeoForge API patterns and event system: `.agents/skills/minecraft-modding/references/neoforge-api.md`
-- Fabric API patterns and mixin guide: `.agents/skills/minecraft-modding/references/fabric-api.md`
-- Blocks, items, recipes, commands, GUIs, datagen: `.agents/skills/minecraft-modding/references/common-patterns.md`
+- NeoForge API patterns and event system: `./references/neoforge-api.md`
+- Fabric API patterns and mixin guide: `./references/fabric-api.md`
+- Blocks, items, recipes, commands, GUIs, datagen: `./references/common-patterns.md`
 - NeoForge official docs: https://docs.neoforged.net/
 - Fabric developer docs: https://docs.fabricmc.net/develop/
 - Architectury (multiloader): https://docs.architectury.dev/
