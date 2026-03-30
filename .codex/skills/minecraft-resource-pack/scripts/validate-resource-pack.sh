@@ -37,8 +37,16 @@ USAGE
 done
 
 if ! command -v jq >/dev/null 2>&1; then
-  echo "$FAIL jq is required"
-  exit 1
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  JQ_SHIM="$SCRIPT_DIR/jq-shim.mjs"
+  if command -v node >/dev/null 2>&1 && [[ -f "$JQ_SHIM" ]]; then
+    jq() {
+      node "$JQ_SHIM" "$@"
+    }
+  else
+    echo "$FAIL jq is required"
+    exit 1
+  fi
 fi
 
 if [[ ! -d "$ROOT" ]]; then

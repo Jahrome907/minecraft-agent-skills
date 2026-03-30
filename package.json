@@ -1,12 +1,12 @@
 {
   "name": "minecraft-agent-skills",
   "private": true,
-  "version": "2.3.1",
+  "version": "2.3.2",
   "type": "module",
   "scripts": {
     "audit:skills": "node ./scripts/audit-skills.mjs",
-    "test:validators": "bash ./scripts/run-skill-validator-fixtures.sh",
-    "test:repo-policy": "bash ./scripts/test-repo-policy-fixtures.sh",
+    "test:validators": "node ./scripts/run-bash.mjs ./scripts/run-skill-validator-fixtures.sh",
+    "test:repo-policy": "node ./scripts/run-bash.mjs ./scripts/test-repo-policy-fixtures.sh",
     "test:docs": "node ./scripts/validate-doc-snippets.mjs",
     "check:plugin-bundle": "node ./scripts/validate-plugin-bundle.mjs",
     "check:workflow-pins": "node ./scripts/check-workflow-action-pins.mjs",
