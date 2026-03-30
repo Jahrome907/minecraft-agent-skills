@@ -5,22 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [2.3.2] - 2026-03-29
+## [2.3.3] - 2026-03-29
 
-### Added (2.3.2)
+### Added (2.3.3)
 
 - Canonical skill index at `.agents/skills/README.md` plus mirrored copies at `.codex/skills/README.md`, `.claude/skills/README.md`, and `plugins/minecraft-codex-skills/skills/README.md`
 - New `minecraft-worldedit-ops` skill with practical command workflows for selections, masks, clipboards/schematics, terraforming brushes, and rollback-safe operations
 - New `minecraft-essentials-ops` skill with EssentialsX-focused runbooks for economy, kits/warps/homes, permissions, and moderation workflows
 - Companion mirror docs at `.codex/README.md` and `.claude/README.md` describing canonical-first edit flow
 
-### Changed (2.3.2)
+### Changed (2.3.3)
 
 - Reworked `minecraft-server-admin` into deployment-driven operations guidance with explicit environment routing, server-type decision matrix, and concrete playbooks for performance, plugin operations, proxy/forwarding, backup/recovery, and incident troubleshooting
 - Hardened `scripts/sync-skills-layout.sh` and `scripts/audit-skills.mjs` to require a canonical/mirrored skills index and fail fast when index files are missing
 - Updated top-level docs and plugin docs for the expanded 12-skill inventory, including README skill tables and `AGENTS.md` selection guidance
 - Updated `docs/assets/how-it-works.svg` to display a 12-skill bundle surface
-- Bumped package and plugin metadata to version `2.3.2`
+- Bumped package and plugin metadata to version `2.3.3`
 
 ## [2.3.1] - 2026-03-27
 
