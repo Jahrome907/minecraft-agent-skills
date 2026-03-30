@@ -13,7 +13,7 @@
 
 - [ ] `CHANGELOG.md` updated for user-facing or repo-workflow changes
 - [ ] Canonical `.agents/skills/` edits were synced to `.codex/skills/` and `.claude/skills/` when applicable
-- [ ] Security-sensitive changes were reviewed against `SECURITY.md`
+- [ ] Secret, token, and private-key exposure risks were reviewed
 - [ ] Screenshots or sample output were added when they materially improve review
 
 ## Notes

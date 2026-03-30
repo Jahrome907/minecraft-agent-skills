@@ -311,19 +311,17 @@ skill trees.
 
 ---
 
-## Contributing
+## Repo Notes
 
-PRs are welcome! Before opening one:
+This repository is a small, owner-managed skills bundle rather than a broader contributor project.
 
-1. Verify Java examples you change remain correct for **Java 21** in their target project context
-2. Validate all JSON with `jq . < file.json`
-3. Test against the stated Minecraft / platform version
-4. Add a `CHANGELOG.md` entry describing what changed
-5. Keep examples complete and runnable — no pseudo-code
+If you need to inspect or update repo structure:
 
-See [AGENTS.md](AGENTS.md) and [docs/skill-authoring-standard.md](docs/skill-authoring-standard.md) for guidance on editing skill files.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow and quality gates.
-Public issues should use the GitHub issue templates, and security reports should follow [SECURITY.md](SECURITY.md).
+1. Edit canonical skill content in `.agents/skills/`
+2. Keep `.codex/skills/`, `.claude/skills/`, and `plugins/minecraft-codex-skills/skills/` synchronized
+3. Run `npm run check` before publishing repo-level changes
+
+See [AGENTS.md](AGENTS.md) and [docs/skill-authoring-standard.md](docs/skill-authoring-standard.md) for the repo-specific editing model.
 
 ---
 

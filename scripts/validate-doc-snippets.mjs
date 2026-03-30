@@ -6,8 +6,6 @@ import yaml from "js-yaml";
 const ROOT = process.cwd();
 const TARGETS = [
   path.join(ROOT, "README.md"),
-  path.join(ROOT, "CONTRIBUTING.md"),
-  path.join(ROOT, "SECURITY.md"),
   path.join(ROOT, "AGENTS.md"),
   path.join(ROOT, "docs"),
   path.join(ROOT, ".agents", "skills"),

@@ -184,9 +184,10 @@ When Minecraft releases a new version, update the following files:
 11. **`minecraft-worldedit-ops/SKILL.md`** — command workflow or safety behavior changes
 12. **`minecraft-essentials-ops/SKILL.md`** — EssentialsX command/config/permission behavior changes
 
-## Contributing
+## Repo Notes
 
-This collection is MIT-licensed and open for contributions. When opening a PR:
+This collection is MIT-licensed and maintained as a small repo-owned skills bundle.
+If repo content is changed:
 
 - Verify all Java examples are correct for the stated MC version
 - Verify all JSON is valid (`jq . < file.json`)

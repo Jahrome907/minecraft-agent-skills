@@ -11,7 +11,7 @@
     "check:plugin-bundle": "node ./scripts/validate-plugin-bundle.mjs",
     "check:workflow-pins": "node ./scripts/check-workflow-action-pins.mjs",
     "check:community": "node ./scripts/check-github-community-files.mjs",
-    "lint:md": "markdownlint-cli2 \"README.md\" \"AGENTS.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CHANGELOG.md\" \".github/**/*.md\" \"docs/**/*.md\" \".agents/**/*.md\" \".codex/**/*.md\" \".claude/**/*.md\" \"plugins/**/*.md\" \"tests/**/*.md\"",
+    "lint:md": "markdownlint-cli2 \"README.md\" \"AGENTS.md\" \"CHANGELOG.md\" \".github/**/*.md\" \"docs/**/*.md\" \".agents/**/*.md\" \".codex/**/*.md\" \".claude/**/*.md\" \"plugins/**/*.md\" \"tests/**/*.md\"",
     "check": "npm run check:plugin-bundle && npm run audit:skills && npm run test:docs && npm run test:validators && npm run test:repo-policy && npm run check:workflow-pins && npm run check:community && npm run lint:md"
   },
   "engines": {

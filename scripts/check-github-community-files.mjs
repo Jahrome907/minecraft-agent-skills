@@ -85,13 +85,6 @@ const issueConfig = parseYamlFile(issueConfigPath);
 if (issueConfig && typeof issueConfig === "object") {
   if (!Array.isArray(issueConfig.contact_links) || issueConfig.contact_links.length === 0) {
     addError(issueConfigPath, "must define at least one contact link");
-  } else {
-    const hasSecurityLink = issueConfig.contact_links.some((link) => {
-      return typeof link?.url === "string" && link.url.includes("/security/policy");
-    });
-    if (!hasSecurityLink) {
-      addError(issueConfigPath, "must include a security policy contact link");
-    }
   }
 }
 
