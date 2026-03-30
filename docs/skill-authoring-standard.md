@@ -35,4 +35,4 @@ This repository uses `.agents/skills/` as canonical. `.codex/skills/` is a gener
 - Use `{mod_version}+{mc_version}` for mod release examples.
 - Keep validator commands mirror-safe by using `./scripts/...` from the installed skill directory.
 - Bundled skill validators must ship any parser/runtime code they need inside the skill directory.
-- Do not make bundled validators depend on repo-root `node_modules`; that is only acceptable for repo-only maintainer scripts.
+- Do not make bundled validators depend on repo-root `node_modules`; that is only acceptable for repo-only development scripts.

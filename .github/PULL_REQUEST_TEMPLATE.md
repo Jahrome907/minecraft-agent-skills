@@ -11,7 +11,7 @@
 
 ## Checklist
 
-- [ ] `CHANGELOG.md` updated for user-facing or maintainer-facing changes
+- [ ] `CHANGELOG.md` updated for user-facing or repo-workflow changes
 - [ ] Canonical `.agents/skills/` edits were synced to `.codex/skills/` and `.claude/skills/` when applicable
 - [ ] Security-sensitive changes were reviewed against `SECURITY.md`
 - [ ] Screenshots or sample output were added when they materially improve review

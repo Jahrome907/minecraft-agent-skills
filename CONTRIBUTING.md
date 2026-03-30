@@ -47,7 +47,7 @@ Thanks for contributing to `minecraft-agent-skills`.
 - Open PRs against `main` from a branch; avoid direct pushes to `main`.
 - Include rationale for behavior/structure changes.
 - Use the PR template to summarize scope, verification, and rollout impact.
-- Update `CHANGELOG.md` for any user-facing or maintainer-facing behavior change.
+- Update `CHANGELOG.md` for any user-facing or repo-workflow behavior change.
 - If you changed canonical skill content, sync `.codex/skills/`, `.claude/skills/`, and `plugins/minecraft-codex-skills/skills/` before review.
 - Ensure CI passes before requesting review.
 
@@ -56,16 +56,10 @@ Thanks for contributing to `minecraft-agent-skills`.
 - Use the GitHub issue templates for bugs and feature requests so reproduction details are complete.
 - Do not open public issues for vulnerabilities; follow `SECURITY.md` instead.
 
-## Maintainer Release Flow
+## Release Checklist
 
 1. Land release-ready changes on a branch.
 2. Bump `package.json` to the intended release version; plugin bundle validation enforces that both plugin manifests match it.
 3. Run the full local verification suite on the exact commit you plan to publish.
 4. Open a PR to `main` and wait for the GitHub-hosted audit workflow to pass.
 5. Merge the PR, create an annotated `vX.Y.Z` tag from the merge commit on `main`, and publish the GitHub Release from that tag.
-
-## Maintainer GitHub Settings
-
-- Protect `main` on GitHub and require the `validate-skills` and `secret-scan` checks before merge.
-- Prefer squash merges for release branches so public history stays linear and reviewable.
-- Keep direct pushes to `main` disabled in GitHub settings once the protected-branch policy is enabled.
