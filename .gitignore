@@ -25,3 +25,10 @@ Thumbs.db
 *.p12
 *.pfx
 *.crt
+
+# This repo intentionally versions compatibility mirrors in these root folders.
+# Keep them includable even if contributors have global ignore rules for .codex/.claude.
+!/.codex/
+!/.codex/**
+!/.claude/
+!/.claude/**

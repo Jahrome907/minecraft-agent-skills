@@ -1,6 +1,6 @@
 # minecraft-codex-skills plugin
 
-This plugin packages the repository's 10 Minecraft development skills for both
+This plugin packages the repository's 12 Minecraft development skills for both
 Codex and Claude Code.
 
 ## Layout
@@ -16,8 +16,9 @@ plugins/minecraft-codex-skills/
 
 - Do not edit `skills/` directly in this plugin.
 - Edit `.agents/skills/` in the repo root.
+- Maintain `.agents/skills/README.md` as the canonical skill index.
 - Run `./scripts/sync-skills-layout.sh sync` to refresh `.codex/skills/`,
-  `.claude/skills/`, and this plugin bundle.
+  `.claude/skills/`, and this plugin bundle (including mirrored `skills/README.md`).
 
 ## Codex local install
 

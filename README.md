@@ -5,9 +5,10 @@
 [![GitHub release](https://img.shields.io/github/v/release/Jahrome907/minecraft-agent-skills)](https://github.com/Jahrome907/minecraft-agent-skills/releases/latest)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.x-brightgreen)](https://www.minecraft.net/)
 
-An open-source collection of **10 AI coding agent skills** covering every major area
+A public skills bundle of **12 AI coding agent skills** covering every major area
 of Minecraft development — mods, plugins, datapacks, commands, testing, CI/CD,
-world generation, resource packs, and server administration.
+world generation, resource packs, server administration, WorldEdit operations,
+and EssentialsX operations.
 
 Use it either as raw skill folders for Codex or Claude Code, or as a dual-target
 plugin bundle under `plugins/minecraft-codex-skills/` for plugin-based installs.
@@ -17,9 +18,14 @@ identifier remains `minecraft-codex-skills` for marketplace and install compatib
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
-  <img src="docs/assets/how-it-works.svg" alt="How It Works — 3-step flow: drop skills in, assign a task, skill activates" width="100%"/>
+      <img src="docs/assets/how-it-works.svg" alt="How It Works — choose raw skills or plugin install, load the skills into your agent, assign a task, and the right skill activates" width="100%"/>
 </p>
 <!-- markdownlint-enable MD033 -->
+
+Use the raw-skill path if you want to copy `.agents/`, `.codex/`, or `.claude/`
+directly into a project. Use the plugin path if you want to keep the repository
+layout intact and load `plugins/minecraft-codex-skills/` through Codex's local
+marketplace flow or Claude Code's `--plugin-dir` support.
 
 ---
 
@@ -34,6 +40,7 @@ the description field and your task.
 This repository keeps `.agents/skills/` as the canonical source of truth and
 syncs exact mirrors to `.codex/skills/`, `.claude/skills/`, and the shared plugin
 bundle at `plugins/minecraft-codex-skills/skills/`.
+The routing index lives at `.agents/skills/README.md`.
 
 ---
 
@@ -51,6 +58,8 @@ bundle at `plugins/minecraft-codex-skills/skills/`.
 |**minecraft-world-generation**|`minecraft-world-generation/`|Custom biomes, dimensions, structures (datapacks + mods)|
 |**minecraft-resource-pack**|`minecraft-resource-pack/`|Textures, block/item models, sounds, animations, OptiFine CIT, shaders|
 |**minecraft-server-admin**|`minecraft-server-admin/`|Server setup, JVM tuning, Docker, Velocity proxy, backups, security|
+|**minecraft-worldedit-ops**|`minecraft-worldedit-ops/`|WorldEdit ops playbooks: selections, masks, schematics, brushes, safe rollback|
+|**minecraft-essentials-ops**|`minecraft-essentials-ops/`|EssentialsX ops: kits/warps/homes, economy, permissions, moderation workflows|
 
 ---
 
@@ -126,6 +135,7 @@ Download the latest release from
 your-project/
 └── .agents/
     └── skills/
+        ├── README.md
         ├── minecraft-modding/
         │   ├── SKILL.md
         │   ├── references/
@@ -160,7 +170,11 @@ your-project/
         │   ├── SKILL.md
         │   └── scripts/
         │       └── validate-resource-pack.sh
-        └── minecraft-server-admin/
+        ├── minecraft-server-admin/
+        │   └── SKILL.md
+        ├── minecraft-worldedit-ops/
+        │   └── SKILL.md
+        └── minecraft-essentials-ops/
             └── SKILL.md
 
 # Compatibility mirrors (same content, synced by script):
@@ -186,19 +200,19 @@ your-project/
 
 ---
 
-## Maintainers
+## Working On This Repo
 
-Repo maintainer tooling requires **Node 20+**. The copied skill directories do not
+Repo development tooling requires **Node 20+**. The copied skill directories do not
 need the repo-root Node install.
 
 The shell-based fixture scripts require **bash**, **jq**, and **rsync**. On Windows,
-run those maintainer checks from WSL or Git Bash with those tools available on `PATH`.
+run those repo checks from WSL or Git Bash with those tools available on `PATH`.
 
 ```bash
 # One-time: install/check local dev tools
 bash ./scripts/setup-dev-tools.sh
 
-# Install pinned Node-based maintainer tooling
+# Install pinned repo tooling
 npm ci
 
 # Edit canonical skills only
@@ -271,15 +285,15 @@ Use the bundled plugin for local testing or team distribution:
 claude --plugin-dir ./plugins/minecraft-codex-skills
 ```
 
-The plugin exposes the same 10 skills under the `minecraft-codex-skills` plugin
+The plugin exposes the same 12 skills under the `minecraft-codex-skills` plugin
 namespace while keeping the shared `skills/` content synchronized with the raw
 skill trees.
 
 ---
 
-## Usage with ChatGPT Codex
+## Usage with Codex
 
-1. Open [chatgpt.com/codex](https://chatgpt.com/codex)
+1. Open [Codex](https://chatgpt.com/codex)
 2. Connect your GitHub repository
 3. Assign a task — Codex reads the skills from your repo automatically
 

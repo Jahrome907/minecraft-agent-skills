@@ -1,6 +1,6 @@
 # AGENTS.md — minecraft-agent-skills Repository
 
-This repository is a collection of **10 Minecraft development skills** plus a
+This repository is a collection of **12 Minecraft development skills** plus a
 dual-target plugin bundle for Codex and Claude Code.
 It is NOT itself a Minecraft project — it contains skill files and plugin packaging
 that get copied into Minecraft mod, plugin, or server-admin projects.
@@ -33,7 +33,11 @@ that get copied into Minecraft mod, plugin, or server-admin projects.
 │   └── SKILL.md
 ├── minecraft-resource-pack/
 │   └── SKILL.md
-└── minecraft-server-admin/
+├── minecraft-server-admin/
+│   └── SKILL.md
+├── minecraft-worldedit-ops/
+│   └── SKILL.md
+└── minecraft-essentials-ops/
     └── SKILL.md
 ```
 
@@ -65,7 +69,11 @@ Compatibility mirror (kept in sync by script/CI):
 │   └── SKILL.md
 ├── minecraft-resource-pack/      ← Textures, models, sounds, shaders
 │   └── SKILL.md
-└── minecraft-server-admin/       ← Server setup, JVM tuning, Docker, Velocity
+├── minecraft-server-admin/       ← Server setup, JVM tuning, Docker, Velocity
+│   └── SKILL.md
+├── minecraft-worldedit-ops/      ← WorldEdit operations and safe edit workflows
+│   └── SKILL.md
+└── minecraft-essentials-ops/     ← EssentialsX operations and moderation/economy policy
     └── SKILL.md
 ```
 
@@ -97,7 +105,11 @@ Claude Code mirror (kept in sync by script/CI):
 │   └── SKILL.md
 ├── minecraft-resource-pack/      ← Textures, models, sounds, shaders
 │   └── SKILL.md
-└── minecraft-server-admin/       ← Server setup, JVM tuning, Docker, Velocity
+├── minecraft-server-admin/       ← Server setup, JVM tuning, Docker, Velocity
+│   └── SKILL.md
+├── minecraft-worldedit-ops/      ← WorldEdit operations and safe edit workflows
+│   └── SKILL.md
+└── minecraft-essentials-ops/     ← EssentialsX operations and moderation/economy policy
     └── SKILL.md
 ```
 
@@ -119,7 +131,9 @@ plugins/minecraft-codex-skills/
     ├── minecraft-ci-release/
     ├── minecraft-world-generation/
     ├── minecraft-resource-pack/
-    └── minecraft-server-admin/
+    ├── minecraft-server-admin/
+    ├── minecraft-worldedit-ops/
+    └── minecraft-essentials-ops/
 ```
 
 ## Skill Selection Guide
@@ -139,6 +153,8 @@ The table below maps task types to which skill(s) to load:
 |Custom biomes, dimensions, structures (datapack or mod)|`minecraft-world-generation`|
 |Texture packs, block/item models, animated textures, shaders|`minecraft-resource-pack`|
 |Server launch flags, `server.properties`, Docker, Velocity proxy|`minecraft-server-admin`|
+|WorldEdit selections, schematics, brushes, safe rollback workflows|`minecraft-worldedit-ops`|
+|EssentialsX commands, economy, kits/warps/homes, moderation and permissions|`minecraft-essentials-ops`|
 
 ## When working in this repository
 
@@ -165,6 +181,8 @@ When Minecraft releases a new version, update the following files:
 8. **`minecraft-commands-scripting/SKILL.md`** — any syntax changes
 9. **`minecraft-world-generation/SKILL.md`** — worldgen JSON schema changes
 10. **`minecraft-multiloader/SKILL.md`** — Architectury, Fabric loader, NeoForge versions
+11. **`minecraft-worldedit-ops/SKILL.md`** — command workflow or safety behavior changes
+12. **`minecraft-essentials-ops/SKILL.md`** — EssentialsX command/config/permission behavior changes
 
 ## Contributing
 
