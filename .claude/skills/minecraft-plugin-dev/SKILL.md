@@ -3,9 +3,9 @@ name: minecraft-plugin-dev
 description: >
   Develop Minecraft server plugins using the Paper/Bukkit/Spigot API for Minecraft 1.21.x.
   Handles creating Paper plugins with JavaPlugin, event listeners with @EventHandler, 
-  commands, schedulers (sync/async), Persistent Data Container (PDC), Adventure text components,
-  Vault economy integration, BungeeCord/Velocity messaging, plugin.yml configuration,
-  YAML config management, and Paper-specific enhancement APIs. Always targets Paper API
+    commands, schedulers (sync/async/Folia-safe), Persistent Data Container (PDC), Adventure text components,
+    Vault economy integration, BungeeCord/Velocity messaging, plugin.yml and paper-plugin.yml configuration,
+    YAML config management, and Paper-specific enhancement APIs. Always targets Paper API
   1.21.x (Java 21) with Gradle (Kotlin DSL). Distinguishes plugin development from mod
   development: plugins run server-side only and do not require client installation.
 ---
@@ -68,7 +68,7 @@ java {
 tasks {
     processResources {
         // Substitutes ${version} in plugin.yml with the Gradle project version
-        filesMatching("plugin.yml") {
+        filesMatching(listOf("plugin.yml", "paper-plugin.yml")) {
             expand("version" to project.version)
         }
     }
@@ -107,6 +107,7 @@ my-plugin/
     │       └── DataManager.java
     └── resources/
         ├── plugin.yml
+        ├── paper-plugin.yml      ← optional, Paper-only metadata
         └── config.yml
 ```
 
@@ -114,7 +115,7 @@ my-plugin/
 
 ## Core Files
 
-### `plugin.yml` (required)
+### `plugin.yml` (Bukkit-compatible default)
 ```yaml
 name: MyPlugin
 version: "${version}"
@@ -143,6 +144,26 @@ permissions:
 > Paper 1.20.5+ supports major/minor/patch `api-version` values.
 > Use `api-version: '1.21.11'` when you target that Paper patch specifically, or `api-version: '1.21'`
 > only when you intentionally support the broader 1.21.x line.
+
+### `paper-plugin.yml` (Paper-only metadata)
+
+Use `paper-plugin.yml` when you need Paper-specific metadata such as `folia-supported`
+or server/bootstrap dependency ordering. Keep `plugin.yml` if you must stay portable
+to Bukkit-derived servers that do not understand the Paper-specific file.
+
+```yaml
+name: MyPlugin
+version: "${version}"
+main: com.example.myplugin.MyPlugin
+api-version: '1.21.11'
+folia-supported: true
+
+dependencies:
+    server:
+        Vault:
+            load: BEFORE
+            required: false
+```
 
 ### Main Plugin Class
 ```java
@@ -332,6 +353,10 @@ public class MyCommand implements CommandExecutor, TabCompleter {
 
 ## Schedulers
 
+For classic Paper plugins, `BukkitScheduler` is still fine. If you claim Folia support,
+move entity, region, and global work onto the Folia-aware schedulers instead of assuming
+one global main thread.
+
 ### Synchronous (runs on main thread)
 ```java
 // Run once after 20 ticks (1 second)
@@ -375,6 +400,32 @@ new BukkitRunnable() {
 }.runTaskTimer(plugin, 0L, 20L);
 ```
 
+### Folia-safe scheduling
+```java
+// Player-bound work: stays with the player's owning region
+player.getScheduler().run(plugin, task -> {
+    player.sendActionBar(Component.text("Checkpoint reached"));
+}, null);
+
+// Location / chunk-bound work
+plugin.getServer().getRegionScheduler().run(plugin, location, task -> {
+    location.getBlock().setType(Material.GOLD_BLOCK);
+});
+
+// Global coordination that is not tied to one region
+plugin.getServer().getGlobalRegionScheduler().run(plugin, task -> {
+    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "save-all");
+});
+
+// Async I/O remains on the async scheduler
+plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
+    writeAuditLog();
+});
+```
+
+If you need to support both Paper and Folia, hide scheduling behind your own interface
+instead of scattering scheduler calls throughout listeners and commands.
+
 ---
 
 ## Persistent Data Container (PDC)
@@ -411,10 +462,21 @@ player.getPersistentDataContainer().remove(killKey);
 ### PDC on ItemStack
 ```java
 ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
-ItemMeta meta = item.getItemMeta();
-meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "custom_id"),
-    PersistentDataType.STRING, "special_sword");
-item.setItemMeta(meta);
+item.editMeta(meta -> meta.getPersistentDataContainer().set(
+    new NamespacedKey(plugin, "custom_id"),
+    PersistentDataType.STRING,
+    "special_sword"
+));
+```
+
+### PDC on chunks or worlds
+```java
+NamespacedKey arenaKey = new NamespacedKey(plugin, "arena_id");
+
+chunk.getPersistentDataContainer().set(arenaKey, PersistentDataType.STRING, "spawn");
+
+String arenaId = chunk.getPersistentDataContainer()
+    .getOrDefault(arenaKey, PersistentDataType.STRING, "unknown");
 ```
 
 ---

@@ -32,20 +32,24 @@ Datapacks can:
 
 ---
 
-## Pack Format Numbers (1.21.x)
+## Pack Metadata (1.21.x)
 
-| Minecraft Version | `pack_format` |
-|-------------------|--------------|
-| 1.21 / 1.21.1     | 48           |
-| 1.21.2 / 1.21.3   | 57           |
-| 1.21.4            | 61           |
-| 1.21.5            | 71           |
+| Minecraft Version | Preferred `pack` metadata |
+|-------------------|---------------------------|
+| 1.21 / 1.21.1     | `pack_format: 48` |
+| 1.21.2 / 1.21.3   | `pack_format: 57` |
+| 1.21.4            | `pack_format: 61` |
+| 1.21.5            | `pack_format: 71` |
+| 1.21.6            | `pack_format: 80` |
+| 1.21.7 / 1.21.8   | `pack_format: 81` |
+| 1.21.9 / 1.21.10  | `min_format: 88.0`, `max_format: 88.0` |
+| 1.21.11           | `min_format: 94.1`, `max_format: 94.1` |
 
-Always use the exact format for your target version.
-Use `supported_formats` to declare a range:
-```json
-"supported_formats": { "min_inclusive": 48, "max_inclusive": 71 }
-```
+Use `pack_format` through 1.21.8. Starting in 1.21.9, Mojang replaced that
+single field with explicit `min_format` / `max_format` values.
+
+Keep `pack.mcmeta` exact for the patch you target instead of trying to span the
+entire 1.21.x line with one metadata block.
 
 ---
 
@@ -83,11 +87,24 @@ my-datapack/
 
 ## `pack.mcmeta`
 
+### 1.21.8 and earlier
+
 ```json
 {
   "pack": {
-    "pack_format": 71,
-    "supported_formats": { "min_inclusive": 48, "max_inclusive": 71 },
+    "pack_format": 81,
+    "description": "My Custom Datapack v1.0"
+  }
+}
+```
+
+### 1.21.9 and newer
+
+```json
+{
+  "pack": {
+    "min_format": 94.1,
+    "max_format": 94.1,
     "description": "My Custom Datapack v1.0"
   }
 }
@@ -524,7 +541,7 @@ Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 |-------|-------|-----|
 | `Unknown or invalid command` | Syntax error in function | Check whitespace, selector, trailing space |
 | `Datapack did not load` | Invalid JSON in any file | Validate with `jq . < file.json` |
-| `pack_format mismatch` | Wrong `pack_format` number | Update `pack.mcmeta` |
+| `pack metadata mismatch` | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
 | Function not running on tick | Missing tick tag or wrong namespace | Check `tags/function/tick.json` path |
 | Macro error | `$` line but no `with` | Provide `with storage/entity/block` |
 

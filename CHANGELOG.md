@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-04-04
+
+### Added
+
+- Targeted `scripts/check-version-drift.mjs` guard plus validator fixture coverage for modern `pack.mcmeta` metadata, multiloader version sanity, and testing layout checks
+- Bundled support assets for previously thin skills: Architectury reference/checker, testing layout reference/validator, and commands execute/selector cheat sheets with example scripts
+
+### Changed
+
+- Refreshed the repo's 1.21.x guidance around the 1.21.11 line across modding, multiloader, datapack, resource-pack, CI/release, and top-level docs
+- Updated datapack and resource-pack docs plus validators to support both legacy `pack_format` metadata and newer `min_format` / `max_format` metadata for 1.21.9+
+- Expanded Paper plugin/testing guidance with `paper-plugin.yml`, Folia-safe scheduler patterns, and newer PDC examples
+
 ## [2.3.3] - 2026-03-29
 
 ### Added (2.3.3)

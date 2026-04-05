@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "mypack:font/icons.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\\uE000"
+      ]
+    }
+  ]
+}

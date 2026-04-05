@@ -360,7 +360,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.21.1"
+      VERSION: "1.21.11"
       MEMORY: "10G"
     ports:
       - "25565:25565"

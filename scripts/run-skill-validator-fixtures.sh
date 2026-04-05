@@ -85,19 +85,27 @@ expect_temp_skill_pass() {
 echo "=== Running Skill Validator Fixtures ==="
 
 expect_path "tests/fixtures/validators/datapack/valid"
+expect_path "tests/fixtures/validators/datapack/legacy-pack-metadata"
 expect_path "tests/fixtures/validators/datapack/invalid"
 expect_pass "datapack valid" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/valid
+expect_pass "datapack legacy pack metadata" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/legacy-pack-metadata
 expect_fail_contains "datapack invalid" "legacy path detected" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/invalid
 
 expect_path "tests/fixtures/validators/resource-pack/valid"
+expect_path "tests/fixtures/validators/resource-pack/legacy-pack-metadata"
 expect_path "tests/fixtures/validators/resource-pack/invalid"
 expect_pass "resource-pack valid" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/valid
+expect_pass "resource-pack legacy pack metadata" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/legacy-pack-metadata
 expect_fail_contains "resource-pack invalid" "missing texture" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/invalid
@@ -142,6 +150,24 @@ expect_pass "plugin-dev valid" \
 expect_fail_contains "plugin-dev invalid" "api-version has invalid format" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/invalid
+
+expect_path "tests/fixtures/validators/testing/valid"
+expect_path "tests/fixtures/validators/testing/invalid"
+expect_pass "testing valid" \
+  ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
+  --root tests/fixtures/validators/testing/valid
+expect_fail_contains "testing invalid" "MockBukkit tests detected but build file is missing MockBukkit dependency" \
+  ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
+  --root tests/fixtures/validators/testing/invalid
+
+expect_path "tests/fixtures/validators/multiloader/valid"
+expect_path "tests/fixtures/validators/multiloader/invalid"
+expect_pass "multiloader valid" \
+  ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
+  --root tests/fixtures/validators/multiloader/valid
+expect_fail_contains "multiloader invalid" "enabled_platforms must include fabric and neoforge" \
+  ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
+  --root tests/fixtures/validators/multiloader/invalid
 
 expect_path "tests/fixtures/validators/worldgen/valid"
 expect_path "tests/fixtures/validators/worldgen/invalid"

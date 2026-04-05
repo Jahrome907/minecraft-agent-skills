@@ -18,8 +18,8 @@ Target platforms:
 
 | Platform | MC Version | Java | Build System |
 |---|---|---|---|
-| **NeoForge** | 1.21.1 / 1.21.4 / 1.21.5 | Java 21 | Gradle + ModDevGradle |
-| **Fabric** | 1.21.1 / 1.21.4 | Java 21 | Gradle + Fabric Loom |
+| **NeoForge** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + ModDevGradle |
+| **Fabric** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + Fabric Loom |
 | **Architectury** (multiloader) | 1.21.x | Java 21 | Gradle + Architectury Loom |
 
 Always confirm the platform and Minecraft version from `gradle.properties` or `build.gradle`
@@ -337,7 +337,7 @@ When adding a **new entity**:
 ## 11. Open-Source Conventions
 
 - **License**: MIT or LGPL-3.0 — include `LICENSE` file and `SPDX-License-Identifier` header
-- **Versioning**: `{mod_version}+{mc_version}` (e.g., `2.0.0+1.21.1`)
+- **Versioning**: `{mod_version}+{mc_version}` (e.g., `2.0.0+1.21.11`)
 - **Changelog**: Keep `CHANGELOG.md` up to date with semver notes
 - **Publishing**: Use `gradle-modrinth` or `curseforgegradle` plugins for CurseForge / Modrinth
 - **CI**: GitHub Actions with `./gradlew build` and `./gradlew runGameTestServer`

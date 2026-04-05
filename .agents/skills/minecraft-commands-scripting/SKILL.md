@@ -27,6 +27,15 @@ description: >
 - `Do not use when`: creating or editing full datapack structures and registries (`minecraft-datapack`).
 - `Do not use when`: behavior depends on Java plugin or mod code (`minecraft-plugin-dev`/`minecraft-modding`).
 
+## Bundled References And Examples
+
+- Execute cheat sheet: `references/execute-cheat-sheet.md`
+- Selector cheat sheet: `references/selector-cheat-sheet.md`
+- Example scripts: `scripts/examples/arena-countdown.mcfunction`, `scripts/examples/stopwatch-podium.mcfunction`, `scripts/examples/rcon-backup-warning.sh`
+
+Use the cheat sheets when you need fast command recall without scanning this whole
+skill file. The example scripts are meant to be copyable starting points, not toy snippets.
+
 ---
 
 ## Target Selectors

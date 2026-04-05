@@ -77,7 +77,7 @@ side="BOTH"
 [[dependencies.mymod]]
 modId="minecraft"
 type="required"
-versionRange="[1.21.1,1.22)"
+versionRange="[1.21.11,1.22)"
 ordering="NONE"
 side="BOTH"
 ```
@@ -370,10 +370,10 @@ PacketDistributor.sendToServer(new MyPayload(42));
 org.gradle.jvmargs=-Xmx3G
 org.gradle.daemon=false
 
-minecraft_version=1.21.1
-minecraft_version_range=[1.21.1,1.22)
-neo_version=21.1.172
-neo_version_range=[21.1,)
+minecraft_version=1.21.11
+minecraft_version_range=[1.21.11,1.22)
+neo_version=21.11.42
+neo_version_range=[21.11,)
 loader_version_range=[1,)
 
 mod_id=mymod

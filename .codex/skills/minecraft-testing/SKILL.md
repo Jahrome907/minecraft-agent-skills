@@ -28,6 +28,16 @@ description: >
 - `Do not use when`: the task is implementing gameplay features rather than testing them (`minecraft-modding`, `minecraft-plugin-dev`, `minecraft-datapack`).
 - `Do not use when`: the task is release automation or publishing pipelines (`minecraft-ci-release`).
 
+## Bundled References And Helpers
+
+- Layout guide: `references/test-layouts.md`
+- Fixture/layout validator: `./scripts/validate-test-layout.sh --root <project>`
+
+Use the validator before copying a test layout into a real project. It checks for
+the common breakpoints that show up in 1.21.x plugin/mod test repos: missing
+`useJUnitPlatform()`, MockBukkit tests without the dependency, and GameTests with
+no committed structure fixtures.
+
 ---
 
 ## Unit Testing (JUnit 5 — No Minecraft)
@@ -207,6 +217,39 @@ void repeatingTask_firesAfterDelay() {
 }
 ```
 
+### Testing Folia-safe scheduler abstractions
+
+MockBukkit does not emulate Folia's region-threaded runtime. The safe pattern is to
+wrap scheduling behind your own interface and unit test the abstraction boundary.
+
+```java
+interface SchedulerFacade {
+    void runPlayerTask(Player player, Runnable task);
+    void runAsync(Runnable task);
+}
+
+@Test
+void playerTask_delegatesThroughFacade() {
+    List<String> calls = new ArrayList<>();
+    SchedulerFacade facade = new SchedulerFacade() {
+        @Override
+        public void runPlayerTask(Player player, Runnable task) {
+            calls.add("player");
+            task.run();
+        }
+
+        @Override
+        public void runAsync(Runnable task) {
+            calls.add("async");
+            task.run();
+        }
+    };
+
+    facade.runPlayerTask(server.addPlayer(), () -> calls.add("ran"));
+    assertEquals(List.of("player", "ran"), calls);
+}
+```
+
 ### Testing PDC
 ```java
 @Test
@@ -224,6 +267,23 @@ void pdcKillCount_incrementsOnKill() {
     int kills = player.getPersistentDataContainer()
         .getOrDefault(key, PersistentDataType.INTEGER, 0);
     assertEquals(1, kills);
+}
+```
+
+### Testing item or chunk PDC writes
+```java
+@Test
+void itemPdc_roundTripsCustomId() {
+    NamespacedKey key = new NamespacedKey(plugin, "custom_id");
+    ItemStack item = new ItemStack(Material.STICK);
+
+    item.editMeta(meta -> meta.getPersistentDataContainer().set(
+        key, PersistentDataType.STRING, "wand"
+    ));
+
+    String value = item.getItemMeta().getPersistentDataContainer()
+        .get(key, PersistentDataType.STRING);
+    assertEquals("wand", value);
 }
 ```
 
@@ -381,6 +441,9 @@ helper.succeedOnTickWhen(tick, () -> { /* assertions */ });
 
 ## CI: Running Tests in GitHub Actions
 
+Split CI into fast unit/mock coverage and slower runtime-facing jobs. MockBukkit is great
+for command/event logic, but it does not prove Folia thread safety or real server bootstrap.
+
 ```yaml
 # .github/workflows/test.yml
 name: Tests
@@ -388,32 +451,27 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  unit-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Run unit tests
-        run: ./gradlew test
+    unit-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - { uses: actions/setup-java@v4, with: { java-version: '21', distribution: 'temurin' } }
+            - uses: gradle/actions/setup-gradle@v3
+            - { name: Run unit tests, run: ./gradlew test }
 
-  game-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Run GameTests (headless)
-        run: ./gradlew runGameTestServer
-        env:
-          # Required for headless rendering
-          CI: true
+    game-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - { uses: actions/setup-java@v4, with: { java-version: '21', distribution: 'temurin' } }
+            - uses: gradle/actions/setup-gradle@v3
+            - { name: Run GameTests (headless), run: ./gradlew runGameTestServer, env: { CI: true } }
+
+    layout-checks:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - { name: Validate test layout, run: ./scripts/validate-test-layout.sh --root . }
 ```
 
 ---

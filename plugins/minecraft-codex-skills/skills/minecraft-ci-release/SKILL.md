@@ -32,9 +32,9 @@ Tag push (v*) → build + publish to Modrinth + CurseForge + GitHub Releases
 Minecraft mod versions follow: `{mod_version}+{mc_version}`
 
 ```
-1.0.0+1.21.1   ← mod 1.0.0 for MC 1.21.1
-1.2.3+1.21.1
-2.0.0+1.21.4
+1.0.0+1.21.11  ← mod 1.0.0 for MC 1.21.11
+1.2.3+1.21.11
+2.0.0+1.21.11
 ```
 
 Git tag format: `v1.0.0` (mod version only, not MC version in the tag).
@@ -217,7 +217,7 @@ modrinth {
 
     uploadFile.set(tasks.remapJar)      // the JAR to upload
 
-    gameVersions.addAll("1.21.1")
+    gameVersions.addAll("1.21.11")
     loaders.addAll("fabric")
 
     changelog.set(
@@ -266,7 +266,7 @@ tasks.register<net.darkhax.curseforgegradle.TaskPublishCurseForge>("curseforge")
         .trim()
 
     cf.releaseType = "release"
-    cf.addGameVersion("1.21.1")
+    cf.addGameVersion("1.21.11")
     cf.addModLoader("Fabric")     // "NeoForge" for NeoForge subproject
     cf.addRequirement("fabric-api")
     // cf.addJavaVersion("Java 21")
@@ -287,7 +287,7 @@ Never hardcode tokens. Read them from environment:
 # gradle.properties (committed)
 mod_id=mymod
 mod_version=1.0.0
-minecraft_version=1.21.1
+minecraft_version=1.21.11
 modrinth_project_id=AABBCCDD
 curseforge_project_id=123456
 
@@ -305,7 +305,7 @@ curseforge_project_id=123456
 | New features, no breaking changes | Minor: `1.1.0` |
 | Bug fixes only | Patch: `1.0.1` |
 | API/config breaking changes | Major: `2.0.0` |
-| Minecraft version update | Keep mod version, change `+1.21.4` suffix |
+| Minecraft version update | Keep mod version, change `+1.21.11` suffix |
 | Pre-release | `1.0.0-beta.1`, `1.0.0-rc.1` |
 
 ---

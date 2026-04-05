@@ -40,16 +40,29 @@ platform-specific behavior behind the `@ExpectPlatform` abstraction.
 
 ```properties
 # gradle.properties (root)
-minecraft_version=1.21.1
+minecraft_version=1.21.11
 enabled_platforms=fabric,neoforge
 
 architectury_version=13.0.8
-fabric_loader_version=0.16.9
-fabric_api_version=0.114.0+1.21.1
-neoforge_version=21.1.172
+fabric_loader_version=0.17.3
+fabric_api_version=0.116.10+1.21.1
+neoforge_version=21.11.42
 
-loom_version=1.9-SNAPSHOT
+loom_version=1.7
 ```
+
+Pin `architectury_version`, the Architectury plugin version, and `loom_version`
+from the same released template line when scaffolding a new project. The values
+above are for the stable 1.21.x toolchain story in this repo and avoid snapshot-only examples.
+
+## Bundled References And Helpers
+
+- Version alignment reference: `references/architectury-reference.md`
+- Sanity checker: `./scripts/check-version-sanity.sh --root <project>`
+
+Run the sanity checker after editing `gradle.properties`. It catches the most common
+multiloader drift mistakes: snapshot toolchain pins, missing `fabric` / `neoforge`
+platforms, and mismatched NeoForge vs Minecraft patch lines.
 
 ---
 
@@ -115,7 +128,7 @@ include "neoforge"
 
 ```groovy
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT" apply false
+    id "architectury-plugin" version "3.4" apply false
     id "dev.architectury.loom" version "${loom_version}" apply false
     id "com.github.johnrengelman.shadow" version "8.1.1" apply false
 }
@@ -449,14 +462,14 @@ description = "A multiloader example mod"
 [[dependencies.mymod]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "[21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.mymod]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.1,)"
+versionRange = "[1.21.11,1.22)"
 ordering = "NONE"
 side = "BOTH"
 ```
@@ -470,8 +483,8 @@ side = "BOTH"
 ./gradlew build
 
 # Outputs:
-#   fabric/build/libs/my-mod-fabric-1.0.0+1.21.1.jar
-#   neoforge/build/libs/my-mod-neoforge-1.0.0+1.21.1.jar
+#   fabric/build/libs/my-mod-fabric-1.0.0+1.21.11.jar
+#   neoforge/build/libs/my-mod-neoforge-1.0.0+1.21.11.jar
 
 # Run in dev environment
 ./gradlew :fabric:runClient

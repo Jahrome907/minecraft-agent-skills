@@ -1,0 +1,7 @@
+{
+  "ui.click": {
+    "sounds": [
+      "mypack:ui/click"
+    ]
+  }
+}

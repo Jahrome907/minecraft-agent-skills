@@ -562,7 +562,7 @@ modrinth {
     versionNumber = project.mod_version
     versionType = "release"
     uploadFile = jar
-    gameVersions = ["1.21.1"]
+    gameVersions = ["1.21.11"]
     loaders = ["neoforge"]
     changelog = rootProject.file("CHANGELOG.md").text
     syncBodyFrom = rootProject.file("README.md").text
@@ -578,7 +578,7 @@ curseforge {
         changelogType = "markdown"
         changelog = file("CHANGELOG.md")
         releaseType = "release"
-        addGameVersion "1.21.1"
+        addGameVersion "1.21.11"
         addGameVersion "NeoForge"
         mainArtifact jar
     }

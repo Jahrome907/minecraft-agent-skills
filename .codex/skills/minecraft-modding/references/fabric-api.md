@@ -348,10 +348,12 @@ public class MyScreen extends HandledScreen<MyScreenHandler> {
 ```properties
 org.gradle.jvmargs=-Xmx2G
 
-minecraft_version=1.21.1
-yarn_mappings=1.21.1+build.3
-loader_version=0.16.9
-fabric_version=0.114.0+1.21.1
+minecraft_version=1.21.11
+loader_version=0.17.3
+fabric_version=0.116.10+1.21.1
+
+# Prefer loom.officialMojangMappings() in shared examples.
+# If you want Yarn, resolve the exact 1.21.11 build from https://fabricmc.net/develop/.
 
 mod_version=1.0.0
 maven_group=com.example

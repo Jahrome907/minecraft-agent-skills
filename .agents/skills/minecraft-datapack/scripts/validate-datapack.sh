@@ -70,16 +70,44 @@ check_json() {
   fi
 }
 
+check_pack_metadata() {
+  local file="$1"
+  local has_pack_format=0
+  local has_min_format=0
+  local has_max_format=0
+
+  if jq -e '.pack.pack_format | numbers' "$file" >/dev/null 2>&1; then
+    pass "pack.mcmeta uses numeric pack.pack_format"
+    has_pack_format=1
+  fi
+
+  if jq -e '.pack.min_format | numbers' "$file" >/dev/null 2>&1; then
+    pass "pack.mcmeta uses numeric pack.min_format"
+    has_min_format=1
+  fi
+
+  if jq -e '.pack.max_format | numbers' "$file" >/dev/null 2>&1; then
+    pass "pack.mcmeta uses numeric pack.max_format"
+    has_max_format=1
+  fi
+
+  if [[ "$has_pack_format" -eq 1 ]]; then
+    return
+  fi
+
+  if [[ "$has_min_format" -eq 1 && "$has_max_format" -eq 1 ]]; then
+    return
+  fi
+
+  fail "pack.mcmeta must define either numeric .pack.pack_format or both numeric .pack.min_format and .pack.max_format"
+}
+
 echo "=== Datapack Validator ==="
 
 echo "Checking required root files..."
 if [[ -f "$ROOT/pack.mcmeta" ]]; then
   check_json "$ROOT/pack.mcmeta"
-  if jq -e '.pack.pack_format | numbers' "$ROOT/pack.mcmeta" >/dev/null 2>&1; then
-    pass "pack.mcmeta has numeric pack.pack_format"
-  else
-    fail "pack.mcmeta missing numeric .pack.pack_format"
-  fi
+  check_pack_metadata "$ROOT/pack.mcmeta"
 else
   fail "missing pack.mcmeta"
 fi

@@ -25,19 +25,21 @@ or mod loader required. Works on vanilla clients and servers.
 
 ---
 
-## Pack Format Numbers (1.21.x)
+## Pack Metadata (1.21.x)
 
-| Minecraft Version | `pack_format` |
-|-------------------|--------------|
-| 1.21 / 1.21.1     | 34           |
-| 1.21.2 / 1.21.3   | 42           |
-| 1.21.4            | 46           |
-| 1.21.5            | 55           |
+| Minecraft Version | Preferred `pack` metadata |
+|-------------------|---------------------------|
+| 1.21 / 1.21.1     | `pack_format: 34` |
+| 1.21.2 / 1.21.3   | `pack_format: 42` |
+| 1.21.4            | `pack_format: 46` |
+| 1.21.5            | `pack_format: 55` |
+| 1.21.6            | `pack_format: 63` |
+| 1.21.7 / 1.21.8   | `pack_format: 64` |
+| 1.21.9 / 1.21.10  | `min_format: 69.0`, `max_format: 69.0` |
+| 1.21.11           | `min_format: 75.0`, `max_format: 75.0` |
 
-Use `supported_formats` for broad compatibility:
-```json
-"supported_formats": { "min_inclusive": 34, "max_inclusive": 55 }
-```
+Use `pack_format` through 1.21.8. Starting in 1.21.9, `pack.mcmeta` switches to
+`min_format` / `max_format` instead of the older single-number field.
 
 ---
 
@@ -85,11 +87,24 @@ my-pack/
 
 ## `pack.mcmeta`
 
+### 1.21.8 and earlier
+
 ```json
 {
   "pack": {
-    "pack_format": 55,
-    "supported_formats": { "min_inclusive": 34, "max_inclusive": 55 },
+    "pack_format": 64,
+    "description": "My Custom Resource Pack v1.0"
+  }
+}
+```
+
+### 1.21.9 and newer
+
+```json
+{
+  "pack": {
+    "min_format": 75.0,
+    "max_format": 75.0,
     "description": "My Custom Resource Pack v1.0"
   }
 }
@@ -462,7 +477,7 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 | Blockstate not applying | Wrong state property name | Match exact property names from `/blockdata` |
 | Animation not working | Wrong MCMETA location | Must be same folder as texture, named `texture.png.mcmeta` |
 | Custom sound not playing | Not in `sounds.json` | Register sound event in `sounds.json`, match namespace |
-| Pack not loading | Wrong `pack_format` | Update `pack.mcmeta` for current MC version |
+| Pack not loading | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
 
 ## Validator Script
 

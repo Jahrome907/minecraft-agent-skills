@@ -264,7 +264,7 @@ codex "Write a datapack function that detects when a player kills 10 zombies \
       and gives them a custom advancement with a diamond reward."
 
 # Server admin
-codex "Generate a docker-compose.yml for a Paper 1.21.1 server with Aikar's \
+codex "Generate a docker-compose.yml for a Paper 1.21.11 server with Aikar's \
       JVM flags, persistent volumes, and auto-restart on crash."
 ```
 
@@ -303,11 +303,11 @@ skill trees.
 
 |Platform|Version|Java|
 |---|---|---|
-|NeoForge|21.1.x / 21.4.x / 21.5.x|21|
-|Fabric|0.114.x+|21|
+|NeoForge|1.21.x examples centered on 21.11.x|21|
+|Fabric|1.21.11 line (`fabric-api:0.116.10+1.21.1`)|21|
 |Paper/Bukkit|1.21.x (`paper-api:1.21.11-R0.1-SNAPSHOT`)|21|
-|Vanilla datapack|1.21–1.21.5 (pack formats 48–71)|—|
-|Resource pack|1.21–1.21.5 (pack formats 34–55)|—|
+|Vanilla datapack|1.21–1.21.11 (formats 48–94.1; `min_format` / `max_format` from 1.21.9+)|—|
+|Resource pack|1.21–1.21.11 (formats 34–75.0; `min_format` / `max_format` from 1.21.9+)|—|
 
 ---
 

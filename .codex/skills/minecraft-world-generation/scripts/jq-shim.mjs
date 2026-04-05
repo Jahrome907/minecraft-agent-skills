@@ -106,6 +106,10 @@ function evaluateFilter(input, filter) {
       return [];
     case ".pack.pack_format|numbers":
       return typeof input?.pack?.pack_format === "number" ? [input.pack.pack_format] : [];
+    case ".pack.min_format|numbers":
+      return typeof input?.pack?.min_format === "number" ? [input.pack.min_format] : [];
+    case ".pack.max_format|numbers":
+      return typeof input?.pack?.max_format === "number" ? [input.pack.max_format] : [];
     case ".values|type==\"array\"":
       return [Array.isArray(input?.values)];
     case ".values[]?|strings":
