@@ -1,13 +1,6 @@
 ---
 name: minecraft-plugin-dev
-description: >
-  Develop Minecraft server plugins using the Paper/Bukkit/Spigot API for Minecraft 1.21.x.
-  Handles creating Paper plugins with JavaPlugin, event listeners with @EventHandler, 
-    commands, schedulers (sync/async/Folia-safe), Persistent Data Container (PDC), Adventure text components,
-    Vault economy integration, BungeeCord/Velocity messaging, plugin.yml and paper-plugin.yml configuration,
-    YAML config management, and Paper-specific enhancement APIs. Always targets Paper API
-  1.21.x (Java 21) with Gradle (Kotlin DSL). Distinguishes plugin development from mod
-  development: plugins run server-side only and do not require client installation.
+description: "Develop Minecraft server plugins using the Paper/Bukkit/Spigot API for Minecraft 1.21.x. Handles creating Paper plugins with JavaPlugin, event listeners with @EventHandler, commands, schedulers (sync/async/Folia-safe), Persistent Data Container (PDC), Adventure text components, Vault economy integration, BungeeCord/Velocity messaging, plugin.yml and paper-plugin.yml configuration, YAML config management, and Paper-specific enhancement APIs. Always targets Paper API 1.21.x (Java 21) with Gradle (Kotlin DSL). Plugins run server-side only and do not require client installation. Use when creating or modifying Minecraft server plugins, working with Paper/Bukkit/Spigot APIs, or developing server-side features involving event handlers, commands, or plugin.yml configuration."
 ---
 
 # Minecraft Plugin Development Skill
@@ -363,24 +356,20 @@ one global main thread.
 
 ### Synchronous (runs on main thread)
 ```java
-// Run once after 20 ticks (1 second)
 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-    // safe to access Bukkit API here
+    // Bukkit API access is safe here
 }, 20L);
 
-// Repeating task every 40 ticks (2 seconds), starts after 0 ticks
 plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-    // runs on main thread
+    // Repeating: starts after 0 ticks, runs every 40 ticks
 }, 0L, 40L);
 ```
 
 ### Asynchronous (for I/O / database work)
 ```java
-// Never touch Bukkit API in async tasks!
 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-    // safe: file I/O, HTTP requests, DB queries
     String data = fetchFromDatabase();
-    // Switch back to main thread to use Bukkit API
+    // Switch back to main thread for Bukkit API calls
     plugin.getServer().getScheduler().runTask(plugin, () -> {
         Bukkit.broadcastMessage(data);
     });
@@ -675,32 +664,25 @@ if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
 
 ---
 
-## Build & Run
+## Build, Validate, and Run
 
 ```bash
-# Build plugin JAR
+# 1. Build plugin JAR
 ./gradlew shadowJar
-
 # Output: build/libs/my-plugin-1.0.0-SNAPSHOT.jar
-# Copy to server/plugins/ and restart the server
 
-# Run Paper dev server (with run-task plugin)
+# 2. Validate layout and plugin.yml before deploying
+./scripts/validate-plugin-layout.sh --root /path/to/plugin-project
+# Strict mode treats warnings as failures:
+# ./scripts/validate-plugin-layout.sh --root /path/to/plugin-project --strict
+
+# 3. If errors, fix and re-validate until clean
+
+# 4. Copy JAR to server/plugins/ and restart, or use the dev server:
 ./gradlew runServer
 ```
 
-## Validator Script
-
-Use the bundled validator before publishing a Paper plugin:
-
-```bash
-# Run from the installed skill directory:
-./scripts/validate-plugin-layout.sh --root /path/to/plugin-project
-
-# Strict mode treats warnings as failures:
-./scripts/validate-plugin-layout.sh --root /path/to/plugin-project --strict
-```
-
-What it checks:
+The validator checks:
 - `plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported `1.21` / positive `1.21.<patch>` `api-version` values on the 1.21.x line, with warnings for patches newer than the repo's current example version
 - Main class path exists and extends `JavaPlugin`
 - `/reload` anti-pattern detection in source snippets

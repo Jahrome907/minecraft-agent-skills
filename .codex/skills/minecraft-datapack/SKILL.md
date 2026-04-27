@@ -1,29 +1,9 @@
 ---
 name: minecraft-datapack
-description: >
-  Create, edit, and debug Minecraft vanilla datapacks for 1.21.x. Covers the full
-  datapack format: pack.mcmeta, function files (.mcfunction), advancements, predicates,
-  loot tables, item modifiers, recipe overrides, tags, damage types, dimension types,
-  worldgen overrides, and structure sets. Handles function syntax, execute command chains,
-  macro functions (1.20.2+), storage NBT, scoreboard operations, advancement triggers,
-  pack format numbers, and /reload workflow. No Java or mod loader required — pure
-  vanilla JSON and .mcfunction files.
+description: "Create, edit, and debug Minecraft vanilla datapacks for 1.21.x. Covers the full datapack format: pack.mcmeta, function files (.mcfunction), advancements, predicates, loot tables, item modifiers, recipe overrides, tags, damage types, dimension types, worldgen overrides, and structure sets. Handles function syntax, execute command chains, macro functions (1.20.2+), storage NBT, scoreboard operations, advancement triggers, pack format numbers, and /reload workflow. No Java or mod loader required — pure vanilla JSON and .mcfunction files. Use when creating or editing Minecraft datapacks, writing .mcfunction files, configuring loot tables or advancements, or any vanilla datapack development that does not need mod loaders."
 ---
 
 # Minecraft Datapack Skill
-
-## What Is a Datapack?
-
-A datapack is a folder (or `.zip`) placed in a world's `datapacks/` directory that
-extends or overrides vanilla Minecraft behavior using JSON files and `.mcfunction`
-scripts. No Java, no mods. Requires only a running Minecraft server or singleplayer world.
-
-Datapacks can:
-- Add custom **advancements**, **recipes**, **loot tables**, and **tags**
-- Override vanilla **worldgen** (biomes, structures, noise settings)
-- Add **functions** executed by command blocks, other functions, or triggers
-- Add **predicates** for conditional logic
-- Add **item modifiers** (rename, enchant, etc. via loot table mechanics)
 
 ### Routing Boundaries
 - `Use when`: the deliverable is datapack files (`pack.mcmeta`, `data/...`) and `.mcfunction`/JSON content.
@@ -151,90 +131,31 @@ execute as @a[scores={deaths=1..}] run function mypack:on_death_check
 
 ## Commands and Function Syntax
 
-### Execute subcommands
+### Execute subcommands (datapack-specific patterns)
 ```mcfunction
-# as: change execution entity
-execute as @a run say Hi from each player
-
-# at: change execution position to entity's location
-execute as @a at @s run particle flame ~ ~ ~ 0 0 0 0 1
-
-# positioned: change position without changing executor
-execute positioned 0 64 0 run setblock ~ ~ ~ stone
-
-# if/unless conditions
-execute if block ~ ~-1 ~ minecraft:grass_block run say Standing on grass
-execute unless entity @a[tag=vip] run say No VIPs online
-
-# store result into score
-execute store result score @s mypack.health run data get entity @s Health
-
-# Chained
+# Chained execute — common datapack pattern for conditional per-player logic
 execute as @a[gamemode=!spectator] at @s if block ~ ~-1 ~ #minecraft:logs run give @s minecraft:apple
 
-# in: change dimension
+# store result into score (bridge between NBT world and scoreboard state)
+execute store result score @s mypack.health run data get entity @s Health
+
+# in: run logic in another dimension
 execute in minecraft:the_nether run say This runs in the Nether
 ```
 
-### Scoreboard
+### Storage NBT (datapack-specific global state)
 ```mcfunction
-# Create objectives
-scoreboard objectives add kills playerKillCount
-scoreboard objectives add points dummy
-scoreboard objectives setdisplay sidebar points
-
-# Modify scores
-scoreboard players set @s points 0
-scoreboard players add @s points 10
-scoreboard players remove @s points 5
-scoreboard players operation @s points += @s kills
-
-# Test scores
-execute if score @s points matches 100.. run say Reached 100 points!
-execute if score @s points matches ..0 run say Score is zero or negative
-execute if score PlayerA points < PlayerB points run say A has fewer points than B
-```
-
-### NBT and storage
-```mcfunction
-# Read entity NBT
-data get entity @s Health
-data get entity @s Inventory[0]
-
-# Modify entity NBT
-data modify entity @s Health set value 20.0f
-data modify entity @s CustomName set value '{"text":"Boss","color":"red"}'
-
-# Storage (global key-value store)
+# Storage is the datapack-native key-value store — persists across /reload
 data modify storage mypack:data config.difficulty set value "hard"
 data get storage mypack:data config.difficulty
 
-# Copy from entity to storage
+# Copy live entity data into storage for macro use or cross-function state
 data modify storage mypack:log last_player_pos set from entity @s Pos
 ```
 
-### Selectors
-```mcfunction
-@a                          # all players
-@p                          # nearest player
-@r                          # random player
-@e                          # all entities
-@s                          # executing entity
-@n                          # nearest entity (1.21+)
-
-# Selector arguments
-@a[gamemode=survival]
-@a[gamemode=!spectator]
-@e[type=minecraft:zombie,distance=..10]
-@e[type=minecraft:player,tag=vip]
-@a[scores={kills=1..10}]
-@a[nbt={playerGameType:0}]
-@e[sort=nearest,limit=1,type=!minecraft:player]
-@a[x=0,y=64,z=0,dx=10,dy=10,dz=10]   # AABB selection
-@a[team=red]
-@a[level=30..]
-@a[name=Steve]
-```
+For full command syntax, selectors, and scoreboard operations see the
+[Minecraft Wiki — Commands](https://minecraft.wiki/w/Commands) reference.
+The `minecraft-commands-scripting` skill covers command-only work in depth.
 
 ---
 
@@ -529,9 +450,14 @@ Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 
 ### Development workflow
 1. Edit `.mcfunction` or `.json` files
-2. Run `/reload` in-game (or `/minecraft:reload` if a mod intercepts it)
-3. Test with target command
-4. Check `latest.log` for syntax errors
+2. Run the bundled validator to catch JSON and path errors before loading:
+   ```bash
+   ./scripts/validate-datapack.sh --root /path/to/datapack
+   ```
+3. If errors, fix and re-validate until clean
+4. Run `/reload` in-game (or `/minecraft:reload` if a mod intercepts it)
+5. Test with target command (e.g., `/function mypack:setup`, trigger an advancement)
+6. Check `latest.log` for runtime errors (missing references, bad selectors)
 
 ---
 

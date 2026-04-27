@@ -1,14 +1,6 @@
 ---
 name: minecraft-testing
-description: >
-  Write automated tests for Minecraft mods and plugins for 1.21.x. Covers NeoForge
-  GameTests (@GameTest annotation, GameTestHelper assertions, test structure placement),
-  Fabric game tests (fabric-gametest-api-v1), unit testing non-Minecraft logic with
-  JUnit 5, MockBukkit for Paper/Bukkit plugin testing (mock server, mock player, event 
-  dispatching, inventory checking), integration testing with a test server via Gradle,
-  and GitHub Actions CI workflows that run GameTests headlessly. Includes patterns for
-  mocking registries, testing event handlers, testing commands, and test-driven
-  development for Minecraft projects.
+description: "Write automated tests for Minecraft mods and plugins for 1.21.x. Covers NeoForge GameTests (@GameTest annotation, GameTestHelper assertions, test structure placement), Fabric game tests (fabric-gametest-api-v1), unit testing non-Minecraft logic with JUnit 5, MockBukkit for Paper/Bukkit plugin testing (mock server, mock player, event dispatching, inventory checking), integration testing with a test server via Gradle, and GitHub Actions CI workflows that run GameTests headlessly. Includes patterns for mocking registries, testing event handlers, testing commands, and test-driven development for Minecraft projects. Use when the user asks about testing Minecraft mods or plugins, writing GameTests, setting up MockBukkit, or configuring CI for Minecraft projects."
 ---
 
 # Minecraft Testing Skill
@@ -85,9 +77,6 @@ class CooldownManagerTest {
 
 ## MockBukkit (Paper/Bukkit Plugin Tests)
 
-[MockBukkit](https://github.com/MockBukkit/MockBukkit) provides a mock Bukkit server
-for unit-testing plugin logic without running a real Minecraft server.
-
 ### `build.gradle.kts`
 ```kotlin
 repositories {
@@ -121,7 +110,6 @@ class MyPluginTest {
 
     @BeforeAll
     static void setUp() {
-        // Start mock Bukkit server and load your plugin
         server = MockBukkit.mock();
         plugin = MockBukkit.load(MyPlugin.class);
     }
@@ -131,10 +119,6 @@ class MyPluginTest {
         MockBukkit.unmock();
     }
 
-    @BeforeEach
-    void beforeEach() {
-        // Create a fresh mock player per test if needed
-    }
 }
 ```
 
@@ -357,9 +341,14 @@ Place empty structure files at:
 Generate them in-game using `/test create mymod:empty 3 3 3` (NeoForge test command).
 Commit the `.nbt` files to version control.
 
+### GameTest setup checklist
+1. Verify `.nbt` structure files exist at `src/main/resources/data/<modid>/structures/`
+2. Run `./gradlew runGameTestServer` — if tests fail with "Missing template", the `.nbt` file path or name is wrong
+3. Check Gradle output for `PASSED`/`FAILED` per test
+4. If a test times out, increase `timeoutTicks` in the `@GameTest` annotation or add intermediate assertions with `runAfterDelay`
+
 ### Running GameTests
 ```bash
-# Start the test server and run all tests
 ./gradlew runGameTestServer
 
 # In-game (dev environment):

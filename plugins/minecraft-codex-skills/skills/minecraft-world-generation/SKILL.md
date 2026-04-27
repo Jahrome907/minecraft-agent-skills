@@ -1,14 +1,6 @@
 ---
 name: minecraft-world-generation
-description: >
-  Create custom world generation content for Minecraft 1.21.x including custom biomes,
-  dimensions, noise settings, surface rules, placed/configured features, carvers,
-  structure sets, and biome modifiers. Covers both the datapack-only approach (JSON
-  worldgen files) and the mod-code approach (NeoForge BiomeModifiers, Fabric BiomeModification
-  API, code-driven worldgen registration with DeferredRegister). Includes the full JSON
-  schema for biome files, noise_settings overrides, placed_feature, configured_feature,
-  structure, structure_set, and processor_list files. Targets Minecraft 1.21.x with
-  official Mojang mappings.
+description: "Create custom world generation content for Minecraft 1.21.x including custom biomes, dimensions, noise settings, surface rules, placed/configured features, carvers, structure sets, and biome modifiers. Covers both the datapack-only approach (JSON worldgen files) and the mod-code approach (NeoForge BiomeModifiers, Fabric BiomeModification API, code-driven worldgen registration with DeferredRegister). Includes JSON schemas for biome, noise_settings, placed_feature, configured_feature, structure, structure_set, and processor_list files. Targets Minecraft 1.21.x with official Mojang mappings. Use when the user asks about Minecraft worldgen, custom biomes, datapack JSON for dimensions or features, or mod-based biome modification with NeoForge or Fabric."
 ---
 
 # Minecraft World Generation Skill
@@ -536,38 +528,31 @@ public class ModWorldgenProvider extends FabricDynamicRegistryProvider {
 
 ---
 
-## Testing Worldgen
+## Development Workflow
 
-```bash
-# Create a new world with datapack loaded
-# In-game with a mod:
-/locate structure <namespace>:my_structure
-/locate biome <namespace>:my_biome
-/placefeature <namespace>:my_ore_placed
-
-# Reload worldgen data (does not affect already-generated chunks)
-/reload
-
-# For dimension testing — must use /execute in <namespace>:my_dimension
-execute in <namespace>:my_dimension run tp @s 0 100 0
-```
-
-## Validator Script
-
-Use the bundled validator before shipping worldgen JSON changes:
-
-```bash
-# Run from the installed skill directory:
-./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources
-
-# Strict mode treats warnings as failures:
-./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources --strict
-```
-
-What it checks:
-- JSON validity for `worldgen/**` and `neoforge/biome_modifier/**`
-- Cross-reference integrity for `placed_feature -> configured_feature`
-- Cross-reference integrity for `structure_set -> structure` and biome/biome_modifier feature targets
+1. Create or edit worldgen JSON files (biomes, features, structures) or mod datagen code
+2. Run the bundled validator to catch JSON and cross-reference errors:
+   ```bash
+   ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources
+   # Strict mode treats warnings as failures:
+   # ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources --strict
+   ```
+3. If errors, fix and re-validate until clean — the validator checks:
+   - JSON validity for `worldgen/**` and `neoforge/biome_modifier/**`
+   - Cross-reference integrity for `placed_feature -> configured_feature`
+   - Cross-reference integrity for `structure_set -> structure` and biome/biome_modifier feature targets
+4. Load in-game and test:
+   ```mcfunction
+   /locate structure <namespace>:my_structure
+   /locate biome <namespace>:my_biome
+   /placefeature <namespace>:my_ore_placed
+   ```
+5. For dimension testing:
+   ```mcfunction
+   execute in <namespace>:my_dimension run tp @s 0 100 0
+   ```
+6. Check `latest.log` for missing reference or registry errors
+7. Note: `/reload` does not affect already-generated chunks — create a new world to verify full worldgen changes
 
 ---
 

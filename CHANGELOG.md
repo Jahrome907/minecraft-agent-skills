@@ -5,6 +5,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Improved skill descriptions for `minecraft-datapack`, `minecraft-plugin-dev`, `minecraft-world-generation`, `minecraft-testing`, and `minecraft-essentials-ops` with explicit "Use when..." clauses, quoted frontmatter format, trimmed redundant content, and integrated validation workflows
+- Synced `.codex/skills/`, `.claude/skills/`, and `plugins/minecraft-codex-skills/skills/` mirrors
+
 ## [2.4.1] - 2026-04-21
 
 ### Added

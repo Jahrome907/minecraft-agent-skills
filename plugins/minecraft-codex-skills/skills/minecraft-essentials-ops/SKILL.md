@@ -1,18 +1,9 @@
 ---
 name: minecraft-essentials-ops
-description: >
-  Operate EssentialsX on Minecraft 1.21.x servers with safe, practical admin workflows.
-  Covers module scope, install and version-alignment checks, Vault economy integration,
-  kits/warps/homes/spawn operations, permissions patterns, moderation workflows (mute, jail,
-  tempban), and common config pitfalls. Use for EssentialsX operations, not plugin development.
+description: "Operate EssentialsX on Minecraft 1.21.x servers with safe, practical admin workflows. Covers module scope, install and version-alignment checks, Vault economy integration, kits/warps/homes/spawn operations, permissions patterns, moderation workflows (mute, jail, tempban), and common config pitfalls. Use when the task involves EssentialsX commands, config, permissions, economy, or moderation operations — not plugin development or general server deployment."
 ---
 
 # Minecraft EssentialsX Operations Skill
-
-## Scope and Positioning
-
-This skill focuses on **operating EssentialsX** on running servers.
-It is not a general economics theory guide and not a plugin coding guide.
 
 ### Routing Boundaries
 - `Use when`: the task is EssentialsX command, config, permissions, economy, or moderation operations.
@@ -76,13 +67,18 @@ Use admin economy commands through staff roles only.
 
 If using EssentialsX signs and economy interactions:
 
-1. Define pricing policy:
-- starter-tier prices
-- anti-inflation sinks
-- admin-only item exceptions
+1. Define pricing policy (starter-tier prices, anti-inflation sinks, admin-only item exceptions)
+2. Restrict sign creation permissions to trusted groups
+3. Validate buy/sell math after config changes
 
-1. Restrict sign creation permissions to trusted groups.
-1. Validate buy/sell math after config changes.
+### Sign shop format
+```
+[Buy]          or  [Sell]
+64                 64
+Diamond:1          Diamond:1
+$500               $250
+```
+Line 1: `[Buy]` or `[Sell]`. Line 2: quantity. Line 3: `item:damage`. Line 4: price.
 
 Operational guardrails:
 - never enable broad player access to unrestricted admin shop signs
@@ -95,12 +91,22 @@ Operational guardrails:
 ### Kits operations
 
 Typical kit lifecycle:
-1. create/edit kit definition
-2. set cooldown and permission
-3. test with player-rank account
+1. Create/edit kit definition in `config.yml` or via `/createkit`
+2. Set cooldown and permission
+3. Test with a player-rank account
+
+Kit definition in `config.yml`:
+```yaml
+kits:
+  starter:
+    delay: 86400       # cooldown in seconds (24h)
+    items:
+      - stone_sword 1
+      - bread 16
+      - oak_planks 32
+```
 
 Common commands:
-
 ```mcfunction
 /kit
 /kit starter
@@ -182,8 +188,9 @@ Avoid wildcard permissions outside trusted admin roles.
 ```
 
 Practice:
-- include reason and duration
-- log escalation path for repeat behavior
+- Include reason and duration
+- Log escalation path for repeat behavior
+- If `/mute` has no effect: verify the player is online, check that `essentials.mute` permission is granted to the staff role, and confirm EssentialsXChat is installed
 
 ## Workflow: Jail
 
@@ -194,8 +201,9 @@ Practice:
 ```
 
 Practice:
-- define clear jail reasons
-- pair with rollback/repair actions when relevant
+- Define clear jail reasons
+- Pair with rollback/repair actions when relevant
+- If jail teleport fails: verify the jail location was set with `/setjail` first and that the target world is loaded
 
 ## Workflow: Temporary Ban
 
@@ -206,8 +214,9 @@ Practice:
 ```
 
 Practice:
-- align durations with policy tiers
-- document evidence and staff actor
+- Align durations with policy tiers
+- Document evidence and staff actor
+- If `/tempban` does not take effect: check that `essentials.tempban` is assigned and that no other ban plugin is overriding EssentialsX
 
 ---
 
@@ -229,16 +238,12 @@ Hardening checklist:
 
 ## Operations Runbook: Safe Config Rollout
 
-1. Backup current Essentials config files.
-2. Apply targeted config edits.
-3. Reload only if plugin docs explicitly support live reload for changed sections.
-4. Prefer maintenance restart for sensitive changes.
-5. Validate:
-- login flow
-- homes/warps
-- economy transactions
-- moderation commands
-1. Keep rollback bundle ready for immediate restore.
+1. Backup current Essentials config files
+2. Apply targeted config edits
+3. Reload only if plugin docs explicitly support live reload for changed sections
+4. Prefer maintenance restart for sensitive changes
+5. Validate: login flow, homes/warps, economy transactions, moderation commands
+6. Keep rollback bundle ready for immediate restore
 
 ---
 
