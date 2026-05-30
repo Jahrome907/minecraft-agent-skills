@@ -5,6 +5,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Added a README quick-install prompt that users can give to their own agent to download the repository archive and install the Codex or Claude Code skill bundle without manually cloning the repo
+
 ## [2.5.0] - 2026-05-29
 
 ### Changed

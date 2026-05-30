@@ -92,6 +92,44 @@ codex "Create two square pack icon concepts for a vanilla-faithful archaeology p
 
 ## Installation
 
+### Quick install — agent prompt
+
+If you want another agent to install the skills for you without manually cloning
+this repository, paste the prompt below from the target project root:
+
+```text
+Install the Minecraft agent skills into this project without using git clone.
+
+Repository archive:
+https://github.com/Jahrome907/minecraft-agent-skills/archive/refs/heads/main.zip
+
+Work from the current project root. Download the repository archive to a
+temporary directory, extract it, and install the skills for the agent host I am
+using:
+
+- For Codex, merge the extracted `.agents/` directory into this project.
+- For Claude Code, merge the extracted `.claude/` directory into this project.
+- If I ask for plugin install instead of raw skills, copy
+  `plugins/minecraft-codex-skills/` into this project and explain the host's
+  next plugin-loading step.
+
+Preserve existing local agent files. If `.agents/skills/` or `.claude/skills/`
+already exists, replace only this bundle's `minecraft-*` skill directories and
+the bundled skills `README.md`; do not delete unrelated local skills or custom
+agent config.
+
+After copying, verify that all 13 Minecraft skill directories are present:
+`minecraft-modding`, `minecraft-plugin-dev`, `minecraft-datapack`,
+`minecraft-commands-scripting`, `minecraft-multiloader`, `minecraft-testing`,
+`minecraft-ci-release`, `minecraft-world-generation`,
+`minecraft-resource-pack`, `minecraft-imagegen`, `minecraft-server-admin`,
+`minecraft-worldedit-ops`, and `minecraft-essentials-ops`.
+
+Report the installed target path, which files or directories were changed, and
+any existing bundle files that were overwritten. Do not run Minecraft, Gradle,
+Paper, or a server from this repository.
+```
+
 ### Option A — Raw skills for Codex
 
 ```bash
