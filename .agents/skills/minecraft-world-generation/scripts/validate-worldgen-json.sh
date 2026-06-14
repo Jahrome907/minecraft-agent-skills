@@ -29,6 +29,8 @@ Checks worldgen JSON integrity:
   dimension -> dimension_type + noise_settings
   placed_feature -> configured_feature
   structure_set -> structure
+  jigsaw structure -> template_pool
+  template_pool single_pool_element -> structure template + processor_list
   biome and biome_modifier feature references -> placed_feature
 USAGE
       exit 0
@@ -65,6 +67,16 @@ pass() { echo "$PASS $*"; }
 warn() { echo "$WARN $*"; WARNINGS=$((WARNINGS + 1)); }
 fail() { echo "$FAIL $*"; FAILURES=$((FAILURES + 1)); }
 strip_cr() { printf '%s' "${1%$'\r'}"; }
+json_query_raw() {
+  local filter="$1"
+  local file="$2"
+
+  if command -v jq >/dev/null 2>&1; then
+    jq -r "$filter" "$file"
+  else
+    node "$JQ_SHIM" -r "$filter" "$file"
+  fi
+}
 
 TOTAL_SUPPORTED_FILES=0
 
@@ -73,8 +85,17 @@ declare -A INVALID_JSON_FILES=()
 declare -A CONFIGURED_FEATURES=()
 declare -A PLACED_FEATURES=()
 declare -A STRUCTURES=()
+declare -A TEMPLATE_POOLS=()
+declare -A PROCESSOR_LISTS=()
+declare -A STRUCTURE_TEMPLATES=()
 declare -A DIMENSION_TYPES=()
 declare -A NOISE_SETTINGS=()
+declare -A VANILLA_TEMPLATE_POOLS=(
+  ["minecraft:empty"]=1
+)
+declare -A VANILLA_PROCESSOR_LISTS=(
+  ["minecraft:empty"]=1
+)
 declare -A VANILLA_DIMENSION_TYPES=(
   ["minecraft:overworld"]=1
   ["minecraft:overworld_caves"]=1
@@ -104,6 +125,7 @@ to_id() {
   path="${rel#*/}"
   path="${path#worldgen/}"
   noext="${path%.json}"
+  noext="${noext%.nbt}"
   echo "$ns:${noext#*/}"
 }
 
@@ -197,6 +219,12 @@ find_neoforge_jsons() {
   done < <(find "$DATA_ROOT" -mindepth 3 -maxdepth 3 -type d -path "$DATA_ROOT/*/neoforge/$dir_name" -print0 2>/dev/null)
 }
 
+find_structure_templates() {
+  while IFS= read -r -d '' dir; do
+    find "$dir" -mindepth 1 -type f -name '*.nbt' -print0 2>/dev/null
+  done < <(find "$DATA_ROOT" -mindepth 2 -maxdepth 2 -type d -name structure -print0 2>/dev/null)
+}
+
 find_tags_worldgen_jsons() {
   while IFS= read -r -d '' dir; do
     find "$dir" -mindepth 2 -type f -name '*.json' -print0 2>/dev/null
@@ -207,6 +235,50 @@ find_invalid_tags_worldgen_jsons() {
   while IFS= read -r -d '' dir; do
     find "$dir" -mindepth 1 -maxdepth 1 -type f -name '*.json' -print0 2>/dev/null
   done < <(find "$DATA_ROOT" -mindepth 3 -maxdepth 3 -type d -path "$DATA_ROOT/*/tags/worldgen" -print0 2>/dev/null)
+}
+
+should_validate_template_pool_ref() {
+  local source_ns="$1"
+  local id="$2"
+  local target_ns="${id%%:*}"
+
+  if [[ "$target_ns" == "$source_ns" ]]; then
+    return 0
+  fi
+
+  if [[ "$target_ns" == "minecraft" && -n "${VANILLA_TEMPLATE_POOLS[$id]:-}" ]]; then
+    return 1
+  fi
+
+  [[ -d "$DATA_ROOT/$target_ns/worldgen/template_pool" ]]
+}
+
+should_validate_processor_list_ref() {
+  local source_ns="$1"
+  local id="$2"
+  local target_ns="${id%%:*}"
+
+  if [[ "$target_ns" == "$source_ns" ]]; then
+    return 0
+  fi
+
+  if [[ "$target_ns" == "minecraft" && -n "${VANILLA_PROCESSOR_LISTS[$id]:-}" ]]; then
+    return 1
+  fi
+
+  [[ -d "$DATA_ROOT/$target_ns/worldgen/processor_list" ]]
+}
+
+should_validate_structure_template_ref() {
+  local source_ns="$1"
+  local id="$2"
+  local target_ns="${id%%:*}"
+
+  if [[ "$target_ns" == "$source_ns" ]]; then
+    return 0
+  fi
+
+  [[ -d "$DATA_ROOT/$target_ns/structure" ]]
 }
 
 echo "=== Worldgen Validator ==="
@@ -250,6 +322,21 @@ while IFS= read -r -d '' f; do
   id="$(to_id "$f")"
   STRUCTURES["$id"]=1
 done < <(find_worldgen_jsons 'structure')
+
+while IFS= read -r -d '' f; do
+  id="$(to_id "$f")"
+  TEMPLATE_POOLS["$id"]=1
+done < <(find_worldgen_jsons 'template_pool')
+
+while IFS= read -r -d '' f; do
+  id="$(to_id "$f")"
+  PROCESSOR_LISTS["$id"]=1
+done < <(find_worldgen_jsons 'processor_list')
+
+while IFS= read -r -d '' f; do
+  id="$(to_id "$f")"
+  STRUCTURE_TEMPLATES["$id"]=1
+done < <(find_structure_templates)
 
 while IFS= read -r -d '' f; do
   id="$(to_id "$f")"
@@ -350,6 +437,10 @@ done < <(find_worldgen_jsons 'placed_feature')
 
 echo "Checking structure_set -> structure references..."
 while IFS= read -r -d '' ss_file; do
+  if [[ -n "${INVALID_JSON_FILES["$ss_file"]:-}" ]]; then
+    continue
+  fi
+
   rel="${ss_file#"$ROOT/data/"}"
   ns="${rel%%/*}"
   while IFS= read -r sref; do
@@ -364,8 +455,89 @@ while IFS= read -r -d '' ss_file; do
   done < <(jq -r '.structures[]?.structure? // empty' "$ss_file")
 done < <(find_worldgen_jsons 'structure_set')
 
+echo "Checking jigsaw structure and template_pool references..."
+while IFS= read -r -d '' structure_file; do
+  if [[ -n "${INVALID_JSON_FILES["$structure_file"]:-}" ]]; then
+    continue
+  fi
+
+  rel="${structure_file#"$ROOT/data/"}"
+  ns="${rel%%/*}"
+  structure_type="$(json_query_raw '.type? // empty' "$structure_file")"
+  structure_type="$(strip_cr "$structure_type")"
+
+  if [[ "$structure_type" != "minecraft:jigsaw" ]]; then
+    continue
+  fi
+
+  start_pool_ref="$(json_query_raw '.start_pool? // empty' "$structure_file")"
+  start_pool_ref="$(strip_cr "$start_pool_ref")"
+
+  if [[ -z "$start_pool_ref" ]]; then
+    fail "jigsaw structure missing .start_pool: ${structure_file#$ROOT/}"
+    continue
+  fi
+
+  start_pool_id="$(split_ref "$ns" "$start_pool_ref")"
+  if should_validate_template_pool_ref "$ns" "$start_pool_id"; then
+    if [[ -n "${TEMPLATE_POOLS[$start_pool_id]:-}" ]]; then
+      pass "jigsaw start_pool target exists: $start_pool_id"
+    else
+      fail "jigsaw structure references missing template_pool: $start_pool_id"
+    fi
+  fi
+done < <(find_worldgen_jsons 'structure')
+
+while IFS= read -r -d '' pool_file; do
+  if [[ -n "${INVALID_JSON_FILES["$pool_file"]:-}" ]]; then
+    continue
+  fi
+
+  rel="${pool_file#"$ROOT/data/"}"
+  ns="${rel%%/*}"
+  while IFS=$'\t' read -r location_ref processors_ref; do
+    location_ref="$(strip_cr "$location_ref")"
+    processors_ref="$(strip_cr "$processors_ref")"
+
+    if [[ -z "$location_ref" ]]; then
+      fail "template_pool single_pool_element missing .location: ${pool_file#$ROOT/}"
+    else
+      location_id="$(split_ref "$ns" "$location_ref")"
+      if should_validate_structure_template_ref "$ns" "$location_id"; then
+        if [[ -n "${STRUCTURE_TEMPLATES[$location_id]:-}" ]]; then
+          pass "template_pool structure template target exists: $location_id"
+        else
+          fail "template_pool element references missing structure template: $location_id"
+        fi
+      fi
+    fi
+
+    if [[ -z "$processors_ref" ]]; then
+      fail "template_pool single_pool_element missing .processors: ${pool_file#$ROOT/}"
+    else
+      processors_id="$(split_ref "$ns" "$processors_ref")"
+      if should_validate_processor_list_ref "$ns" "$processors_id"; then
+        if [[ -n "${PROCESSOR_LISTS[$processors_id]:-}" ]]; then
+          pass "template_pool processor_list target exists: $processors_id"
+        else
+          fail "template_pool element references missing processor_list: $processors_id"
+        fi
+      fi
+    fi
+  done < <(json_query_raw '
+    .. | objects
+    | select(.element_type? == "minecraft:single_pool_element" or .element_type? == "minecraft:legacy_single_pool_element")
+    | [(.location? // ""), (.processors? // "")]
+    | @tsv
+  ' "$pool_file")
+done < <(find_worldgen_jsons 'template_pool')
+
 echo "Checking biome feature references..."
 while IFS= read -r -d '' biome_file; do
+  if [[ -n "${INVALID_JSON_FILES["$biome_file"]:-}" ]]; then
+    continue
+  fi
+
   rel="${biome_file#"$ROOT/data/"}"
   ns="${rel%%/*}"
   while IFS= read -r fref; do
@@ -387,6 +559,10 @@ done < <(find_worldgen_jsons 'biome')
 
 echo "Checking biome_modifier feature/structure references..."
 while IFS= read -r -d '' mod_file; do
+  if [[ -n "${INVALID_JSON_FILES["$mod_file"]:-}" ]]; then
+    continue
+  fi
+
   rel="${mod_file#"$ROOT/data/"}"
   ns="${rel%%/*}"
 

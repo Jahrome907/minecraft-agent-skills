@@ -504,7 +504,7 @@ Use the bundled validator script before shipping a datapack update:
 
 What it checks:
 - JSON validity for `pack.mcmeta` and `data/**/*.json`
-- Legacy pluralized path mistakes for loot tables and block/item tags
+- Legacy pluralized path mistakes for loot tables, functions, and block/item/function tags
 - `tags/function/load.json` and `tags/function/tick.json` references resolve to real `.mcfunction` files
 
 ---

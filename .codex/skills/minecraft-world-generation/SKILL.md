@@ -251,7 +251,6 @@ still model every environment behavior on newer runtimes.
   "has_skylight": true,
   "has_ceiling": false,
   "ambient_light": 0.0,
-  "fixed_time": false,
   "monster_spawn_light_level": {
     "type": "minecraft:uniform",
     "min_inclusive": 0,
@@ -269,6 +268,9 @@ still model every environment behavior on newer runtimes.
   "effects": "minecraft:overworld"
 }
 ```
+
+Omit `fixed_time` when the dimension should use the normal day/night cycle.
+Only include it when you want a fixed long tick value such as `6000`.
 
 ---
 
@@ -553,6 +555,7 @@ public class ModWorldgenProvider extends FabricDynamicRegistryProvider {
    - JSON validity for `worldgen/**` and `neoforge/biome_modifier/**`
    - Cross-reference integrity for `placed_feature -> configured_feature`
    - Cross-reference integrity for `structure_set -> structure` and biome/biome_modifier feature targets
+   - Cross-reference integrity for `jigsaw structure -> start_pool` and `template_pool -> structure template / processor_list`
 4. In-game biome and structure testing:
    ```mcfunction
    /locate structure <namespace>:my_structure

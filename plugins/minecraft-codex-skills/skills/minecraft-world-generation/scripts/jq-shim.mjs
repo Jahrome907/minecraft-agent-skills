@@ -96,6 +96,16 @@ function collectNestedFeatureRefs(input) {
   return results;
 }
 
+function collectTemplatePoolElementRows(input) {
+  const results = [];
+  walk(input, (entry) => {
+    if (!isObject(entry)) return;
+    if (entry.element_type !== "minecraft:single_pool_element" && entry.element_type !== "minecraft:legacy_single_pool_element") return;
+    results.push(`${entry.location ?? ""}\t${entry.processors ?? ""}`);
+  });
+  return results;
+}
+
 function normalizeFilter(filter) {
   return filter.replace(/\s+/g, "");
 }
@@ -138,6 +148,10 @@ function evaluateFilter(input, filter) {
       return present(input?.feature) ? [input.feature] : [];
     case ".structures[]?.structure?//empty":
       return Array.isArray(input?.structures) ? input.structures.map((entry) => entry?.structure).filter(present) : [];
+    case ".start_pool?//empty":
+      return present(input?.start_pool) ? [input.start_pool] : [];
+    case "..|objects|select(.element_type?==\"minecraft:single_pool_element\"or.element_type?==\"minecraft:legacy_single_pool_element\")|[(.location?//\"\"),(.processors?//\"\")]|@tsv":
+      return collectTemplatePoolElementRows(input);
     case ".features[][]?//empty":
       return collectNestedFeatureRefs(input);
     case "(.features?//empty),(.features[]?//empty)":

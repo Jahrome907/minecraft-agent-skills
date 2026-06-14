@@ -9,7 +9,7 @@ const checks = [
     file: "README.md",
     required: [
       /Paper 1\.21\.11 server/,
-      /Fabric\|1\.21\.11 line \(`fabric-api:0\.141\.4\+1\.21\.11`, Loom 1\.14\)\|21/,
+      /Fabric\|1\.21\.11 line \(`fabric-loader:0\.19\.3`, `fabric-api:0\.141\.4\+1\.21\.11`, Loom 1\.17\.11\)\|21/,
       /Vanilla datapack\|1\.21-1\.21\.11 \(`pack_format` 48-81 through 1\.21\.8; exact 1\.21\.11 metadata uses `\[94, 1\]` full-version arrays\)\|-/,
       /Resource pack\|1\.21-1\.21\.11 \(`pack_format` 34-64 through 1\.21\.8; exact 1\.21\.11 metadata uses `\[75, 0\]` full-version arrays\)\|-/
     ]
@@ -17,15 +17,18 @@ const checks = [
   {
     file: ".agents/skills/minecraft-multiloader/SKILL.md",
     required: [
+      /mod_version=1\.0\.0/,
       /minecraft_version=1\.21\.11/,
       /architectury_version=19\.0\.1/,
-      /fabric_loader_version=0\.18\.4/,
+      /fabric_loader_version=0\.19\.3/,
       /fabric_api_version=0\.141\.4\+1\.21\.11/,
       /neoforge_version=21\.11\.42/,
       /id "architectury-plugin" version "3\.4"/,
-      /loom_version=1\.14/,
+      /loom_version=1\.17\.11/,
       /dev\.architectury:architectury-fabric/,
       /dev\.architectury:architectury-neoforge/,
+      /"fabric-api": ">=0\.141\.4\+1\.21\.11"/,
+      /"minecraft": "~1\.21\.11"/,
       /loaderVersion = "\[1,\)"/
     ],
     forbidden: [
@@ -34,7 +37,9 @@ const checks = [
       /0\.114\.0\+1\.21\.1/,
       /0\.116\.10\+1\.21\.1/,
       /loom_version=1\.7/,
-      /dev\.architectury:architectury-api:/
+      /dev\.architectury:architectury-api:/,
+      /"fabric-api": "\*"/,
+      /"minecraft": "1\.21\.11"/
     ]
   },
   {
@@ -93,15 +98,17 @@ const checks = [
     file: ".agents/skills/minecraft-modding/references/fabric-api.md",
     required: [
       /minecraft_version=1\.21\.11/,
-      /loader_version=0\.18\.4/,
+      /loader_version=0\.19\.3/,
       /fabric_version=0\.141\.4\+1\.21\.11/,
-      /yarn_mappings=1\.21\.11\+build\.5/
+      /yarn_mappings=1\.21\.11\+build\.6/,
+      /"fabric-api": ">=0\.141\.4\+1\.21\.11"/
     ],
     forbidden: [
       /0\.114\.0\+1\.21\.1/,
       /0\.116\.10\+1\.21\.1/,
       /loader_version=0\.17\.3/,
-      /yarn_mappings=1\.21\.1\+build\.3/
+      /yarn_mappings=1\.21\.1\+build\.3/,
+      /"fabric-api": "\*"/
     ]
   },
   {

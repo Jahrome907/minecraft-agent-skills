@@ -24,6 +24,7 @@ Usage: check-version-sanity.sh [--root <path>] [--strict]
 
 Checks common Architectury multiloader version-alignment rules:
 - gradle.properties exists with required keys
+- gradle.properties declares mod_version for `${mod_version}+${minecraft_version}` outputs
 - enabled_platforms includes fabric and neoforge
 - no snapshot-only toolchain pins unless you accept warnings
 - NeoForge version family matches the Minecraft patch line
@@ -72,7 +73,7 @@ FABRIC_API_VERSION="$(read_prop fabric_api_version)"
 NEOFORGE_VERSION="$(read_prop neoforge_version)"
 LOOM_VERSION="$(read_prop loom_version)"
 
-for key in minecraft_version enabled_platforms architectury_version fabric_loader_version fabric_api_version neoforge_version loom_version; do
+for key in mod_version minecraft_version enabled_platforms architectury_version fabric_loader_version fabric_api_version neoforge_version loom_version; do
   value="$(read_prop "$key")"
   if [[ -n "$value" ]]; then
     pass "gradle.properties has $key"

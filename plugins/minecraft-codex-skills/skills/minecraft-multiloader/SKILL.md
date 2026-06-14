@@ -32,15 +32,16 @@ platform-specific behavior behind the `@ExpectPlatform` abstraction.
 
 ```properties
 # gradle.properties (root)
+mod_version=1.0.0
 minecraft_version=1.21.11
 enabled_platforms=fabric,neoforge
 
 architectury_version=19.0.1
-fabric_loader_version=0.18.4
+fabric_loader_version=0.19.3
 fabric_api_version=0.141.4+1.21.11
 neoforge_version=21.11.42
 
-loom_version=1.14
+loom_version=1.17.11
 ```
 
 Pin `architectury_version`, the Architectury plugin version, and `loom_version`
@@ -78,8 +79,8 @@ my-mod/
 │   └── src/main/
 │       ├── java/com/example/mymod/fabric/
 │       │   ├── MyModFabric.java          ← Fabric entrypoint
-│       │   └── platform/
-│       │       └── PlatformHelperImpl.java  ← Fabric implementation
+│       ├── java/com/example/mymod/platform/
+│       │   └── PlatformHelperImpl.java   ← Fabric @ExpectPlatform implementation
 │       └── resources/
 │           ├── fabric.mod.json
 │           └── assets/...
@@ -88,8 +89,8 @@ my-mod/
     └── src/main/
         ├── java/com/example/mymod/neoforge/
         │   ├── MyModNeoForge.java        ← NeoForge @Mod entry
-        │   └── platform/
-        │       └── PlatformHelperImpl.java  ← NeoForge implementation
+        ├── java/com/example/mymod/platform/
+        │   └── PlatformHelperImpl.java   ← NeoForge @ExpectPlatform implementation
         └── resources/
             ├── META-INF/neoforge.mods.toml
             └── assets/...
@@ -339,6 +340,10 @@ public class PlatformHelper {
 }
 ```
 
+Keep each platform implementation in the same Java package as the common
+`@ExpectPlatform` class. Only the source set changes between `common/`,
+`fabric/`, and `neoforge/`.
+
 Implement in `fabric/.../platform/PlatformHelperImpl.java`:
 ```java
 package com.example.mymod.platform;
@@ -411,10 +416,10 @@ public class MyModFabric implements ModInitializer {
     "main": ["com.example.mymod.fabric.MyModFabric"]
   },
   "depends": {
-    "fabricloader": ">=0.18.4",
-    "fabric-api": "*",
-    "architectury": ">=19.0.0",
-    "minecraft": "1.21.11"
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.141.4+1.21.11",
+    "architectury": ">=19.0.1",
+    "minecraft": "~1.21.11"
   }
 }
 ```
@@ -495,7 +500,7 @@ side = "BOTH"
 |---------|----------|
 | Using `net.neoforged.*` / `net.fabricmc.*` in `common/` | Only use vanilla MC and Architectury APIs in common |
 | Direct field access on `DeferredRegister` (NeoForge style) in common | Use Architectury's `DeferredRegister` |
-| Forgetting `@ExpectPlatform` throws `AssertionError` at runtime | Both `fabric/` and `neoforge/` must have matching `*Impl` classes |
+| Forgetting `@ExpectPlatform` throws `AssertionError` at runtime | Both `fabric/` and `neoforge/` must have matching same-package `*Impl` classes |
 | Assets duplicated in fabric/ and neoforge/ | Keep assets in `common/src/main/resources/assets/` |
 | Mixins in common — not supported on NeoForge | Put Mixins in the platform subprojects only |
 | Accessing world/registry on mod init thread | Use `mod bus` events for setup; never access world on init |

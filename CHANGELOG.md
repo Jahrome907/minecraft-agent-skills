@@ -5,9 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-06-13
+
 ### Added
 
 - Added a README quick-install prompt that users can give to their own agent to download the repository archive and install the Codex or Claude Code skill bundle without manually cloning the repo
+
+### Changed
+
+- Corrected the worldgen dimension example to omit invalid `fixed_time: false`, documented `assets/<namespace>/items/` in the resource-pack layout, and separated one-time scoreboard setup from recurring command example runtime logic
+- Hardened the datapack validator against legacy `functions/` and `tags/functions/` paths, and extended the worldgen validator to check jigsaw `start_pool`, template structure template locations, and processor list references
+- Tightened Architectury multiloader guidance around same-package `@ExpectPlatform` implementations, required `mod_version` samples, fresher Fabric/Yarn/Loom pins, stricter Fabric dependency metadata, and Kotlin-DSL-safe build-check script output
+- Clarified Codex plugin quick-install requirements, aligned CI with the full local check gate, pinned first-party GitHub Actions, and made the dev-tool setup script explicit about Node/npm prerequisites
+- Improved Paper plugin and testing validators for `paper-plugin.yml`, server `/reload` misuse, and GameTest metadata/template wiring
+- Hardened server-admin backup guidance and marked WorldEdit/EssentialsX chat and console examples as plain text instead of datapack functions
+- Bumped package and plugin metadata to version `2.5.1`
 
 ## [2.5.0] - 2026-05-29
 

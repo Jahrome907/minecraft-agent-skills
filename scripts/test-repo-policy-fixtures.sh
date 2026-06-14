@@ -48,7 +48,7 @@ expect_pass "workflow pins valid" \
 expect_fail_contains "workflow pins invalid missing ref" "action reference is missing a ref: actions/checkout" \
   node ./scripts/check-workflow-action-pins.mjs \
   --root tests/fixtures/workflow-pins/invalid
-expect_fail_contains "workflow pins invalid" "third-party action must be pinned to a full commit SHA" \
+expect_fail_contains "workflow pins invalid" "action must be pinned to a full commit SHA" \
   node ./scripts/check-workflow-action-pins.mjs \
   --root tests/fixtures/workflow-pins/invalid
 

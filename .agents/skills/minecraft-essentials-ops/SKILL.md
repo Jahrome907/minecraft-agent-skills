@@ -52,7 +52,7 @@ Verify provider chain:
 
 ### Core economy commands
 
-```mcfunction
+```text
 /bal
 /baltop
 /pay Alex 250
@@ -145,7 +145,7 @@ kits:
 
 Common commands:
 
-```mcfunction
+```text
 /kit
 /kit starter
 /createkit starter
@@ -153,7 +153,7 @@ Common commands:
 
 ### Warps and homes
 
-```mcfunction
+```text
 /setwarp spawn
 /setwarp market
 /warp spawn
@@ -170,7 +170,7 @@ Control limits through permissions and Essentials config values.
 installed, the startup log has no module-load errors, and player groups have
 `essentials.spawn` before treating a spawn command failure as a location issue.
 
-```mcfunction
+```text
 /nick BuilderOne
 /realname BuilderOne
 /setspawn
@@ -224,7 +224,7 @@ Avoid wildcard permissions outside trusted admin roles.
 
 ## Workflow: Mute
 
-```mcfunction
+```text
 /mute Alex 30m Chat abuse after warning
 /unmute Alex
 ```
@@ -237,7 +237,7 @@ Troubleshooting: mute not applying → verify `essentials.mute` permission and t
 
 ## Workflow: Jail
 
-```mcfunction
+```text
 /setjail intake
 /jail Alex intake 20m Griefing spawn edge
 /unjail Alex
@@ -251,7 +251,7 @@ Troubleshooting: jail not working → confirm jail location exists with `/setjai
 
 ## Workflow: Temporary Ban
 
-```mcfunction
+```text
 /tempban Alex 7d Repeated harassment
 /banip Alex Severe evasion case
 /unban Alex

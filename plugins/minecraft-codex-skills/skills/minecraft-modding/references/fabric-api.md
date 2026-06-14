@@ -60,9 +60,9 @@ public class MyModClient implements ClientModInitializer {
   },
   "mixins": ["mymod.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.15.0",
-    "fabric-api": "*",
-    "minecraft": "~1.21"
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.141.4+1.21.11",
+    "minecraft": "~1.21.11"
   }
 }
 ```
@@ -355,9 +355,9 @@ translated.
 org.gradle.jvmargs=-Xmx2G
 
 minecraft_version=1.21.11
-loader_version=0.18.4
+loader_version=0.19.3
 fabric_version=0.141.4+1.21.11
-yarn_mappings=1.21.11+build.5
+yarn_mappings=1.21.11+build.6
 
 # Fabric-only examples in this file expect:
 # mappings("net.fabricmc:yarn:$yarn_mappings:v2")

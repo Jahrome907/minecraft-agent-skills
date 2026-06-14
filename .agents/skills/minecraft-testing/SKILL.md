@@ -27,8 +27,9 @@ description: "Write automated tests for Minecraft mods and plugins for 1.21.x. C
 
 Use the validator before copying a test layout into a real project. It checks for
 the common breakpoints that show up in 1.21.x plugin/mod test repos: missing
-`useJUnitPlatform()`, MockBukkit tests without the dependency, and GameTests with
-no committed structure fixtures.
+`useJUnitPlatform()`, MockBukkit tests without the dependency, GameTests with
+missing committed template files, and missing NeoForge/Fabric GameTest registration
+metadata.
 
 ---
 
@@ -339,14 +340,17 @@ Place empty structure files at:
 `src/main/resources/data/mymod/structures/empty.nbt`
 
 Generate them in-game using `/test create mymod:empty 3 3 3` (NeoForge test command).
-Commit the `.nbt` files to version control.
+Commit the `.nbt` files to version control, and keep the namespace/path aligned
+with each literal `@GameTest(template = "mymod:...")` value so the validator can
+catch missing templates before runtime.
 
 ### GameTest setup checklist
 
 1. Verify `.nbt` structure files exist at `src/main/resources/data/<modid>/structures/`
-2. Run `./gradlew runGameTestServer` — if tests fail with "Missing template", the `.nbt` file path or name is wrong
-3. Check Gradle output for `PASSED`/`FAILED` per test
-4. If a test times out, increase `timeoutTicks` in the `@GameTest` annotation or add intermediate assertions with `runAfterDelay`
+2. Verify the GameTest class is actually registered (for example `modEventBus.register(MyGameTests.class)`)
+3. Run `./gradlew runGameTestServer` — if tests fail with "Missing template", the `.nbt` file path or name is wrong
+4. Check Gradle output for `PASSED`/`FAILED` per test
+5. If a test times out, increase `timeoutTicks` in the `@GameTest` annotation or add intermediate assertions with `runAfterDelay`
 
 ### Running GameTests
 ```bash
@@ -396,6 +400,9 @@ public class MyFabricGameTests implements FabricGameTest {
   }
 }
 ```
+
+Keep the `fabric-gametest` entrypoint in sync with the concrete GameTest class
+name. The validator checks both the metadata file and the entry itself.
 
 ---
 

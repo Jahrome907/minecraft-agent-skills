@@ -1,0 +1,4 @@
+name: ReloadablePlugin
+version: 1.0.0
+main: com.example.plugin.ReloadablePlugin
+api-version: '1.21'

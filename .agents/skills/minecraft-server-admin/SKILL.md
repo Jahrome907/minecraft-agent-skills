@@ -46,11 +46,18 @@ Use this table first. Pick a deployment type before changing configs.
 
 ### Step 1: Establish baseline
 
-Collect a baseline before edits:
+Collect a baseline before edits. Linux host example:
 
 ```bash
 free -h
 top -b -n 1 | head -n 25
+```
+
+Windows PowerShell host example:
+
+```powershell
+Get-CimInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory,TotalVisibleMemorySize
+Get-Process java | Sort-Object CPU -Descending | Select-Object -First 5 Id,CPU,WorkingSet,Path
 ```
 
 In server console:
@@ -240,7 +247,7 @@ not enable BungeeCord forwarding and Velocity modern forwarding at the same time
 | Asset | Frequency | Retention | Notes |
 |---|---|---|---|
 | World folders (`world*`) | Hourly incremental + daily full | 7 daily, 4 weekly | Highest priority |
-| `plugins/` and `config/` | Daily | 14 daily | Required for quick rollback |
+| `plugins/`, `config/`, and root server state | Daily | 14 daily | Required for operational restore |
 | Proxy config/secrets | Daily | 30 daily | Store encrypted off-host |
 | Container/orchestration files | On change + weekly | 8 weeks | Git-tracked where possible |
 
@@ -256,6 +263,8 @@ the restore path before trusting the backup.
 #!/usr/bin/env bash
 set -euo pipefail
 
+: "${SERVER_STOPPED_CONFIRMED:?set SERVER_STOPPED_CONFIRMED=1 after stopping the server cleanly}"
+
 DATE="$(date +%Y-%m-%d_%H-%M-%S)"
 BACKUP_ROOT="/backups/minecraft"
 SERVER_ROOT="/srv/minecraft"
@@ -263,14 +272,19 @@ DEST="${BACKUP_ROOT}/${DATE}"
 
 mkdir -p "$DEST"
 
-if pgrep -f "server.jar" >/dev/null; then
-  echo "Refusing to archive a live server. Stop it cleanly or use a tested snapshot workflow." >&2
-  exit 1
-fi
-
 tar -czf "${DEST}/worlds.tar.gz" -C "$SERVER_ROOT" world world_nether world_the_end
-tar -czf "${DEST}/plugins-config.tar.gz" -C "$SERVER_ROOT" plugins config
-cp "$SERVER_ROOT/server.properties" "$DEST/server.properties"
+
+state_items=()
+for item in \
+  plugins config server.properties bukkit.yml spigot.yml paper-global.yml \
+  paper-world-defaults.yml permissions.yml ops.json whitelist.json \
+  banned-players.json banned-ips.json; do
+  [[ -e "$SERVER_ROOT/$item" ]] && state_items+=("$item")
+done
+
+if [[ "${#state_items[@]}" -gt 0 ]]; then
+  tar -czf "${DEST}/server-state.tar.gz" -C "$SERVER_ROOT" "${state_items[@]}"
+fi
 ```
 
 ### Recovery drill (must be tested)
@@ -301,11 +315,18 @@ Define targets:
 - join/auth failures
 - memory/disk pressure
 
-1. Capture evidence first:
+1. Capture evidence first. Linux host example:
 
 ```bash
 df -h
 free -h
+```
+
+Windows PowerShell host example:
+
+```powershell
+Get-PSDrive -PSProvider FileSystem
+Get-CimInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory,TotalVisibleMemorySize
 ```
 
 From server/proxy console:

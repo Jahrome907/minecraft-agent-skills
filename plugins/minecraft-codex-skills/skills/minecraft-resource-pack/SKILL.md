@@ -54,6 +54,8 @@ my-pack/
         │   │   └── stone.json
         │   └── item/
         │       └── diamond_sword.json
+        ├── items/              ← 1.21.4+ item model definitions
+        │   └── diamond_sword.json
         ├── blockstates/
         │   └── stone.json
         ├── textures/

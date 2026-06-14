@@ -7,4 +7,5 @@ RCON_PASSWORD="${RCON_PASSWORD:?set RCON_PASSWORD}"
 
 mcrcon -H "$RCON_HOST" -P "$RCON_PORT" -p "$RCON_PASSWORD" \
   'tellraw @a {"text":"[Server] Backup starts in 60 seconds.","color":"yellow"}'
+sleep 60
 mcrcon -H "$RCON_HOST" -P "$RCON_PORT" -p "$RCON_PASSWORD" 'save-all flush'

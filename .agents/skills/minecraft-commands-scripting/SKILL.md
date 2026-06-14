@@ -22,7 +22,7 @@ description: "Write Minecraft vanilla commands, NBT scripts, scoreboards, and co
 
 - Execute cheat sheet: `references/execute-cheat-sheet.md`
 - Selector cheat sheet: `references/selector-cheat-sheet.md`
-- Example scripts: `scripts/examples/arena-countdown.mcfunction`, `scripts/examples/stopwatch-podium.mcfunction`, `scripts/examples/rcon-backup-warning.sh`
+- Example scripts: `scripts/examples/arena-countdown.mcfunction`, `scripts/examples/stopwatch-podium.mcfunction`, `scripts/examples/rcon-backup-warning.sh` (one-time setup commands are called out in comments when needed)
 
 Use the cheat sheets when you need fast command recall without scanning this whole
 skill file. The example scripts are meant to be copyable starting points, not toy snippets.

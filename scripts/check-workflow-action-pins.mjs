@@ -43,10 +43,8 @@ function validateUse(file, lineNumber, ref) {
     return;
   }
 
-  if (ref.startsWith("actions/")) return;
-
   if (!/@[0-9a-f]{40}$/.test(ref)) {
-    addError(file, lineNumber, `third-party action must be pinned to a full commit SHA: ${ref}`);
+    addError(file, lineNumber, `action must be pinned to a full commit SHA: ${ref}`);
   }
 }
 

@@ -1,4 +1,6 @@
-scoreboard objectives add arena_timer dummy
+# One-time setup (run once, for example from a load function):
+# scoreboard objectives add arena_timer dummy
+
 scoreboard players add #arena arena_timer 1
 
 execute if score #arena arena_timer matches 20 run title @a[tag=arena_player] actionbar {"text":"3","color":"gold"}

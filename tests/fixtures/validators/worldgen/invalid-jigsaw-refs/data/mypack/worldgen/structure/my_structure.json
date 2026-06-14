@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:jigsaw",
+  "start_pool": "mypack:missing_pool",
+  "size": 1,
+  "step": "surface_structures",
+  "biomes": "minecraft:is_overworld",
+  "spawn_overrides": {}
+}

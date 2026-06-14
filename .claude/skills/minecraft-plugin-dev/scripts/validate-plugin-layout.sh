@@ -24,8 +24,9 @@ Usage: validate-plugin-layout.sh [--root <path>] [--strict]
 
 Checks Paper/Bukkit plugin layout:
 - required plugin.yml keys (name, version, main, api-version)
+- optional paper-plugin.yml keys (name, version, api-version, and matching main when declared)
 - main class path exists and extends JavaPlugin
-- warns on /reload anti-pattern usage
+- warns on actual server /reload anti-pattern usage
 USAGE
       exit 0
       ;;
@@ -101,6 +102,25 @@ extract_yaml_key() {
   awk -F':' -v key="$key" '$1 ~ "^"key"[[:space:]]*$" {sub(/^[^:]*:[[:space:]]*/, "", $0); print; exit}' "$file"
 }
 
+warn_on_reload_misuse() {
+  local root="$1"
+  local misuse_detected=0
+
+  if grep -R -n -E --include='*.java' --include='*.kt' '\b(Bukkit|getServer\(\)|server)\.reload[[:space:]]*\(' "$root/src" >/dev/null 2>&1; then
+    misuse_detected=1
+  fi
+
+  if grep -R -n -E -i --include='*.java' --include='*.kt' "(dispatchCommand|performCommand|chat)\\([^)]*[\"']/?(minecraft:)?reload([[:space:]]|[\"'])" "$root/src" >/dev/null 2>&1; then
+    misuse_detected=1
+  fi
+
+  if [[ "$misuse_detected" -eq 1 ]]; then
+    warn "detected actual server reload usage in source (avoid Bukkit.reload() and dispatching /reload)"
+  else
+    pass "no obvious server /reload anti-pattern detected"
+  fi
+}
+
 echo "=== Plugin Layout Validator ==="
 
 PLUGIN_YML=""
@@ -162,13 +182,53 @@ if [[ -n "$PLUGIN_YML" ]]; then
   fi
 fi
 
+PAPER_PLUGIN_YML=""
+if [[ -f "$ROOT/src/main/resources/paper-plugin.yml" ]]; then
+  PAPER_PLUGIN_YML="$ROOT/src/main/resources/paper-plugin.yml"
+elif [[ -f "$ROOT/paper-plugin.yml" ]]; then
+  PAPER_PLUGIN_YML="$ROOT/paper-plugin.yml"
+fi
+
+if [[ -n "$PAPER_PLUGIN_YML" ]]; then
+  pass "found paper-plugin.yml: ${PAPER_PLUGIN_YML#$ROOT/}"
+
+  paper_name_val="$(trim "$(extract_yaml_key "$PAPER_PLUGIN_YML" "name" || true)")"
+  paper_version_val="$(trim "$(extract_yaml_key "$PAPER_PLUGIN_YML" "version" || true)")"
+  paper_main_val="$(trim "$(extract_yaml_key "$PAPER_PLUGIN_YML" "main" || true)")"
+  paper_api_val="$(trim "$(extract_yaml_key "$PAPER_PLUGIN_YML" "api-version" || true)")"
+
+  [[ -n "$paper_name_val" ]] && pass "paper-plugin.yml has name" || fail "paper-plugin.yml missing key: name"
+  [[ -n "$paper_version_val" ]] && pass "paper-plugin.yml has version" || fail "paper-plugin.yml missing key: version"
+
+  if [[ -z "$paper_api_val" ]]; then
+    fail "paper-plugin.yml missing key: api-version"
+  elif validate_api_version "$paper_api_val"; then
+    pass "paper-plugin.yml api-version is within the documented 1.21.x skill scope: $paper_api_val"
+    warn_if_newer_than_example_api_version "$paper_api_val"
+  elif [[ "$paper_api_val" =~ ^1\.21\.0[0-9]*$ ]]; then
+    fail "paper-plugin.yml api-version patch must be a positive integer without leading zeroes: $paper_api_val"
+  elif [[ "$paper_api_val" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+    fail "paper-plugin.yml api-version is outside the documented 1.21.x skill scope: $paper_api_val"
+  else
+    fail "paper-plugin.yml api-version has invalid format: $paper_api_val"
+  fi
+
+  if [[ -n "$PLUGIN_YML" ]]; then
+    [[ -n "$paper_name_val" && "$paper_name_val" == "$name_val" ]] && pass "paper-plugin.yml name matches plugin.yml" || fail "paper-plugin.yml name must match plugin.yml"
+    [[ -n "$paper_version_val" && "$paper_version_val" == "$version_val" ]] && pass "paper-plugin.yml version matches plugin.yml" || fail "paper-plugin.yml version must match plugin.yml"
+    [[ -n "$paper_api_val" && "$paper_api_val" == "$api_val" ]] && pass "paper-plugin.yml api-version matches plugin.yml" || fail "paper-plugin.yml api-version must match plugin.yml"
+
+    if [[ -n "$paper_main_val" ]]; then
+      [[ "$paper_main_val" == "$main_val" ]] && pass "paper-plugin.yml main matches plugin.yml" || fail "paper-plugin.yml main must match plugin.yml when declared"
+    else
+      warn "paper-plugin.yml omits main; verify the descriptor is intentional for your Paper plugin bootstrap flow"
+    fi
+  fi
+fi
+
 echo "Checking /reload anti-pattern..."
 if [[ -d "$ROOT/src" ]]; then
-  if grep -rqE '/reload|\breload\b' "$ROOT/src" 2>/dev/null; then
-    warn "detected reload usage in source (prefer restart or plugin manager alternatives)"
-  else
-    pass "no obvious /reload anti-pattern detected"
-  fi
+  warn_on_reload_misuse "$ROOT"
 else
   warn "src/ directory not found; skipped reload scan"
 fi

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "mymod",
+  "version": "1.0.0",
+  "entrypoints": {
+    "fabric-gametest": [
+      "com.example.mymod.fabric.MyFabricGameTests"
+    ]
+  }
+}

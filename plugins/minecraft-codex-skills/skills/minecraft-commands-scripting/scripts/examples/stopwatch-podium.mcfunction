@@ -1,4 +1,5 @@
-scoreboard objectives add lap_time dummy
+# One-time setup (run once, for example from a load function):
+# scoreboard objectives add lap_time dummy
 
 execute as @a[tag=race_finished] unless score @s lap_time matches ..0 run tellraw @s {"text":"Submit your time before running podium logic.","color":"red"}
 execute if entity @a[tag=race_finished,scores={lap_time=1..}] run function mypack:race/sort_results

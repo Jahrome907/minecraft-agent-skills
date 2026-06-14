@@ -24,7 +24,7 @@ Usage: validate-datapack.sh [--root <path>] [--strict]
 
 Checks datapack structure and JSON validity:
 - pack.mcmeta and data/** JSON parse with jq
-- 1.21.x path conventions (loot_table, tags/block, tags/item)
+- 1.21.x path conventions (loot_table, function, tags/block, tags/item, tags/function)
 - load/tick function tag references resolve to existing .mcfunction files
 USAGE
       exit 0
@@ -127,7 +127,7 @@ done < <(find "$ROOT/data" -type f -name '*.json' -print0 2>/dev/null)
 echo "Checking banned legacy paths..."
 while IFS= read -r -d '' bad_path; do
   fail "legacy path detected: ${bad_path#$ROOT/}"
-done < <(find "$ROOT/data" -type f \( -path '*/loot_tables/*' -o -path '*/tags/blocks/*' -o -path '*/tags/items/*' \) -print0 2>/dev/null)
+done < <(find "$ROOT/data" -type f \( -path '*/loot_tables/*' -o -path '*/functions/*' -o -path '*/tags/blocks/*' -o -path '*/tags/items/*' -o -path '*/tags/functions/*' \) -print0 2>/dev/null)
 
 resolve_function_ref() {
   local tag_file="$1"

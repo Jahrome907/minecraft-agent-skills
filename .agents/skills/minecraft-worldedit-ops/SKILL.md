@@ -45,7 +45,7 @@ beta or pre-release build before using it on production worlds.
 
 Most common cuboid flow:
 
-```mcfunction
+```text
 //wand
 //pos1
 //pos2
@@ -54,7 +54,7 @@ Most common cuboid flow:
 
 Fast alternatives:
 
-```mcfunction
+```text
 //hpos1
 //hpos2
 //chunk
@@ -72,7 +72,7 @@ Selection safety checks:
 
 ### High-frequency operations
 
-```mcfunction
+```text
 //set stone
 //replace stone andesite
 //replace water air
@@ -85,7 +85,7 @@ Selection safety checks:
 
 Use masks to constrain scope:
 
-```mcfunction
+```text
 //gmask #existing
 //replace grass_block dirt
 //gmask
@@ -93,14 +93,14 @@ Use masks to constrain scope:
 
 Single-command mask approach:
 
-```mcfunction
+```text
 //replace stone,andesite,diorite,granite smooth_stone
 //replace ##leaves air
 ```
 
 Pattern examples:
 
-```mcfunction
+```text
 //set 70%stone,20%andesite,10%cobblestone
 //replace dirt 60%coarse_dirt,40%podzol
 ```
@@ -111,7 +111,7 @@ Pattern examples:
 
 ### Clipboard basics
 
-```mcfunction
+```text
 //copy
 //rotate 90
 //flip east
@@ -122,7 +122,7 @@ Use `-a` when you want to skip air blocks during paste.
 
 ### Schematic workflow
 
-```mcfunction
+```text
 //schem save spawn-hub-v3
 //schem list
 //schem load spawn-hub-v3
@@ -140,7 +140,7 @@ Operational guidance:
 
 ### Practical brush setup
 
-```mcfunction
+```text
 //brush sphere stone 4
 //brush smooth 3
 //brush raise 2
@@ -150,7 +150,7 @@ Operational guidance:
 
 Reset brush:
 
-```mcfunction
+```text
 //none
 ```
 
@@ -165,7 +165,7 @@ Terraforming safety:
 
 ### History commands
 
-```mcfunction
+```text
 //undo
 //undo 5
 //redo
@@ -190,7 +190,7 @@ checkpoint exists, and the rollback window is closed.
 - Select spawn zone and run `//size`.
 - Snapshot:
 
-```mcfunction
+```text
 //copy
 //schem save spawn-before-refresh
 ```
@@ -198,14 +198,14 @@ checkpoint exists, and the rollback window is closed.
 - Apply constrained replacements and overlays.
 - Smooth terrain edges:
 
-```mcfunction
+```text
 //smooth 2
 ```
 
 - Validate spawn safety (voids, lighting, navigation).
 - Save final state:
 
-```mcfunction
+```text
 //schem save spawn-after-refresh
 ```
 
@@ -214,7 +214,7 @@ checkpoint exists, and the rollback window is closed.
 - Keep a pristine arena schematic.
 - After each match:
 
-```mcfunction
+```text
 //schem load arena-pristine
 //paste -a
 ```
@@ -231,7 +231,7 @@ Typical cleanup targets:
 
 Example cleanup sequence:
 
-```mcfunction
+```text
 //replace lava air
 //replace water air
 //replace ##leaves air
@@ -244,7 +244,7 @@ Always scope with selection/mask first to avoid map-wide accidental edits.
 - Select corridor/path footprint.
 - Build mixed surface:
 
-```mcfunction
+```text
 //set 50%dirt_path,30%coarse_dirt,20%gravel
 ```
 

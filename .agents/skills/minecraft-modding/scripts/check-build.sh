@@ -9,6 +9,20 @@ PASS="[PASS]"
 FAIL="[FAIL]"
 WARN="[WARN]"
 
+check_one_of() {
+    local label="$1"
+    shift
+
+    for f in "$@"; do
+        if [[ -f "$f" ]]; then
+            echo "$PASS $f"
+            return 0
+        fi
+    done
+
+    echo "$WARN $label not found"
+}
+
 echo "=== Minecraft Mod Build Environment Check ==="
 echo ""
 
@@ -73,9 +87,10 @@ case "$PLATFORM" in
     [[ -f "build.gradle" || -f "build.gradle.kts" ]] && echo "$PASS build script found" || echo "$WARN build script not found"
     ;;
   architectury)
-    for f in "common/build.gradle" "common/build.gradle.kts" "fabric/build.gradle" "fabric/build.gradle.kts" "neoforge/build.gradle" "neoforge/build.gradle.kts" "gradle.properties"; do
-        [[ -f "$f" ]] && echo "$PASS $f" || echo "$WARN $f not found"
-    done
+    check_one_of "common build script" "common/build.gradle" "common/build.gradle.kts"
+    check_one_of "fabric build script" "fabric/build.gradle" "fabric/build.gradle.kts"
+    check_one_of "neoforge build script" "neoforge/build.gradle" "neoforge/build.gradle.kts"
+    [[ -f "gradle.properties" ]] && echo "$PASS gradle.properties" || echo "$WARN gradle.properties not found"
     ;;
   *)
     echo "$WARN Unknown platform; skipping file checks"

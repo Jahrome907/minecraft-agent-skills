@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
           cache: "npm"
@@ -32,38 +32,14 @@ jobs:
           fi
           jq --version
 
-      - name: Validate mirror sync
-        run: npm run check:sync
-
-      - name: Validate plugin bundle
-        run: npm run check:plugin-bundle
-
-      - name: Run skill audit
-        run: npm run audit:skills
-
-      - name: Validate documentation snippets
-        run: npm run test:docs
-
-      - name: Run validator fixture tests
-        run: npm run test:validators
-
-      - name: Run repo policy fixtures
-        run: npm run test:repo-policy
-
-      - name: Validate workflow action pinning
-        run: npm run check:workflow-pins
-
-      - name: Validate GitHub community files
-        run: npm run check:community
-
-      - name: Run markdown lint
-        run: npm run lint:md
+      - name: Run full repository check
+        run: npm run check
 
   secret-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 

@@ -1,6 +1,6 @@
 {
   "type": "minecraft:jigsaw",
-  "start_pool": "minecraft:empty",
+  "start_pool": "mypack:my_pool/start",
   "size": 1,
   "step": "surface_structures",
   "biomes": "minecraft:is_overworld",

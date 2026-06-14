@@ -47,6 +47,8 @@ Checklist:
 - Keep pure unit tests in `src/test/java`
 - Keep GameTest structure fixtures under committed `data/<modid>/structures/`
 - Make the test namespace match the `@GameTest(template = "<namespace>:...")` usage
+- Register each GameTest class on the NeoForge mod event bus
+- Keep `src/main/resources/META-INF/neoforge.mods.toml` present in the mod layout
 
 ## 3. Fabric GameTest Layout
 
@@ -68,6 +70,7 @@ src/
 Checklist:
 
 - Keep `fabric-gametest` entrypoints in `fabric.mod.json`
+- Register the concrete GameTest class inside that `fabric-gametest` entrypoint block
 - Commit the `.nbt` templates used by your tests
 - Keep game-facing tests small; move parsing and business logic back into plain JUnit
 
@@ -84,4 +87,5 @@ What it checks:
 - test source roots exist
 - JUnit Platform is enabled
 - MockBukkit tests have the dependency
-- GameTests have committed structure fixtures
+- GameTests have committed structure fixtures that match referenced templates
+- NeoForge/Fabric GameTests include the metadata and entrypoints they need to run

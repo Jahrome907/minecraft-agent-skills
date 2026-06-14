@@ -478,15 +478,15 @@ profile lookup, and protection-plugin integration examples.
    ./scripts/validate-plugin-layout.sh --root /path/to/plugin-project --strict
    ```
 3. Fix any reported errors and re-run until clean.
-4. Deploy: copy JAR to `server/plugins/` and restart, or use the dev server:
-   ```bash
-   ./gradlew runServer
-   ```
+4. Deploy: copy the built JAR to `server/plugins/` and restart the Paper server.
+   If the real project already applies a Paper dev-server plugin such as `xyz.jpenilla.run-paper`,
+   use that project's documented dev task instead of assuming `./gradlew runServer` exists.
 
 The validator checks:
 - `plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported `1.21` / positive `1.21.<patch>` `api-version` values on the 1.21.x line, with warnings for patches newer than the repo's current example version
+- optional `paper-plugin.yml` metadata consistency for `name`, `version`, `api-version`, and declared `main`
 - Main class path exists and extends `JavaPlugin`
-- `/reload` anti-pattern detection in source snippets
+- actual server `/reload` anti-patterns such as `Bukkit.reload()` or dispatching the server reload command
 
 ---
 

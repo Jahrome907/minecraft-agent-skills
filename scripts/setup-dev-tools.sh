@@ -20,19 +20,25 @@ install_with_apt() {
 }
 
 install_with_brew() {
-  brew install jq rsync node
+  brew install jq rsync
 }
 
-if need_cmd jq && need_cmd node && need_cmd npm; then
-  echo "$PASS Required tools already installed: jq, node, npm"
+if ! need_cmd node || ! need_cmd npm; then
+  echo "$FAIL Node 20+ and npm are required but were not found on PATH."
+  echo "$WARN Install Node 20+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
+  exit 1
+fi
+
+if need_cmd jq && need_cmd rsync; then
+  echo "$PASS Required support tools already installed: jq, rsync"
 else
-  echo "[INFO] Installing missing tools..."
+  echo "[INFO] Installing missing support tools..."
   case "$OS" in
     Linux)
       if need_cmd apt-get; then
         install_with_apt
       else
-        echo "$FAIL Unsupported Linux package manager. Install manually: jq rsync node npm"
+        echo "$FAIL Unsupported Linux package manager. Install manually: jq rsync"
         exit 1
       fi
       ;;
@@ -52,13 +58,7 @@ else
   esac
 fi
 
-if ! need_cmd node || ! need_cmd npm; then
-  echo "$FAIL Node 20+ and npm are required but were not found on PATH."
-  echo "$WARN Install Node 20+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
-  exit 1
-fi
-
-for cmd in jq node npm; do
+for cmd in jq rsync node npm; do
   if need_cmd "$cmd"; then
     ver="$($cmd --version 2>/dev/null | head -n 1 || true)"
     echo "$PASS $cmd ${ver}"

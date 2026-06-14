@@ -1,0 +1,4 @@
+name: MisusePlugin
+version: 1.0.0
+main: com.example.plugin.MisusePlugin
+api-version: '1.21'

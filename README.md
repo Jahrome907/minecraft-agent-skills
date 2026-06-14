@@ -109,9 +109,12 @@ using:
 
 - For Codex, merge the extracted `.agents/` directory into this project.
 - For Claude Code, merge the extracted `.claude/` directory into this project.
-- If I ask for plugin install instead of raw skills, copy
-  `plugins/minecraft-codex-skills/` into this project and explain the host's
-  next plugin-loading step.
+- If I ask for a Codex plugin install instead of raw skills, keep or copy both
+  `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/`
+  under this project root so Codex can discover the local marketplace entry.
+- If I ask for a Claude Code plugin install instead of raw skills, copy
+  `plugins/minecraft-codex-skills/` into this project and explain the next
+  `claude --plugin-dir` step.
 
 Preserve existing local agent files. If `.agents/skills/` or `.claude/skills/`
 already exists, replace only this bundle's `minecraft-*` skill directories and
@@ -298,7 +301,7 @@ On Windows, run repo checks from WSL or Git Bash with those tools available on
 `PATH`.
 
 ```bash
-# One-time: install/check local dev tools
+# One-time: with Node 20+ and npm already installed, install/check support tools
 bash ./scripts/setup-dev-tools.sh
 
 # Install pinned repo tooling
@@ -408,7 +411,7 @@ before applying 1.21.x snippets unchanged.
 |Platform|Version|Java|
 |---|---|---|
 |NeoForge|1.21.x examples centered on 21.11.x|21|
-|Fabric|1.21.11 line (`fabric-api:0.141.4+1.21.11`, Loom 1.14)|21|
+|Fabric|1.21.11 line (`fabric-loader:0.19.3`, `fabric-api:0.141.4+1.21.11`, Loom 1.17.11)|21|
 |Paper/Bukkit|1.21.x (`paper-api:1.21.11-R0.1-SNAPSHOT`)|21|
 |Vanilla datapack|1.21-1.21.11 (`pack_format` 48-81 through 1.21.8; exact 1.21.11 metadata uses `[94, 1]` full-version arrays)|-|
 |Resource pack|1.21-1.21.11 (`pack_format` 34-64 through 1.21.8; exact 1.21.11 metadata uses `[75, 0]` full-version arrays)|-|
