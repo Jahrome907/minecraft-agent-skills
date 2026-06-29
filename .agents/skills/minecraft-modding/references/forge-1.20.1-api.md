@@ -299,7 +299,9 @@ public record SyncEnergyPacket(BlockPos pos, int energy) {
 }
 ```
 
-Send packets through the channel and Forge `PacketDistributor` helpers.
+Send packets through the channel and Forge `PacketDistributor` helpers. In Forge
+`47.4.x`, `PacketDistributor<T>.with` takes the target object directly; for
+`PLAYER`, pass the `ServerPlayer`, not a `Supplier<ServerPlayer>`.
 
 ```java
 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(serverPlayer), packet);
