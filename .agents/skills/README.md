@@ -3,10 +3,11 @@
 This index lists all Minecraft skills in this repository.
 Canonical source files live under `.agents/skills/`, and this README is mirrored
 to compatibility trees.
-All skill content targets Minecraft `1.21.x`. Minecraft 26.1.x changed Java,
-Paper, Fabric, and several vanilla data/command surfaces; treat 26.x work as a
-porting task that requires fresh upstream verification before applying these
-examples unchanged.
+Most skill content targets Minecraft `1.21.x`. The `minecraft-modding` skill also
+includes a dedicated Forge `1.20.1` / Java 17 lane for legacy Forge projects.
+Minecraft 26.1.x changed Java, Paper, Fabric, and several vanilla data/command
+surfaces; treat 26.x work as a porting task that requires fresh upstream
+verification before applying these examples unchanged.
 
 Use this index as a quick router before opening individual `SKILL.md` files.
 Some skills also include local `references/` and `scripts/` support assets; the
@@ -16,7 +17,7 @@ table below is a router, not an exhaustive layout listing.
 
 | Skill | Primary use cases | Choose this instead when |
 |---|---|---|
-| `minecraft-modding` | Build NeoForge or Fabric mods (blocks, items, entities, GUIs, datagen) | You need a single shared codebase for both loaders (`minecraft-multiloader`) |
+| `minecraft-modding` | Build NeoForge, Fabric, or Forge 1.20.1 mods (blocks, items, entities, GUIs, datagen) | You need a single shared codebase for both loaders (`minecraft-multiloader`) |
 | `minecraft-multiloader` | Architectury projects that ship both NeoForge and Fabric from one repo | You only need one loader (`minecraft-modding`) |
 | `minecraft-plugin-dev` | Write Paper/Bukkit/Spigot plugins in Java 21 | You need server operations or deployment guidance (`minecraft-server-admin`) |
 | `minecraft-datapack` | Vanilla datapacks: functions, advancements, recipes, loot tables | You only need command chains/NBT/scoreboards (`minecraft-commands-scripting`) |

@@ -86,10 +86,13 @@ function checkRunnableBlocks(file, text) {
 }
 
 function checkPathConventions(file, text) {
+  const allowsLegacyForge1201Paths = file.endsWith("forge-1.20.1-api.md");
   const banned = [
-    ["loot_tables", "use `loot_table` for 1.21.x conventions"],
-    ["tags/blocks", "use `tags/block` for 1.21.x conventions"],
-    ["tags/items", "use `tags/item` for 1.21.x conventions"],
+    ...(allowsLegacyForge1201Paths ? [] : [
+      ["loot_tables", "use `loot_table` for 1.21.x conventions"],
+      ["tags/blocks", "use `tags/block` for 1.21.x conventions"],
+      ["tags/items", "use `tags/item` for 1.21.x conventions"],
+    ]),
     ["biome_modifiers", "use `biome_modifier` for NeoForge biome modifier path"],
     ["max-player-count", "use `max-players` (server.properties key)"],
     ["<mc_version>-<mod_version>", "use `{mod_version}+{mc_version}` for mod version examples"],

@@ -17,6 +17,7 @@ other skills in this repo also include `references/` and `scripts/` support asse
 │   ├── SKILL.md
 │   ├── references/
 │   │   ├── neoforge-api.md
+│   │   ├── forge-1.20.1-api.md
 │   │   ├── fabric-api.md
 │   │   └── common-patterns.md
 │   └── scripts/
@@ -66,10 +67,11 @@ Compatibility mirror (kept in sync by script/CI):
 
 ```text
 .codex/skills/
-├── minecraft-modding/            ← NeoForge + Fabric mod development
+├── minecraft-modding/            ← NeoForge + Fabric + Forge 1.20.1 mod development
 │   ├── SKILL.md
 │   ├── references/
 │   │   ├── neoforge-api.md
+│   │   ├── forge-1.20.1-api.md
 │   │   ├── fabric-api.md
 │   │   └── common-patterns.md
 │   └── scripts/
@@ -119,10 +121,11 @@ Claude Code mirror (kept in sync by script/CI):
 
 ```text
 .claude/skills/
-├── minecraft-modding/            ← NeoForge + Fabric mod development
+├── minecraft-modding/            ← NeoForge + Fabric + Forge 1.20.1 mod development
 │   ├── SKILL.md
 │   ├── references/
 │   │   ├── neoforge-api.md
+│   │   ├── forge-1.20.1-api.md
 │   │   ├── fabric-api.md
 │   │   └── common-patterns.md
 │   └── scripts/
@@ -199,7 +202,7 @@ The table below maps task types to which skill(s) to load:
 
 |Task type|Skill to use|
 |---|---|
-|NeoForge / Fabric mod (blocks, items, entities, events, datagen)|`minecraft-modding`|
+|NeoForge / Fabric / Forge 1.20.1 mod (blocks, items, entities, events, datagen)|`minecraft-modding`|
 |Paper / Bukkit / Spigot server plugin|`minecraft-plugin-dev`|
 |Vanilla datapack (functions, advancements, recipes, loot tables)|`minecraft-datapack`|
 |`/execute`, scoreboards, NBT, `tellraw`, RCON scripting|`minecraft-commands-scripting`|
@@ -217,10 +220,10 @@ The table below maps task types to which skill(s) to load:
 
 - **Do not** run Minecraft, Gradle, or Paper server commands here; there is no game project to build.
 - Edit `.agents/skills/` only; sync mirrors and the plugin bundle after canonical changes.
-- When editing skill files, keep examples accurate for **Minecraft 1.21.x**.
-- Keep Java examples correct for **Java 21** and verify changed examples in their target project context.
+- When editing skill files, keep examples accurate for **Minecraft 1.21.x** unless the file or section is explicitly marked for Forge 1.20.1.
+- Keep Java examples correct for **Java 21** by default; Forge 1.20.1 examples must stay correct for **Java 17** and ForgeGradle 6.
 - Keep JSON snippets valid and pretty-printed with 2-space indentation.
-- Mark platform-specific patterns (NeoForge / Fabric / Paper) clearly.
+- Mark platform-specific patterns (NeoForge / Forge 1.20.1 / Fabric / Paper) clearly.
 - Prefer complete, runnable code snippets over pseudo-code.
 - Skills are independent — do not create cross-skill dependencies.
 
@@ -228,18 +231,19 @@ The table below maps task types to which skill(s) to load:
 
 When Minecraft releases a new version, update the following files:
 
-1. **`minecraft-modding/SKILL.md`** — version table, NeoForge/Fabric versions
+1. **`minecraft-modding/SKILL.md`** — version table, NeoForge/Fabric/Forge 1.20.1 versions
 2. **`minecraft-modding/references/neoforge-api.md`** — class names, gradle.properties versions
-3. **`minecraft-modding/references/fabric-api.md`** — yarn mappings, Fabric API version
-4. **`minecraft-modding/references/common-patterns.md`** — changed JSON formats
-5. **`minecraft-plugin-dev/SKILL.md`** and **`minecraft-plugin-dev/references/runtime-patterns.md`** — `paper-api` version, `api-version` field, runtime API examples
-6. **`minecraft-datapack/SKILL.md`** — pack format number table
-7. **`minecraft-resource-pack/SKILL.md`** — pack format number table
-8. **`minecraft-commands-scripting/SKILL.md`** — any syntax changes
-9. **`minecraft-world-generation/SKILL.md`** — worldgen JSON schema changes
-10. **`minecraft-multiloader/SKILL.md`** — Architectury, Fabric loader, NeoForge versions
-11. **`minecraft-worldedit-ops/SKILL.md`** — command workflow or safety behavior changes
-12. **`minecraft-essentials-ops/SKILL.md`** — EssentialsX command/config/permission behavior changes
+3. **`minecraft-modding/references/forge-1.20.1-api.md`** — ForgeGradle, Forge version, Java 17, and legacy Forge API patterns
+4. **`minecraft-modding/references/fabric-api.md`** — yarn mappings, Fabric API version
+5. **`minecraft-modding/references/common-patterns.md`** — changed JSON formats
+6. **`minecraft-plugin-dev/SKILL.md`** and **`minecraft-plugin-dev/references/runtime-patterns.md`** — `paper-api` version, `api-version` field, runtime API examples
+7. **`minecraft-datapack/SKILL.md`** — pack format number table
+8. **`minecraft-resource-pack/SKILL.md`** — pack format number table
+9. **`minecraft-commands-scripting/SKILL.md`** — any syntax changes
+10. **`minecraft-world-generation/SKILL.md`** — worldgen JSON schema changes
+11. **`minecraft-multiloader/SKILL.md`** — Architectury, Fabric loader, NeoForge versions
+12. **`minecraft-worldedit-ops/SKILL.md`** — command workflow or safety behavior changes
+13. **`minecraft-essentials-ops/SKILL.md`** — EssentialsX command/config/permission behavior changes
 
 ## Repo Notes
 

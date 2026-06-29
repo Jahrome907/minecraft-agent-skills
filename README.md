@@ -3,7 +3,7 @@
 [![Skills Audit](https://github.com/Jahrome907/minecraft-agent-skills/actions/workflows/skills-audit.yml/badge.svg)](https://github.com/Jahrome907/minecraft-agent-skills/actions/workflows/skills-audit.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/Jahrome907/minecraft-agent-skills)](https://github.com/Jahrome907/minecraft-agent-skills/releases/latest)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.x-brightgreen)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.x%20%2B%20Forge%201.20.1-brightgreen)](https://www.minecraft.net/)
 
 A public skills bundle of **13 AI agent skills** covering every major area
 of Minecraft development — mods, plugins, datapacks, commands, testing, CI/CD,
@@ -58,7 +58,7 @@ The routing index lives at `.agents/skills/README.md`.
 
 |Skill|Directory|What it covers|
 |---|---|---|
-|**minecraft-modding**|`minecraft-modding/`|NeoForge + Fabric mod development — blocks, items, entities, events, data gen|
+|**minecraft-modding**|`minecraft-modding/`|NeoForge + Fabric + Forge 1.20.1 mod development — blocks, items, entities, events, data gen|
 |**minecraft-plugin-dev**|`minecraft-plugin-dev/`|Paper/Bukkit server plugins — events, commands, schedulers, PDC, Adventure, Vault|
 |**minecraft-datapack**|`minecraft-datapack/`|Vanilla datapacks — functions, advancements, recipes, loot tables, tags|
 |**minecraft-commands-scripting**|`minecraft-commands-scripting/`|Vanilla commands, scoreboards, NBT paths, JSON text, RCON scripting|
@@ -215,6 +215,7 @@ your-project/
         │   ├── SKILL.md
         │   ├── references/
         │   │   ├── neoforge-api.md
+        │   │   ├── forge-1.20.1-api.md
         │   │   ├── fabric-api.md
         │   │   └── common-patterns.md
         │   └── scripts/
@@ -350,6 +351,9 @@ npm install -g @openai/codex
 codex "Add a custom ore block called Starstone that spawns in the deepslate layer \
       and gives 2-5 StarstoneGems when mined with iron pickaxe or better. NeoForge."
 
+codex "Add a Forge 1.20.1 block item to this mod, keeping Java 17, mods.toml, \
+      FMLJavaModLoadingContext, and net.minecraftforge imports intact."
+
 # Server plugin
 codex "Create a Paper plugin that gives players a speed boost for 10 seconds \
       when they eat a golden apple, with a 60-second cooldown tracked in PDC."
@@ -368,8 +372,9 @@ support is experimental, so use a WSL2 workspace for the best Windows experience
 
 Codex reads the appropriate `SKILL.md` and picks up platform patterns, correct
 API-version guidance, JSON patterns, validators, and build-command examples from
-the skill bundle. Still verify against the target project's exact Minecraft,
-loader, and server runtime before release.
+the skill bundle. Forge 1.20.1 projects route through the dedicated Forge reference
+inside `minecraft-modding`; still verify against the target project's exact
+Minecraft, loader, and server runtime before release.
 
 If you prefer plugin installs in Codex, start Codex from the repository root,
 open `/plugins`, and install `minecraft-codex-skills` from the repo marketplace
@@ -403,14 +408,16 @@ support.
 
 ## Supported Versions
 
-This release is intentionally centered on the Minecraft 1.21.x line. Minecraft
-26.1.x is now a separate porting surface: Java 25, Paper 26.x API coordinates,
-and newer Fabric/vanilla data changes should be verified against upstream docs
-before applying 1.21.x snippets unchanged.
+This release is intentionally centered on the Minecraft 1.21.x line, with a
+specific Forge 1.20.1 / Java 17 lane in `minecraft-modding` for legacy Forge
+projects. Minecraft 26.1.x is now a separate porting surface: Java 25, Paper
+26.x API coordinates, and newer Fabric/vanilla data changes should be verified
+against upstream docs before applying 1.21.x snippets unchanged.
 
 |Platform|Version|Java|
 |---|---|---|
 |NeoForge|1.21.x examples centered on 21.11.x|21|
+|Forge|1.20.1 legacy lane (`forge_version=47.4.x`, ForgeGradle 6)|17|
 |Fabric|1.21.11 line (`fabric-loader:0.19.3`, `fabric-api:0.141.4+1.21.11`, Loom 1.17.11)|21|
 |Paper/Bukkit|1.21.x (`paper-api:1.21.11-R0.1-SNAPSHOT`)|21|
 |Vanilla datapack|1.21-1.21.11 (`pack_format` 48-81 through 1.21.8; exact 1.21.11 metadata uses `[94, 1]` full-version arrays)|-|

@@ -5,6 +5,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Added a dedicated Forge 1.20.1 / Java 17 lane to `minecraft-modding`, including ForgeGradle 6, `mods.toml`, `FMLJavaModLoadingContext`, `MinecraftForge.EVENT_BUS`, `RegistryObject`, networking, and legacy data-path guidance
+
 ### Changed
 
 - Corrected the modding registry cheat sheet to use current 1.21.x NeoForge/Fabric registry constants instead of stale `Registry.*` names
