@@ -30,9 +30,23 @@ read_gradle_property() {
     fi
 }
 
+parse_java_major() {
+    local version="$1"
+    if [[ "$version" =~ ^1\.([0-9]+) ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return 0
+    fi
+    if [[ "$version" =~ ^([0-9]+) ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return 0
+    fi
+    return 1
+}
+
 version_at_least() {
     local found="$1"
     local required="$2"
+    [[ "$found" =~ ^[0-9]+$ ]] || return 1
     [[ "$found" -ge "$required" ]]
 }
 
@@ -78,7 +92,12 @@ if ! command -v java &>/dev/null; then
 fi
 
 JAVA_VERSION=$(java -version 2>&1 | head -1 | sed -n 's/.*version "\([^"]*\)".*/\1/p')
-JAVA_MAJOR=$(echo "$JAVA_VERSION" | cut -d. -f1)
+JAVA_MAJOR=$(parse_java_major "$JAVA_VERSION" || true)
+
+if [[ -z "$JAVA_MAJOR" ]]; then
+    echo "$FAIL Could not parse Java version from: $JAVA_VERSION"
+    exit 1
+fi
 
 if version_at_least "$JAVA_MAJOR" "$REQUIRED_JAVA"; then
     echo "$PASS Java $JAVA_VERSION (JDK $REQUIRED_JAVA+ available)"

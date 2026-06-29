@@ -86,18 +86,28 @@ function checkRunnableBlocks(file, text) {
 }
 
 function checkPathConventions(file, text) {
-  const allowsLegacyForge1201Paths = file.endsWith("forge-1.20.1-api.md");
+  const relativeFile = rel(file);
+  const legacyForge1201PathNeedles = [
+    ["loot_tables", "use `loot_table` for 1.21.x conventions"],
+    ["tags/blocks", "use `tags/block` for 1.21.x conventions"],
+    ["tags/items", "use `tags/item` for 1.21.x conventions"],
+  ];
   const banned = [
-    ...(allowsLegacyForge1201Paths ? [] : [
-      ["loot_tables", "use `loot_table` for 1.21.x conventions"],
-      ["tags/blocks", "use `tags/block` for 1.21.x conventions"],
-      ["tags/items", "use `tags/item` for 1.21.x conventions"],
-    ]),
     ["biome_modifiers", "use `biome_modifier` for NeoForge biome modifier path"],
     ["max-player-count", "use `max-players` (server.properties key)"],
     ["<mc_version>-<mod_version>", "use `{mod_version}+{mc_version}` for mod version examples"],
     ["1.21.1-2.0.0", "use `{mod_version}+{mc_version}` for mod version examples"],
   ];
+
+  const legacyForgeReference = file.endsWith("forge-1.20.1-api.md");
+  const moddingSkill = relativeFile.endsWith("minecraft-modding/SKILL.md");
+
+  for (const line of text.split("\n")) {
+    const lineAllowsLegacyForge1201Paths = legacyForgeReference || (moddingSkill && line.includes("Forge 1.20.1"));
+    for (const [needle, msg] of legacyForge1201PathNeedles) {
+      if (line.includes(needle) && !lineAllowsLegacyForge1201Paths) addError(file, msg);
+    }
+  }
 
   for (const [needle, msg] of banned) {
     if (text.includes(needle)) addError(file, msg);

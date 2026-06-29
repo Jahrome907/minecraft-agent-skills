@@ -310,6 +310,122 @@ ModNetworking.CHANNEL.sendToServer(packet);
 
 Run Forge 1.20.1 data generation with `./gradlew runData`. The generated output
 is normally wired from `src/generated/resources` into `sourceSets.main.resources`.
+Register data providers on the mod event bus; Forge fires `GatherDataEvent` there
+when the data generator starts.
+
+```java
+public MyMod(FMLJavaModLoadingContext context) {
+    IEventBus modEventBus = context.getModEventBus();
+    modEventBus.addListener(ModDataGen::gatherData);
+}
+```
+
+Use Forge 1.20.1 provider classes and constructors rather than NeoForge 1.21.x
+examples. `ExistingFileHelper` comes from the event and validates referenced
+assets such as textures and parent models.
+
+```java
+public final class ModDataGen {
+    public static void gatherData(GatherDataEvent event) {
+        DataGenerator generator = event.getGenerator();
+        PackOutput output = generator.getPackOutput();
+        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+
+        generator.addProvider(event.includeClient(), new ModBlockStateProvider(output, existingFileHelper));
+        generator.addProvider(event.includeClient(), new ModItemModelProvider(output, existingFileHelper));
+        generator.addProvider(event.includeServer(), new ModRecipeProvider(output));
+
+        ModBlockTagsProvider blockTags = new ModBlockTagsProvider(output, lookupProvider, existingFileHelper);
+        generator.addProvider(event.includeServer(), blockTags);
+        generator.addProvider(event.includeServer(), new ModItemTagsProvider(
+            output,
+            lookupProvider,
+            blockTags.contentsGetter(),
+            existingFileHelper
+        ));
+    }
+
+    private ModDataGen() {
+    }
+}
+```
+
+Common Forge 1.20.1 provider constructors look like this:
+
+```java
+public final class ModBlockStateProvider extends BlockStateProvider {
+    public ModBlockStateProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
+        super(output, MyMod.MOD_ID, existingFileHelper);
+    }
+
+    @Override
+    protected void registerStatesAndModels() {
+        // Generate blockstates, block models, and simple block item models here.
+    }
+}
+```
+
+```java
+public final class ModItemModelProvider extends ItemModelProvider {
+    public ModItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
+        super(output, MyMod.MOD_ID, existingFileHelper);
+    }
+
+    @Override
+    protected void registerModels() {
+        // Generate standalone item models here.
+    }
+}
+```
+
+```java
+public final class ModRecipeProvider extends RecipeProvider {
+    public ModRecipeProvider(PackOutput output) {
+        super(output);
+    }
+
+    @Override
+    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+        // Generate recipes here.
+    }
+}
+```
+
+```java
+public final class ModBlockTagsProvider extends BlockTagsProvider {
+    public ModBlockTagsProvider(
+        PackOutput output,
+        CompletableFuture<HolderLookup.Provider> lookupProvider,
+        ExistingFileHelper existingFileHelper
+    ) {
+        super(output, lookupProvider, MyMod.MOD_ID, existingFileHelper);
+    }
+
+    @Override
+    protected void addTags(HolderLookup.Provider provider) {
+        // Generate block tags here.
+    }
+}
+```
+
+```java
+public final class ModItemTagsProvider extends ItemTagsProvider {
+    public ModItemTagsProvider(
+        PackOutput output,
+        CompletableFuture<HolderLookup.Provider> lookupProvider,
+        CompletableFuture<TagsProvider.TagLookup<Block>> blockTags,
+        ExistingFileHelper existingFileHelper
+    ) {
+        super(output, lookupProvider, blockTags, MyMod.MOD_ID, existingFileHelper);
+    }
+
+    @Override
+    protected void addTags(HolderLookup.Provider provider) {
+        // Generate item tags here.
+    }
+}
+```
 
 Minecraft 1.20.1 uses the older server-data path names:
 

@@ -13,6 +13,7 @@ Target platforms:
 | Platform | MC Version | Java | Build System |
 |---|---|---|---|
 | **NeoForge** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + ModDevGradle |
+| **Forge** | 1.20.1 legacy lane | Java 17 | Gradle + ForgeGradle 6 |
 | **Fabric** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + Fabric Loom |
 | **Architectury** (multiloader) | 1.21.x | Java 21 | Gradle + Architectury Loom |
 
@@ -45,6 +46,7 @@ cat gradle.properties
 Key files per platform:
 
 - **NeoForge**: `src/main/resources/META-INF/neoforge.mods.toml`, annotated `@Mod` main class
+- **Forge 1.20.1**: `src/main/resources/META-INF/mods.toml`, `net.minecraftforge:forge` dependency
 - **Fabric**: `src/main/resources/fabric.mod.json`, class implementing `ModInitializer`
 - **Architectury**: `common/`, `fabric/`, `neoforge/` subprojects
 
@@ -147,6 +149,7 @@ src/
 ```
 
 See `references/forge-1.20.1-api.md` before editing Forge 1.20.1 projects.
+
 ## 5. Project Layout (Fabric)
 
 ```
@@ -367,8 +370,9 @@ public static void gatherData(GatherDataEvent event) {
 ```
 
 Run data generation with `./gradlew runData`, then commit the generated files.
-For Forge 1.20.1, use the `GatherDataEvent` signature and provider constructors
-from `references/forge-1.20.1-api.md`.
+For Forge 1.20.1, use the mod-event-bus registration, `GatherDataEvent`
+signature, provider classes, and legacy output paths from
+`references/forge-1.20.1-api.md`.
 
 ---
 
@@ -382,10 +386,11 @@ When adding a **new block**:
 - [ ] Block model JSON → `assets/<modid>/models/block/<name>.json`
 - [ ] Item model JSON → `assets/<modid>/models/item/<name>.json` (or inherits from block)
 - [ ] Texture PNG → `assets/<modid>/textures/block/<name>.png`
-- [ ] Loot table JSON → `data/<modid>/loot_table/blocks/<name>.json`
+- [ ] Loot table JSON -> 1.21.x: `data/<modid>/loot_table/blocks/<name>.json`; Forge 1.20.1: `data/<modid>/loot_tables/blocks/<name>.json`
+- [ ] Tags -> 1.21.x: `data/<modid>/tags/block/` and `tags/item/`; Forge 1.20.1: `data/<modid>/tags/blocks/` and `tags/items/`
 - [ ] Language entry in `en_us.json`
 - [ ] Mine-with-correct-tool tag if hardness > 0
-- [ ] For Forge 1.20.1, verify legacy data paths against the Forge reference before committing generated JSON
+- [ ] Do not mix Forge 1.20.1 plural server-data paths with 1.21.x singular server-data paths
 
 When adding a **new item**:
 - [ ] `Item` subclass (or use `new Item(properties)`)
