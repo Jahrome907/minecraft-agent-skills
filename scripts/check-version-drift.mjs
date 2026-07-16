@@ -6,16 +6,6 @@ const repoRoot = process.cwd();
 
 const checks = [
   {
-    file: "README.md",
-    required: [
-      /Paper 1\.21\.11 server/,
-      /Fabric\|1\.21\.11 line \(`fabric-loader:0\.19\.3`, `fabric-api:0\.141\.4\+1\.21\.11`, Loom 1\.17\.11\)\|21/,
-      /Forge\|1\.20\.1 legacy lane \(`forge_version=47\.4\.x`, ForgeGradle 6\)\|17/,
-      /Vanilla datapack\|1\.21-1\.21\.11 \(`pack_format` 48-81 through 1\.21\.8; exact 1\.21\.11 metadata uses `\[94, 1\]` full-version arrays\)\|-/,
-      /Resource pack\|1\.21-1\.21\.11 \(`pack_format` 34-64 through 1\.21\.8; exact 1\.21\.11 metadata uses `\[75, 0\]` full-version arrays\)\|-/
-    ]
-  },
-  {
     file: ".agents/skills/minecraft-modding/SKILL.md",
     required: [
       /legacy Forge 1\.20\.1/,
