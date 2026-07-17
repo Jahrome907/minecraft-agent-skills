@@ -5,7 +5,6 @@ import crypto from "node:crypto";
 
 const ROOT = process.cwd();
 const CANONICAL = path.join(ROOT, ".agents", "skills");
-const REQUIRED_SKILLS_INDEX = "README.md";
 const MIRRORS = [
   { dir: path.join(ROOT, ".codex", "skills"), label: ".codex/skills" },
   { dir: path.join(ROOT, ".claude", "skills"), label: ".claude/skills" },
@@ -152,10 +151,6 @@ for (const file of FORBIDDEN_REPO_ROOT_SKILL_FILES) {
 if (!fs.existsSync(CANONICAL)) {
   addError(".agents/skills", "canonical skills directory is missing");
 } else {
-  const canonicalIndex = path.join(CANONICAL, REQUIRED_SKILLS_INDEX);
-  if (!fs.existsSync(canonicalIndex)) {
-    addError(rel(canonicalIndex), "required canonical skills index is missing");
-  }
 
   const skillDirs = fs.readdirSync(CANONICAL, { withFileTypes: true }).filter((d) => d.isDirectory());
   for (const dirent of skillDirs) {
@@ -195,10 +190,6 @@ for (const { dir: MIRROR, label: mirrorLabel } of MIRRORS) {
   if (!fs.existsSync(MIRROR)) {
     addError(mirrorLabel, "mirror skills directory is missing");
   } else if (fs.existsSync(CANONICAL)) {
-    const mirrorIndex = path.join(MIRROR, REQUIRED_SKILLS_INDEX);
-    if (!fs.existsSync(mirrorIndex)) {
-      addError(rel(mirrorIndex), "required mirrored skills index is missing");
-    }
 
     const canonicalFiles = walkFiles(CANONICAL).map((p) => path.relative(CANONICAL, p)).sort();
     const mirrorFiles = walkFiles(MIRROR).map((p) => path.relative(MIRROR, p)).sort();

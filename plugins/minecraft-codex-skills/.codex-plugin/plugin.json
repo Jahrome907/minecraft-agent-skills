@@ -1,43 +1,6 @@
 {
   "name": "minecraft-codex-skills",
   "version": "2.5.1",
-  "description": "A dual-target Minecraft development skills bundle for Codex and Claude Code, with built-in image-generation workflows on Codex.",
-  "author": {
-    "name": "Jahrome907",
-    "url": "https://github.com/Jahrome907"
-  },
-  "homepage": "https://github.com/Jahrome907/minecraft-agent-skills",
-  "repository": "https://github.com/Jahrome907/minecraft-agent-skills",
-  "license": "MIT",
-  "keywords": [
-    "minecraft",
-    "skills",
-    "codex",
-    "claude",
-    "neoforge",
-    "fabric",
-    "paper",
-    "resource-pack",
-    "image-generation"
-  ],
-  "skills": "./skills/",
-  "interface": {
-    "displayName": "Minecraft Codex Skills",
-    "shortDescription": "13 reusable Minecraft development and operations skills, plus built-in image-generation workflows on Codex.",
-    "longDescription": "Bundle modding, plugin-dev, datapack, commands, testing, CI/CD, world generation, resource pack, server admin, WorldEdit ops, and EssentialsX ops skills in one installable package, with built-in image-generation workflows when running on Codex.",
-    "developerName": "Jahrome907",
-    "category": "Productivity",
-    "capabilities": [
-      "Read",
-      "Write"
-    ],
-    "websiteURL": "https://github.com/Jahrome907/minecraft-agent-skills",
-    "privacyPolicyURL": "https://github.com/Jahrome907/minecraft-agent-skills/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/Jahrome907/minecraft-agent-skills/blob/main/TERMS.md",
-    "defaultPrompt": [
-      "Use Minecraft Codex Skills to scaffold a NeoForge 1.21.11 mod with data generation.",
-      "Use Minecraft Codex Skills to generate pack art or concept textures for a resource-pack update."
-    ],
-    "brandColor": "#5a8f2c"
-  }
+  "description": "13 Minecraft development and operations skills for Codex and Claude Code.",
+  "skills": "./skills/"
 }
