@@ -27,6 +27,12 @@ claude --plugin-dir ./plugins/minecraft-codex-skills
 `minecraft-imagegen` needs a host with image-generation support. Codex provides
 that support directly.
 
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src="docs/assets/how-it-works.svg" alt="How the Minecraft Agent Skills bundle is installed and routed" width="100%" />
+</p>
+<!-- markdownlint-enable MD033 -->
+
 ## Skills
 
 | Skill | Use it for |
