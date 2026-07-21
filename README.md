@@ -7,7 +7,7 @@ the bundled Codex and Claude Code plugin.
 ## Install
 
 Copy the surface your agent host uses. Preserve unrelated local skills when a
-target already exists.
+target already exists. Or send your agent the repo link & tell the agent to download the skill(s)/plugin.
 
 | Host | Copy or install |
 | --- | --- |
