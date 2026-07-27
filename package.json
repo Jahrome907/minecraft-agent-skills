@@ -17,13 +17,14 @@
     "check": "npm run check:sync && npm run check:plugin-bundle && npm run audit:skills && npm run check:version-drift && npm run test:docs && npm run test:validators && npm run test:repo-policy && npm run check:workflow-pins && npm run lint:md"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "overrides": {
-    "picomatch": "2.3.2"
+    "picomatch": "2.3.2",
+    "js-yaml": "5.2.2"
   },
   "devDependencies": {
-    "js-yaml": "4.1.1",
-    "markdownlint-cli2": "0.21.0"
+    "js-yaml": "5.2.2",
+    "markdownlint-cli2": "0.23.1"
   }
 }

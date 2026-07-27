@@ -477,6 +477,7 @@ profile lookup, and protection-plugin integration examples.
    # Strict mode treats warnings as failures:
    ./scripts/validate-plugin-layout.sh --root /path/to/plugin-project --strict
    ```
+   The validator requires Node and includes its own YAML parser for descriptor checks.
 3. Fix any reported errors and re-run until clean.
 4. Deploy: copy the built JAR to `server/plugins/` and restart the Paper server.
    If the real project already applies a Paper dev-server plugin such as `xyz.jpenilla.run-paper`,
