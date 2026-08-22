@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RCON_HOST="${RCON_HOST:-127.0.0.1}"
-RCON_PORT="${RCON_PORT:-25575}"
-RCON_PASSWORD="${RCON_PASSWORD:?set RCON_PASSWORD}"
+export MCRCON_HOST="${MCRCON_HOST:-127.0.0.1}"
+export MCRCON_PORT="${MCRCON_PORT:-25575}"
+: "${MCRCON_PASS:?inject MCRCON_PASS from a protected secret}"
 
-mcrcon -H "$RCON_HOST" -P "$RCON_PORT" -p "$RCON_PASSWORD" \
-  'tellraw @a {"text":"[Server] Backup starts in 60 seconds.","color":"yellow"}'
+mcrcon 'tellraw @a {"text":"[Server] Backup starts in 60 seconds.","color":"yellow"}'
 sleep 60
-mcrcon -H "$RCON_HOST" -P "$RCON_PORT" -p "$RCON_PASSWORD" 'save-all flush'
+mcrcon 'save-all flush'

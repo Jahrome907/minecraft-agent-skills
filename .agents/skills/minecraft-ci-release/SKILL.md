@@ -1,6 +1,6 @@
 ---
 name: minecraft-ci-release
-description: "Set up CI/CD pipelines, automated publishing, and release workflows for Minecraft mods and plugins for 1.21.x. Covers GitHub Actions matrix builds for NeoForge and Fabric, automated publishing to Modrinth (via minotaur Gradle plugin) and CurseForge (via curseforgegradle), GitHub Releases with JAR artifacts, semantic versioning conventions for Minecraft mods, CHANGELOG generation, Dependabot for Gradle wrapper and plugin updates, build caching with gradle/actions/setup-gradle, pull request checks, and release tag workflows. Also covers Paper plugin CI with shadow JAR builds. Use when the task is CI/CD pipelines, release automation, artifact publishing, versioning, or release governance for Minecraft mods or plugins."
+description: "Set up and review CI, artifact publishing, versioning, and release governance for Minecraft 1.21.x mods and Paper plugins. Use for pipelines and releases, not gameplay implementation or server operations."
 ---
 
 # Minecraft CI / Release Skill
@@ -172,7 +172,7 @@ jobs:
           distribution: "temurin"
       - uses: gradle/actions/setup-gradle@v4
       - run: chmod +x gradlew
-      - run: ./gradlew shadowJar --no-daemon
+      - run: ./gradlew build --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: plugin-${{ github.sha }}

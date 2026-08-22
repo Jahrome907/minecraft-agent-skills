@@ -1,6 +1,6 @@
 ---
 name: minecraft-testing
-description: "Write automated tests for Minecraft mods and plugins for 1.21.x. Covers NeoForge GameTests (@GameTest annotation, GameTestHelper assertions, test structure placement), Fabric game tests (fabric-gametest-api-v1), unit testing non-Minecraft logic with JUnit 5, MockBukkit for Paper/Bukkit plugin testing (mock server, mock player, event dispatching, inventory checking), integration testing with a test server via Gradle, and GitHub Actions CI workflows that run GameTests headlessly. Includes patterns for mocking registries, testing event handlers, testing commands, and test-driven development for Minecraft projects. Use when the user asks about testing Minecraft mods or plugins, writing GameTests, setting up MockBukkit, or configuring CI for Minecraft projects."
+description: "Design and implement automated tests for Minecraft 1.21.x mods and plugins using JUnit, MockBukkit, NeoForge GameTests, or Fabric GameTests. Use for test code and test execution, not release publishing or gameplay implementation."
 ---
 
 # Minecraft Testing Skill

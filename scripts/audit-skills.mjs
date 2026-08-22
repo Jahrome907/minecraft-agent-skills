@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import * as yaml from "js-yaml";
 
 const ROOT = process.cwd();
 const CANONICAL = path.join(ROOT, ".agents", "skills");
@@ -53,10 +54,22 @@ function parseFrontmatter(text, file) {
     return null;
   }
   const raw = match[1];
-  const name = raw.match(/^name:\s*(.+)$/m)?.[1]?.trim();
-  const hasDescription = /^description:\s*>?/m.test(raw);
+  let frontmatter;
+  try {
+    frontmatter = yaml.load(raw);
+  } catch (error) {
+    addError(file, `invalid YAML frontmatter: ${error.message}`);
+    return null;
+  }
+
+  const name = typeof frontmatter?.name === "string" ? frontmatter.name.trim() : "";
+  const description = typeof frontmatter?.description === "string" ? frontmatter.description.trim() : "";
   if (!name) addError(file, "frontmatter missing `name`");
-  if (!hasDescription) addError(file, "frontmatter missing `description`");
+  if (!description) addError(file, "frontmatter missing `description`");
+  if (description.length > 300) {
+    addError(file, `frontmatter description is ${description.length} characters; keep discovery metadata at or below 300`);
+  }
+
   return { name };
 }
 
@@ -81,6 +94,13 @@ function checkRunnableBlocks(file, text) {
     if (/^\s*\.\.\.\s*$/m.test(code)) {
       addError(file, "runnable code block contains unresolved ellipsis line");
     }
+    if (lang === "bash" || lang === "sh") checkUnsafeRcon(file, code);
+  }
+}
+
+function checkUnsafeRcon(file, text) {
+  if (/\bmcrcon\b[^\n]*\s-p(?:\s|=)/.test(text)) {
+    addError(file, "RCON example passes a password on the command line; use MCRCON_PASS or protected secret injection");
   }
 }
 
@@ -158,6 +178,10 @@ if (!fs.existsSync(CANONICAL)) {
     const skillFile = path.join(CANONICAL, skillName, "SKILL.md");
     const skillRel = rel(skillFile);
 
+    if (!/^[a-z0-9-]+$/.test(skillName) || skillName.length >= 64) {
+      addError(path.join(".agents/skills", skillName), "skill directory name must use lowercase letters, digits, and hyphens and stay under 64 characters");
+    }
+
     if (!fs.existsSync(skillFile)) {
       addError(path.join(".agents/skills", skillName), "missing SKILL.md");
       continue;
@@ -183,6 +207,7 @@ if (!fs.existsSync(CANONICAL)) {
       checkRunnableBlocks(rel(file), txt);
       checkPathConventions(rel(file), txt);
     }
+    if (file.endsWith(".sh")) checkUnsafeRcon(rel(file), txt);
   }
 }
 

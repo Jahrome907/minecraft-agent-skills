@@ -1,6 +1,6 @@
 ---
 name: minecraft-plugin-dev
-description: "Develop Minecraft server plugins using the Paper/Bukkit/Spigot API for Minecraft 1.21.x. Handles creating Paper plugins with JavaPlugin, event listeners with @EventHandler, commands, schedulers (sync/async/Folia-safe), Persistent Data Container (PDC), Adventure text components, Vault economy integration, BungeeCord/Velocity messaging, plugin.yml and paper-plugin.yml configuration, YAML config management, and Paper-specific enhancement APIs. Always targets Paper API 1.21.x (Java 21) with Gradle (Kotlin DSL). Plugins run server-side only and do not require client installation. Use when creating or modifying Minecraft server plugins, working with Paper/Bukkit/Spigot APIs, or developing server-side features involving event handlers, commands, or plugin.yml configuration."
+description: "Create, modify, and debug Java 21 server plugins for Paper/Bukkit/Spigot 1.21.x. Use for server-side JavaPlugin APIs, events, commands, schedulers, configuration, PDC, and Adventure, not client mods or vanilla datapacks."
 ---
 
 # Minecraft Plugin Development Skill
@@ -39,7 +39,6 @@ rootProject.name = "my-plugin"
 ```kotlin
 plugins {
     java
-    id("com.gradleup.shadow") version "8.3.0"
 }
 
 group = "com.example"
@@ -48,14 +47,10 @@ version = "1.0.0-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
-    // For Vault (economy API)
-    maven("https://jitpack.io")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    // Optional: Vault economy/permission integration
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 }
 
 java {
@@ -69,14 +64,12 @@ tasks {
             expand("version" to project.version)
         }
     }
-    shadowJar {
-        archiveClassifier.set("")
-    }
-    build {
-        dependsOn(shadowJar)
-    }
 }
 ```
+
+Add Shadow only when the plugin has runtime libraries that must be bundled and
+relocated. Paper and optional plugin APIs such as Vault remain `compileOnly` and
+must not be shaded into the plugin JAR.
 
 ### `gradle/wrapper/gradle-wrapper.properties`
 ```properties
@@ -146,11 +139,12 @@ permissions:
 > Paper updates do not force an immediate validator edit.
 > Values such as `1.21.0`, `1.21.01`, or `1.22` are rejected.
 
-### `paper-plugin.yml` (Paper-only metadata)
+### `paper-plugin.yml` (experimental Paper plugin format)
 
-Use `paper-plugin.yml` when you need Paper-specific metadata such as `folia-supported`
-or server/bootstrap dependency ordering. Keep `plugin.yml` if you must stay portable
-to Bukkit-derived servers that do not understand the Paper-specific file.
+Prefer `plugin.yml` for ordinary plugins. Paper's newer plugin format is still
+experimental; use `paper-plugin.yml` only when you need its bootstrap, loader,
+or dependency model. Keep `plugin.yml` when the JAR must also load on other
+Bukkit-derived servers. Either format can declare `folia-supported`.
 
 ```yaml
 name: MyPlugin
@@ -176,22 +170,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class MyPlugin extends JavaPlugin {
 
-    private static MyPlugin instance;
-
     @Override
     public void onEnable() {
-        instance = this;
         saveDefaultConfig();
 
         // Register listeners
-        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
         // Register commands
         var cmd = getCommand("myplugin");
-        if (cmd != null) {
-            cmd.setExecutor(new MyCommand(this));
-            cmd.setTabCompleter(new MyCommand(this));
+        if (cmd == null) {
+            throw new IllegalStateException("myplugin command is missing from plugin.yml");
         }
+        var handler = new MyCommand(this);
+        cmd.setExecutor(handler);
+        cmd.setTabCompleter(handler);
 
         getLogger().info("MyPlugin enabled!");
     }
@@ -201,9 +194,6 @@ public final class MyPlugin extends JavaPlugin {
         getLogger().info("MyPlugin disabled.");
     }
 
-    public static MyPlugin getInstance() {
-        return instance;
-    }
 }
 ```
 
@@ -214,7 +204,6 @@ public final class MyPlugin extends JavaPlugin {
 ```java
 package com.example.myplugin.listeners;
 
-import com.example.myplugin.MyPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
@@ -226,13 +215,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener {
 
-    private final MyPlugin plugin;
-
-    public PlayerListener(MyPlugin plugin) {
-        this.plugin = plugin;
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.joinMessage(
             Component.text(event.getPlayer().getName() + " joined!", NamedTextColor.GREEN)
@@ -246,7 +229,7 @@ public class PlayerListener implements Listener {
         );
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         // Modify death message using Adventure components
         event.deathMessage(
@@ -260,8 +243,8 @@ public class PlayerListener implements Listener {
 
 ### EventPriority order
 `LOWEST → LOW → NORMAL → HIGH → HIGHEST → MONITOR`  
-Use `MONITOR` for logging only (never modify outcome). Use `ignoreCancelled = true` unless
-you have a specific reason to handle cancelled events.
+Use `MONITOR` for logging only (never modify outcome). On events that implement
+`Cancellable`, use `ignoreCancelled = true` unless you need cancelled events.
 
 ### Cancellable events
 ```java
@@ -293,6 +276,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 
 public class MyCommand implements CommandExecutor, TabCompleter {
 
@@ -320,7 +304,7 @@ public class MyCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        return switch (args[0].toLowerCase()) {
+        return switch (args[0].toLowerCase(Locale.ROOT)) {
             case "reload" -> {
                 plugin.reloadConfig();
                 player.sendMessage(Component.text("Config reloaded.", NamedTextColor.GREEN));
@@ -332,7 +316,7 @@ public class MyCommand implements CommandExecutor, TabCompleter {
             }
             default -> {
                 player.sendMessage(Component.text("Unknown subcommand.", NamedTextColor.RED));
-                yield false;
+                yield true;
             }
         };
     }
@@ -342,7 +326,7 @@ public class MyCommand implements CommandExecutor, TabCompleter {
                                                 @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
             return List.of("reload", "info").stream()
-                .filter(s -> s.startsWith(args[0].toLowerCase()))
+                .filter(s -> s.startsWith(args[0].toLowerCase(Locale.ROOT)))
                 .toList();
         }
         return List.of();
@@ -423,6 +407,9 @@ Declare Vault as `compileOnly`, soft-depend on it in plugin metadata, and disabl
 economy features cleanly when the service provider is unavailable. Never assume a
 Vault-compatible economy plugin is installed just because Vault itself is present.
 
+When Vault support is required, add the JitPack repository and
+`compileOnly("com.github.MilkBowl:VaultAPI:1.7")` to the Gradle build.
+
 See `references/runtime-patterns.md` for a minimal economy setup and charge example.
 
 ---
@@ -444,7 +431,7 @@ profile lookup, and protection-plugin integration examples.
 - [ ] Create class implementing `Listener`
 - [ ] Annotate methods with `@EventHandler`
 - [ ] Call `getServer().getPluginManager().registerEvents(listener, plugin)` in `onEnable()`
-- [ ] Add `ignoreCancelled = true` unless you need cancelled events
+- [ ] On cancellable events, add `ignoreCancelled = true` unless you need cancelled events
 
 ### Adding a new command
 - [ ] Define command in `plugin.yml` under `commands:`
@@ -468,7 +455,7 @@ profile lookup, and protection-plugin integration examples.
 
 1. Build the plugin JAR:
    ```bash
-   ./gradlew shadowJar
+   ./gradlew build
    # Output: build/libs/my-plugin-1.0.0-SNAPSHOT.jar
    ```
 2. Run the bundled validator to catch config and layout errors:

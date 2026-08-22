@@ -1,6 +1,6 @@
 ---
 name: minecraft-commands-scripting
-description: "Write Minecraft vanilla commands, NBT scripts, scoreboards, and complex execute chains for use in command blocks, chat, or .mcfunction files. Covers full execute subcommand reference (as/at/in/positioned/rotated/facing/anchored/if/unless/store/run), selector arguments with all filter options, scoreboard objectives and operations, NBT path syntax for entities/blocks/storage, schedule and forceload commands, tellraw/title JSON text components, bossbar, team management, item modification commands, attribute commands, particle/playsound effects, and RCON scripting. Targets Minecraft 1.21.x Java Edition. Use for command-only work; for full function/advancement/recipe systems use the minecraft-datapack skill instead."
+description: "Write and debug Minecraft Java 1.21.x commands, selectors, execute chains, scoreboards, NBT, and RCON scripts. Use for command-only work; use minecraft-datapack for complete datapack structures."
 ---
 
 # Minecraft Commands & Scripting Skill
@@ -517,29 +517,45 @@ rcon.password=your_password
 rcon.port=25575
 ```
 
+RCON is unencrypted. Keep the port bound to a trusted private network, VPN, or
+localhost, and inject the password through a protected secret rather than a
+command-line argument.
+
 ### Bash RCON script (using `mcrcon`)
 ```bash
-#!/bin/bash
-RCON="mcrcon -H localhost -P 25575 -p your_password"
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${MCRCON_PASS:?inject MCRCON_PASS from a protected secret}"
+export MCRCON_HOST="${MCRCON_HOST:-127.0.0.1}"
+export MCRCON_PORT="${MCRCON_PORT:-25575}"
+
+restore_saves() {
+    mcrcon "save-on" >/dev/null || true
+}
+trap restore_saves EXIT INT TERM
 
 # Send command
-$RCON "say Server backup starting in 5 minutes"
+mcrcon "say Server backup starting in 5 minutes"
 sleep 300
-$RCON "save-off"
-$RCON "save-all"
+mcrcon "save-off"
+mcrcon "save-all flush"
 
 # Backup world
 rsync -av /path/to/server/world/ /backups/world_$(date +%Y%m%d_%H%M%S)/
 
-$RCON "save-on"
-$RCON "say Backup complete!"
+mcrcon "save-on"
+trap - EXIT INT TERM
+mcrcon "say Backup complete!"
 ```
 
 ### Python RCON
 ```python
+import os
+
 from mcrcon import MCRcon
 
-with MCRcon("localhost", "your_password", port=25575) as mcr:
+with MCRcon("localhost", os.environ["MCRCON_PASS"], port=25575) as mcr:
     response = mcr.command("list")
     print(response)
     # "There are 3 of a max of 20 players online: Steve, Alex, Notch"

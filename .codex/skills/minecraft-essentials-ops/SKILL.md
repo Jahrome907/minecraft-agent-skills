@@ -1,6 +1,6 @@
 ---
 name: minecraft-essentials-ops
-description: "Operate EssentialsX on Minecraft 1.21.x servers with safe, practical admin workflows. Covers module scope, install and version-alignment checks, Vault economy integration, kits/warps/homes/spawn operations, permissions patterns, moderation workflows (mute, jail, tempban), and common config pitfalls. Use when the task involves EssentialsX commands, config, permissions, economy, or moderation operations — not plugin development or general server deployment."
+description: "Operate EssentialsX on Minecraft 1.21.x servers, including configuration, permissions, economy, kits, warps, homes, and moderation. Use for EssentialsX administration, not plugin development or general server deployment."
 ---
 
 # Minecraft EssentialsX Operations Skill

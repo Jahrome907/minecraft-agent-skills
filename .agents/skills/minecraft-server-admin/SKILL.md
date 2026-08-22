@@ -1,6 +1,6 @@
 ---
 name: minecraft-server-admin
-description: "Set up, configure, and operate Minecraft Java Edition servers for 1.21.x across Paper, Purpur, Folia, Velocity networks, and modded (Fabric/NeoForge) deployments. Covers deployment selection, performance tuning playbooks, plugin operations, proxy/forwarding setup, backup and recovery runbooks, live incident troubleshooting, Docker/Pterodactyl patterns, and security hardening. Use for server infrastructure and operations, not plugin or mod feature development."
+description: "Set up, operate, tune, and troubleshoot Minecraft Java 1.21.x servers across Paper, Purpur, Folia, Velocity, Fabric, and NeoForge. Use for infrastructure, backups, proxies, and live operations, not plugin or mod development."
 ---
 
 # Minecraft Server Administration Skill
@@ -263,7 +263,10 @@ the restore path before trusting the backup.
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${SERVER_STOPPED_CONFIRMED:?set SERVER_STOPPED_CONFIRMED=1 after stopping the server cleanly}"
+if [[ "${SERVER_STOPPED_CONFIRMED:-}" != "1" ]]; then
+  echo "Set SERVER_STOPPED_CONFIRMED=1 only after stopping the server cleanly." >&2
+  exit 1
+fi
 
 DATE="$(date +%Y-%m-%d_%H-%M-%S)"
 BACKUP_ROOT="/backups/minecraft"

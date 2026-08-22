@@ -1,6 +1,6 @@
 ---
 name: minecraft-world-generation
-description: "Create custom world generation content for Minecraft 1.21.x including custom biomes, dimensions, noise settings, surface rules, placed/configured features, carvers, structure sets, and biome modifiers. Covers both the datapack-only approach (JSON worldgen files) and the mod-code approach (NeoForge BiomeModifiers, Fabric BiomeModification API, code-driven worldgen registration with DeferredRegister). Includes compact JSON patterns and validator-backed reference checks for biome, dimension, placed_feature, configured_feature, structure, structure_set, and biome_modifier files. Targets Minecraft 1.21.x with official Mojang mappings, with explicit verification required before applying 1.21.10-and-earlier biome or dimension JSON shapes to 1.21.11+ packs. Use when the user asks about Minecraft worldgen, custom biomes, datapack JSON for dimensions or features, or mod-based biome modification with NeoForge or Fabric."
+description: "Create and debug Minecraft 1.21.x world generation for datapacks, NeoForge, or Fabric, including biomes, dimensions, features, structures, and biome modifiers. Use for worldgen data or registration, not general gameplay systems."
 ---
 
 # Minecraft World Generation Skill

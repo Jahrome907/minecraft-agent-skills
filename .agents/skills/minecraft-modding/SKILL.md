@@ -1,6 +1,6 @@
 ---
 name: minecraft-modding
-description: "Full-stack Minecraft mod development skill for NeoForge (1.21+), Fabric (1.21+), and legacy Forge 1.20.1. Scaffolds new mods, adds custom blocks, items, entities, recipes, commands, GUIs, dimensions, and data generation. Knows NeoForge DeferredRegister + event-bus patterns, Forge 1.20.1 MDK/FMLJavaModLoadingContext patterns, and Fabric Registry + ModInitializer patterns. Use when the user asks to create a Minecraft mod, add a feature to an existing mod, fix a mod bug, generate JSON assets/data, support Forge 1.20.1, or migrate between modding platforms. Prefer NeoForge unless the user specifies Fabric, Forge 1.20.1, or Multiloader."
+description: "Create, modify, debug, or migrate Minecraft mods for NeoForge or Fabric 1.21.x and legacy Forge 1.20.1. Use for loader-based gameplay code and assets; use minecraft-multiloader when one codebase must target both modern loaders."
 ---
 
 # Minecraft Modding Skill
