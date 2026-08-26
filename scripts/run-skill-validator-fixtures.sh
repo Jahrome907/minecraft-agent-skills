@@ -205,7 +205,7 @@ expect_pass "plugin-dev valid strict reload subcommand" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/valid-strict-reload-subcommand \
   --strict
-expect_pass_contains "plugin-dev valid newer api-version warns" "newer than the repo's documented Paper example patch" \
+expect_pass_contains "plugin-dev valid newer api-version warns" "newer than the last documented 1.21.x patch" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/valid-newer-api-version
 expect_fail_contains "plugin-dev invalid" "api-version has invalid format" \
@@ -214,10 +214,10 @@ expect_fail_contains "plugin-dev invalid" "api-version has invalid format" \
 expect_fail_contains "plugin-dev invalid yaml" "plugin.yml is not valid YAML" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/invalid-yaml
-expect_fail_contains "plugin-dev invalid api-version range" "api-version is outside the documented 1.21.x skill scope" \
+expect_fail_contains "plugin-dev invalid api-version range" "api-version is outside the documented 26.x / 1.21.x skill scope" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/invalid-api-version
-expect_fail_contains "plugin-dev invalid api-version zero patch" "patch must be a positive integer without leading zeroes" \
+expect_fail_contains "plugin-dev invalid api-version zero patch" "release must be a positive integer without leading zeroes" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/invalid-api-version-zero-patch
 expect_fail_contains "plugin-dev invalid paper-plugin.yml" "paper-plugin.yml missing key: api-version" \
@@ -365,11 +365,15 @@ expect_fail_contains "testing fabric missing entrypoint" "fabric.mod.json is mis
   --root tests/fixtures/validators/testing/fabric-missing-entrypoint
 
 expect_path "tests/fixtures/validators/multiloader/valid"
+expect_path "tests/fixtures/validators/multiloader/valid-26.2"
 expect_path "tests/fixtures/validators/multiloader/invalid"
 expect_path "tests/fixtures/validators/multiloader/invalid-missing-mod-version"
 expect_pass "multiloader valid" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/valid
+expect_pass "multiloader valid 26.2" \
+  ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
+  --root tests/fixtures/validators/multiloader/valid-26.2
 expect_fail_contains "multiloader invalid" "enabled_platforms must include fabric and neoforge" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/invalid

@@ -1,6 +1,6 @@
 ---
 name: minecraft-multiloader
-description: "Build and maintain Architectury-based Minecraft 1.21.x mods that share one codebase across NeoForge and Fabric. Use only when both loaders are required; use minecraft-modding for a single-loader project."
+description: "Build and maintain Architectury-based Minecraft 26.x or 1.21.x mods that share one codebase across NeoForge and Fabric. Use only when both loaders are required; use minecraft-modding for a single-loader project."
 ---
 
 # Minecraft Multiloader Skill (Architectury)
@@ -28,7 +28,7 @@ platform-specific behavior behind the `@ExpectPlatform` abstraction.
 
 ---
 
-## Versions (1.21.x)
+## Versions (Legacy 1.21.x Example)
 
 ```properties
 # gradle.properties (root)
@@ -47,6 +47,11 @@ loom_version=1.17.11
 Pin `architectury_version`, the Architectury plugin version, and `loom_version`
 from the same released template line when scaffolding a new project. The values
 above are for the stable 1.21.x toolchain story in this repo and avoid snapshot-only examples.
+
+For Minecraft 26.x, generate or copy a released Architectury 26.x template and
+keep its Java 25, Loom, Fabric API, NeoForge, and Architectury versions together.
+Do not mechanically change only `minecraft_version` in the legacy example:
+26.x is unobfuscated and its Loom/remapping setup differs from 1.21.11.
 
 ## Bundled References And Helpers
 

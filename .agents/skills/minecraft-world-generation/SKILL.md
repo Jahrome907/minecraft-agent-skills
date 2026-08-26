@@ -1,6 +1,6 @@
 ---
 name: minecraft-world-generation
-description: "Create and debug Minecraft 1.21.x world generation for datapacks, NeoForge, or Fabric, including biomes, dimensions, features, structures, and biome modifiers. Use for worldgen data or registration, not general gameplay systems."
+description: "Create and debug Minecraft 26.x and 1.21.x world generation for datapacks, NeoForge, or Fabric, including biomes, dimensions, features, structures, and biome modifiers. Use for worldgen data or registration, not general gameplay systems."
 ---
 
 # Minecraft World Generation Skill

@@ -1,8 +1,8 @@
 # Minecraft Agent Skills
 
-Thirteen reusable skills for Minecraft 1.21.x development and operations, plus
-a Forge 1.20.1 lane for legacy modding. Use raw skills in a project or install
-the bundled Codex and Claude Code plugin.
+Thirteen reusable skills for current Minecraft 26.x development and operations,
+with explicit Minecraft 1.21.x and Forge 1.20.1 legacy lanes. Use raw skills in
+a project or install the bundled Codex and Claude Code plugin.
 
 ## Install
 

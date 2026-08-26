@@ -21,10 +21,10 @@
   },
   "overrides": {
     "picomatch": "2.3.2",
-    "js-yaml": "5.2.2"
+    "js-yaml": "5.4.0"
   },
   "devDependencies": {
-    "js-yaml": "5.2.2",
-    "markdownlint-cli2": "0.23.1"
+    "js-yaml": "5.4.0",
+    "markdownlint-cli2": "0.23.2"
   }
 }

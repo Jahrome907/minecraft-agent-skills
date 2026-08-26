@@ -1,6 +1,6 @@
 ---
 name: minecraft-plugin-dev
-description: "Create, modify, and debug Java 21 server plugins for Paper/Bukkit/Spigot 1.21.x. Use for server-side JavaPlugin APIs, events, commands, schedulers, configuration, PDC, and Adventure, not client mods or vanilla datapacks."
+description: "Create, modify, and debug server plugins for current Paper 26.x on Java 25 or legacy Bukkit-derived 1.21.x servers on Java 21. Use for JavaPlugin APIs, events, commands, schedulers, configuration, PDC, and Adventure, not client mods or vanilla datapacks."
 ---
 
 # Minecraft Plugin Development Skill
@@ -30,6 +30,10 @@ description: "Create, modify, and debug Java 21 server plugins for Paper/Bukkit/
 
 ## Project Setup
 
+The examples below target current Paper 26.2 and Java 25. For an existing
+1.21.x plugin, preserve its `1.21.x-R0.1-SNAPSHOT` dependency, Java 21
+toolchain, and matching `api-version` until the project is intentionally ported.
+
 ### `settings.gradle.kts`
 ```kotlin
 rootProject.name = "my-plugin"
@@ -50,11 +54,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
 tasks {
@@ -113,7 +117,7 @@ main: com.example.myplugin.MyPlugin
 description: An example Paper plugin
 author: YourName
 website: https://github.com/example/my-plugin
-api-version: '1.21.11'
+api-version: '26.2'
 
 commands:
   myplugin:
@@ -131,13 +135,10 @@ permissions:
     default: op
 ```
 
-> Paper 1.20.5+ supports major/minor/patch `api-version` values.
-> Use `api-version: '1.21.11'` when you target that Paper patch specifically, or `api-version: '1.21'`
-> only when you intentionally support the broader 1.21.x line.
-> In this repo, the validator accepts `1.21` plus positive `1.21.<patch>` values on the 1.21 line.
-> Patches newer than the repo's current example patch (`1.21.11`) are allowed but warned so future
-> Paper updates do not force an immediate validator edit.
-> Values such as `1.21.0`, `1.21.01`, or `1.22` are rejected.
+> Match `api-version` to the oldest Paper API the plugin intentionally supports.
+> Current Paper examples use `26.2`; legacy `1.21` and positive `1.21.<patch>`
+> values remain valid for older servers. A server older than the declared value
+> refuses to load the plugin.
 
 ### `paper-plugin.yml` (experimental Paper plugin format)
 
@@ -150,7 +151,7 @@ Bukkit-derived servers. Either format can declare `folia-supported`.
 name: MyPlugin
 version: "${version}"
 main: com.example.myplugin.MyPlugin
-api-version: '1.21.11'
+api-version: '26.2'
 folia-supported: true
 
 dependencies:
@@ -471,7 +472,7 @@ profile lookup, and protection-plugin integration examples.
    use that project's documented dev task instead of assuming `./gradlew runServer` exists.
 
 The validator checks:
-- `plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported `1.21` / positive `1.21.<patch>` `api-version` values on the 1.21.x line, with warnings for patches newer than the repo's current example version
+- `plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported current `26.<release>` or legacy `1.21` / positive `1.21.<patch>` values, with warnings for versions newer than the documented examples
 - optional `paper-plugin.yml` metadata consistency for `name`, `version`, `api-version`, and declared `main`
 - Main class path exists and extends `JavaPlugin`
 - actual server `/reload` anti-patterns such as `Bukkit.reload()` or dispatching the server reload command
@@ -480,7 +481,7 @@ The validator checks:
 
 ## References
 
-- Paper API Javadoc: https://jd.papermc.io/paper/1.21/
+- Paper API Javadoc: https://jd.papermc.io/paper/
 - Paper Dev Docs: https://docs.papermc.io/paper/dev/getting-started/
 - Adventure (text API): https://docs.advntr.dev/
 - MiniMessage format: https://docs.advntr.dev/minimessage/format.html

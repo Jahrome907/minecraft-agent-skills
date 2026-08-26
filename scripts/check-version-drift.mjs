@@ -8,7 +8,7 @@ const checks = [
   {
     file: ".agents/skills/minecraft-modding/SKILL.md",
     required: [
-      /legacy Forge 1\.20\.1/,
+      /Forge 1\.20\.1/,
       /Forge 1\.20\.1 project signature/,
       /references\/forge-1\.20\.1-api\.md/,
       /ForgeRegistries\.BLOCKS/,
@@ -67,10 +67,11 @@ const checks = [
   {
     file: ".agents/skills/minecraft-ci-release/SKILL.md",
     required: [
-      /1\.0\.0\+1\.21\.11/,
-      /gameVersions\.addAll\("1\.21\.11"\)/,
-      /cf\.addGameVersion\("1\.21\.11"\)/,
-      /minecraft_version=1\.21\.11/
+      /1\.0\.0\+26\.2/,
+      /gameVersions\.addAll\("26\.2"\)/,
+      /cf\.addGameVersion\("26\.2"\)/,
+      /minecraft_version=26\.2/,
+      /java-version: "25"/
     ],
     forbidden: [
       /1\.0\.0\+1\.21\.1\s+← mod 1\.0\.0 for MC 1\.21\.1/,
@@ -83,8 +84,11 @@ const checks = [
     required: [
       /1\.21\.11\s+\| `min_format: \[94, 1\]`, `max_format: \[94, 1\]`/,
       /1\.21\.9 \/ 1\.21\.10\s+\| `min_format: \[88, 0\]`, `max_format: \[88, 0\]`/,
+      /26\.2\s+\| `min_format: \[107, 1\]`, `max_format: \[107, 1\]`/,
       /"min_format": \[94, 1\]/,
-      /"max_format": \[94, 1\]/
+      /"max_format": \[94, 1\]/,
+      /"min_format": \[107, 1\]/,
+      /"max_format": \[107, 1\]/
     ],
     forbidden: [
       /"min_format": 94\.1/,
@@ -96,8 +100,11 @@ const checks = [
     required: [
       /1\.21\.9 \/ 1\.21\.10\s+\| `min_format: \[69, 0\]`, `max_format: \[69, 0\]`/,
       /1\.21\.11\s+\| `min_format: \[75, 0\]`, `max_format: \[75, 0\]`/,
+      /26\.2\s+\| `min_format: \[88, 0\]`, `max_format: \[88, 0\]`/,
       /"min_format": \[75, 0\]/,
-      /"max_format": \[75, 0\]/
+      /"max_format": \[75, 0\]/,
+      /"min_format": \[88, 0\]/,
+      /"max_format": \[88, 0\]/
     ],
     forbidden: [
       /"min_format": 75\.0/,
@@ -111,7 +118,54 @@ const checks = [
       /parse_java_major/,
       /MINECRAFT_VERSION" == "1\.20\.1"/,
       /REQUIRED_JAVA=17/,
+      /Minecraft 26\.x requires Java 25/,
       /src\/main\/resources\/META-INF\/mods\.toml/
+    ]
+  },
+  {
+    file: ".agents/skills/minecraft-plugin-dev/SKILL.md",
+    required: [
+      /paper-api:26\.2\.build\.\+/,
+      /JavaLanguageVersion\.of\(25\)/,
+      /api-version: '26\.2'/
+    ]
+  },
+  {
+    file: ".agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh",
+    required: [
+      /CURRENT_API_RELEASE=2/,
+      /\^26\\\.\(\[1-9\]\[0-9\]\*\)\$/,
+      /26\.x \/ 1\.21\.x skill scope/
+    ]
+  },
+  {
+    file: ".agents/skills/minecraft-testing/SKILL.md",
+    required: [
+      /mockbukkit-v26\.2:4\.116\.1/,
+      /data\/mymod\/structure\/empty\.nbt/,
+      /java-version: '25'/
+    ],
+    forbidden: [
+      /data\/mymod\/structures\/empty\.nbt/
+    ]
+  },
+  {
+    file: ".agents/skills/minecraft-testing/scripts/validate-test-layout.sh",
+    required: [
+      /data\/\$namespace\/structure\/\$path\.nbt/,
+      /data\/\*\/structure\/\*\.nbt/
+    ],
+    forbidden: [
+      /data\/\$namespace\/structures\/\$path\.nbt/,
+      /data\/\*\/structures\/\*\.nbt/
+    ]
+  },
+  {
+    file: ".agents/skills/minecraft-server-admin/SKILL.md",
+    required: [
+      /minecraft-server:java25/,
+      /VERSION: "26\.2"/,
+      /java -Xms4G -Xmx4G -jar server\.jar --nogui/
     ]
   },
   {
@@ -163,7 +217,8 @@ const checks = [
       /datapack legacy pack metadata/,
       /resource-pack legacy pack metadata/,
       /testing valid/,
-      /multiloader valid/
+      /multiloader valid/,
+      /multiloader valid 26\.2/
     ]
   }
 ];

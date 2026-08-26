@@ -22,7 +22,7 @@ while [[ $# -gt 0 ]]; do
       cat <<'USAGE'
 Usage: validate-test-layout.sh [--root <path>] [--strict]
 
-Checks common 1.21.x testing layout expectations:
+Checks common Minecraft testing layout expectations:
 - build.gradle(.kts) exists
 - src/test/java or src/test/kotlin exists
 - test task enables JUnit Platform
@@ -96,7 +96,7 @@ template_fixture_exists() {
     return 1
   fi
 
-  local structure_rel="data/$namespace/structures/$path.nbt"
+  local structure_rel="data/$namespace/structure/$path.nbt"
   local structure_root
   for structure_root in "${structure_roots[@]}"; do
     if [[ -f "$structure_root/$structure_rel" ]]; then
@@ -215,10 +215,10 @@ if [[ "$HAS_GAMETESTS" -eq 1 ]]; then
         warn "GameTest template uses a non-literal or unsupported format: $template"
       fi
     done
-  elif find "$ROOT/src" -type f -path '*/data/*/structures/*.nbt' 2>/dev/null | grep -q .; then
+  elif find "$ROOT/src" -type f -path '*/data/*/structure/*.nbt' 2>/dev/null | grep -q .; then
     pass "GameTest structure fixtures found"
   else
-    fail "GameTest tests detected but no committed data/*/structures/*.nbt fixtures were found"
+    fail "GameTest tests detected but no committed data/*/structure/*.nbt fixtures were found"
   fi
 
   if [[ "${#NEOFORGE_GAMETEST_CLASSES[@]}" -gt 0 ]]; then

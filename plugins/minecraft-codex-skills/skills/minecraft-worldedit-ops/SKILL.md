@@ -1,6 +1,6 @@
 ---
 name: minecraft-worldedit-ops
-description: "Operate WorldEdit safely for Minecraft 1.21.x selections, region edits, masks, schematics, brushes, terrain shaping, and rollback. Use for command-driven world editing, not plugin development or general server administration."
+description: "Operate WorldEdit safely for Minecraft 26.x and 1.21.x selections, region edits, masks, schematics, brushes, terrain shaping, and rollback. Use for command-driven world editing, not plugin development or general server administration."
 ---
 
 # Minecraft WorldEdit Operations Skill
@@ -29,9 +29,9 @@ Operational best practice:
 2. Keep automatic backups before major region operations.
 3. Use conservative selection + mask constraints before destructive commands.
 
-Compatibility note: stable WorldEdit 7.4.x targets current 1.21.x servers.
-For Minecraft 26.1.x, check the WorldEdit release notes first and stage-test any
-beta or pre-release build before using it on production worlds.
+Compatibility note: WorldEdit 7.4.x has builds for 1.21.x, 26.1, and 26.2.
+Select the build listed for the exact server version and stage-test it before
+using it on production worlds.
 
 ## Support Assets
 

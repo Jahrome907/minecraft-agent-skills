@@ -77,7 +77,10 @@ fi
 
 REQUIRED_JAVA=21
 JAVA_REASON="Minecraft 1.20.5+ / 1.21.x requires Java 21"
-if [[ "$PLATFORM" == "forge" && "$MINECRAFT_VERSION" == "1.20.1" ]]; then
+if [[ "$MINECRAFT_VERSION" =~ ^([0-9]+)\.([0-9]+) ]] && (( BASH_REMATCH[1] >= 26 )); then
+    REQUIRED_JAVA=25
+    JAVA_REASON="Minecraft 26.x requires Java 25"
+elif [[ "$PLATFORM" == "forge" && "$MINECRAFT_VERSION" == "1.20.1" ]]; then
     REQUIRED_JAVA=17
     JAVA_REASON="Forge 1.20.1 requires Java 17+ and should target Java 17"
 fi

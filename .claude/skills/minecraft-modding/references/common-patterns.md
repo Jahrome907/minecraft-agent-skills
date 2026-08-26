@@ -3,6 +3,10 @@
 Cross-platform patterns for blocks, items, entities, data generation, commands, recipes,
 and more. Code examples use NeoForge syntax unless noted; adapt field/method names for Fabric.
 
+These code and build examples follow the retained Minecraft 1.21.11 lane. For
+26.x, start from the current loader template and use this reference for concepts
+only; Java, mappings, build plugins, and API names changed at the 26.1 boundary.
+
 ---
 
 ## Blocks

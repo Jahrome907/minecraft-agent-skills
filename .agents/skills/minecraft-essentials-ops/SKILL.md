@@ -1,6 +1,6 @@
 ---
 name: minecraft-essentials-ops
-description: "Operate EssentialsX on Minecraft 1.21.x servers, including configuration, permissions, economy, kits, warps, homes, and moderation. Use for EssentialsX administration, not plugin development or general server deployment."
+description: "Operate EssentialsX on Minecraft 26.x and 1.21.x servers, including configuration, permissions, economy, kits, warps, homes, and moderation. Use for EssentialsX administration, not plugin development or general server deployment."
 ---
 
 # Minecraft EssentialsX Operations Skill
@@ -35,6 +35,8 @@ Operational install checklist:
 
 Version-alignment rule:
 - update EssentialsX and companion plugins as a tested batch in staging first.
+- verify the exact EssentialsX release or development build supports the target
+  Paper release; do not assume a build for 26.1 also supports 26.2.
 
 ---
 

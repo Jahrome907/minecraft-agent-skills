@@ -57,7 +57,8 @@ fi
 
 FAILURES=0
 WARNINGS=0
-CURRENT_EXAMPLE_API_PATCH=11
+CURRENT_LEGACY_API_PATCH=11
+CURRENT_API_RELEASE=2
 
 pass() { echo "$PASS $*"; }
 warn() { echo "$WARN $*"; WARNINGS=$((WARNINGS + 1)); }
@@ -74,26 +75,21 @@ validate_api_version() {
     return 0
   fi
 
-  return 1
-}
-
-extract_api_version_patch() {
-  local value="$1"
-  if [[ "$value" =~ ^1\.21\.([1-9][0-9]*)$ ]]; then
-    printf '%s\n' "${BASH_REMATCH[1]}"
+  if [[ "$value" =~ ^26\.([1-9][0-9]*)$ ]]; then
     return 0
   fi
 
   return 1
 }
 
-warn_if_newer_than_example_api_version() {
+warn_if_newer_than_documented_api_version() {
   local value="$1"
-  local patch=""
+  local label="$2"
 
-  patch="$(extract_api_version_patch "$value" || true)"
-  if [[ -n "$patch" ]] && (( patch > CURRENT_EXAMPLE_API_PATCH )); then
-    warn "plugin.yml api-version is newer than the repo's documented Paper example patch (1.21.${CURRENT_EXAMPLE_API_PATCH}); verify it against the current Paper release line"
+  if [[ "$value" =~ ^1\.21\.([1-9][0-9]*)$ ]] && (( BASH_REMATCH[1] > CURRENT_LEGACY_API_PATCH )); then
+    warn "$label api-version is newer than the last documented 1.21.x patch (1.21.${CURRENT_LEGACY_API_PATCH}); verify it against Paper's supported versions"
+  elif [[ "$value" =~ ^26\.([1-9][0-9]*)$ ]] && (( BASH_REMATCH[1] > CURRENT_API_RELEASE )); then
+    warn "$label api-version is newer than the repo's current Paper example (26.${CURRENT_API_RELEASE}); verify it against the current Paper release line"
   fi
 }
 
@@ -220,12 +216,12 @@ if [[ -n "$PLUGIN_YML" ]]; then
     if [[ -z "$api_val" ]]; then
       fail "plugin.yml missing key: api-version"
     elif validate_api_version "$api_val"; then
-      pass "plugin.yml api-version is within the documented 1.21.x skill scope: $api_val"
-      warn_if_newer_than_example_api_version "$api_val"
-    elif [[ "$api_val" =~ ^1\.21\.0[0-9]*$ ]]; then
-      fail "plugin.yml api-version patch must be a positive integer without leading zeroes: $api_val"
+      pass "plugin.yml api-version is within the documented 26.x / 1.21.x skill scope: $api_val"
+      warn_if_newer_than_documented_api_version "$api_val" "plugin.yml"
+    elif [[ "$api_val" =~ ^(1\.21\.|26\.)0[0-9]*$ ]]; then
+      fail "plugin.yml api-version release must be a positive integer without leading zeroes: $api_val"
     elif [[ "$api_val" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-      fail "plugin.yml api-version is outside the documented 1.21.x skill scope: $api_val"
+      fail "plugin.yml api-version is outside the documented 26.x / 1.21.x skill scope: $api_val"
     else
       fail "plugin.yml api-version has invalid format: $api_val"
     fi
@@ -278,12 +274,12 @@ if [[ -n "$PAPER_PLUGIN_YML" ]]; then
     if [[ -z "$paper_api_val" ]]; then
       fail "paper-plugin.yml missing key: api-version"
     elif validate_api_version "$paper_api_val"; then
-      pass "paper-plugin.yml api-version is within the documented 1.21.x skill scope: $paper_api_val"
-      warn_if_newer_than_example_api_version "$paper_api_val"
-    elif [[ "$paper_api_val" =~ ^1\.21\.0[0-9]*$ ]]; then
-      fail "paper-plugin.yml api-version patch must be a positive integer without leading zeroes: $paper_api_val"
+      pass "paper-plugin.yml api-version is within the documented 26.x / 1.21.x skill scope: $paper_api_val"
+      warn_if_newer_than_documented_api_version "$paper_api_val" "paper-plugin.yml"
+    elif [[ "$paper_api_val" =~ ^(1\.21\.|26\.)0[0-9]*$ ]]; then
+      fail "paper-plugin.yml api-version release must be a positive integer without leading zeroes: $paper_api_val"
     elif [[ "$paper_api_val" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-      fail "paper-plugin.yml api-version is outside the documented 1.21.x skill scope: $paper_api_val"
+      fail "paper-plugin.yml api-version is outside the documented 26.x / 1.21.x skill scope: $paper_api_val"
     else
       fail "paper-plugin.yml api-version has invalid format: $paper_api_val"
     fi

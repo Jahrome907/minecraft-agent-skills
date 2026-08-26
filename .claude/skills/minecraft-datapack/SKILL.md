@@ -1,6 +1,6 @@
 ---
 name: minecraft-datapack
-description: "Create, edit, and debug vanilla Minecraft 1.21.x datapacks, including functions, advancements, recipes, loot tables, predicates, tags, and pack metadata. Use when the deliverable is a datapack file tree without Java or loader APIs."
+description: "Create, edit, and debug vanilla Minecraft 26.x and 1.21.x datapacks, including functions, advancements, recipes, loot tables, predicates, tags, and pack metadata. Use when the deliverable is a datapack file tree without Java or loader APIs."
 ---
 
 # Minecraft Datapack Skill
@@ -14,7 +14,7 @@ description: "Create, edit, and debug vanilla Minecraft 1.21.x datapacks, includ
 
 ---
 
-## Pack Metadata (1.21.x)
+## Pack Metadata
 
 | Minecraft Version | Preferred `pack` metadata |
 |-------------------|---------------------------|
@@ -26,6 +26,8 @@ description: "Create, edit, and debug vanilla Minecraft 1.21.x datapacks, includ
 | 1.21.7 / 1.21.8   | `pack_format: 81` |
 | 1.21.9 / 1.21.10  | `min_format: [88, 0]`, `max_format: [88, 0]` |
 | 1.21.11           | `min_format: [94, 1]`, `max_format: [94, 1]` |
+| 26.1              | `min_format: [101, 1]`, `max_format: [101, 1]` |
+| 26.2              | `min_format: [107, 1]`, `max_format: [107, 1]` |
 
 Use `pack_format` through 1.21.8. Starting in 1.21.9, Mojang replaced that
 single field with explicit `min_format` / `max_format` values.
@@ -36,7 +38,7 @@ equivalent to `[major, 0]` for `min_format`, while a single integer in
 JSON numbers such as `94.1`.
 
 Keep `pack.mcmeta` exact for the patch you target instead of trying to span the
-entire 1.21.x line with one metadata block.
+multiple Minecraft releases with one metadata block.
 
 ---
 
@@ -104,6 +106,18 @@ my-datapack/
   "pack": {
     "min_format": [94, 1],
     "max_format": [94, 1],
+    "description": "My Custom Datapack v1.0"
+  }
+}
+```
+
+### 26.2
+
+```json
+{
+  "pack": {
+    "min_format": [107, 1],
+    "max_format": [107, 1],
     "description": "My Custom Datapack v1.0"
   }
 }

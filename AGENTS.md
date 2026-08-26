@@ -13,8 +13,9 @@ skills and a dual-target Codex/Claude Code plugin.
 
 ## Skill standards
 
-- Target Minecraft 1.21.x and Java 21 unless a section explicitly covers Forge
-  1.20.1, which uses Java 17 and ForgeGradle 6.
+- Target current stable Minecraft 26.x and Java 25 for new work. Preserve
+  explicit legacy lanes for Minecraft 1.21.x on Java 21 and Forge 1.20.1 on
+  Java 17 with ForgeGradle 6.
 - Keep platform-specific patterns clear and examples runnable.
 - Keep JSON valid and formatted with 2-space indentation.
 - Do not create cross-skill dependencies.

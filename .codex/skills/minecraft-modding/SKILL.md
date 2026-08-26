@@ -1,6 +1,6 @@
 ---
 name: minecraft-modding
-description: "Create, modify, debug, or migrate Minecraft mods for NeoForge or Fabric 1.21.x and legacy Forge 1.20.1. Use for loader-based gameplay code and assets; use minecraft-multiloader when one codebase must target both modern loaders."
+description: "Create, modify, debug, or migrate Minecraft mods for current NeoForge or Fabric 26.x, legacy 1.21.x, and Forge 1.20.1. Use for loader-based gameplay code and assets; use minecraft-multiloader when one codebase must target both modern loaders."
 ---
 
 # Minecraft Modding Skill
@@ -12,13 +12,21 @@ Target platforms:
 
 | Platform | MC Version | Java | Build System |
 |---|---|---|---|
-| **NeoForge** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + ModDevGradle |
+| **NeoForge** | 26.x current; 1.21.11 examples retained | Java 25 current; Java 21 on 1.21.x | Gradle + ModDevGradle |
 | **Forge** | 1.20.1 legacy lane | Java 17 | Gradle + ForgeGradle 6 |
-| **Fabric** | 1.21.x with 1.21.11 examples | Java 21 | Gradle + Fabric Loom |
-| **Architectury** (multiloader) | 1.21.x | Java 21 | Gradle + Architectury Loom |
+| **Fabric** | 26.x current; 1.21.11 examples retained | Java 25 current; Java 21 on 1.21.x | Gradle + Fabric Loom |
+| **Architectury** (multiloader) | 26.x or 1.21.x | Match Minecraft | Gradle + Architectury Loom |
 
 Always confirm the platform and Minecraft version from `gradle.properties` or `build.gradle`
 before writing any mod-specific code.
+
+Minecraft 26.1 introduced Java 25 and unobfuscated game executables. For 26.x
+projects, start from the current loader generator or example mod and preserve
+its build layout. Do not copy the 1.21.11 mapping, Loom plugin, remapping task,
+or Java 21 snippets in this skill into a 26.x project. Fabric 26.x uses the
+non-remapping Loom path and official names; NeoForge 26.x should start from the
+current NeoForge generator. Treat the detailed API references here as the
+legacy 1.21.x lane unless a section explicitly says 26.x.
 
 ### Routing Boundaries
 - `Use when`: the task is Java/Kotlin mod code, registry/event work, networking, datagen wiring, and loader APIs.

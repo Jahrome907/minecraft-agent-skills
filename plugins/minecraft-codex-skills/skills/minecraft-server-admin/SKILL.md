@@ -1,6 +1,6 @@
 ---
 name: minecraft-server-admin
-description: "Set up, operate, tune, and troubleshoot Minecraft Java 1.21.x servers across Paper, Purpur, Folia, Velocity, Fabric, and NeoForge. Use for infrastructure, backups, proxies, and live operations, not plugin or mod development."
+description: "Set up, operate, tune, and troubleshoot Minecraft Java 26.x and legacy 1.21.x servers across Paper, Purpur, Folia, Velocity, Fabric, and NeoForge. Use for infrastructure, backups, proxies, and live operations, not plugin or mod development."
 ---
 
 # Minecraft Server Administration Skill
@@ -107,33 +107,14 @@ Do not tune everything at once. Apply one group at a time.
 
 ### Step 4: Use stable startup flags
 
-For Java 21 on Paper/Purpur:
+For Java 25 on current Paper/Purpur, start with a simple measured baseline:
 
 ```bash
-java -Xms10G -Xmx10G \
-  -XX:+UseG1GC \
-  -XX:+ParallelRefProcEnabled \
-  -XX:MaxGCPauseMillis=200 \
-  -XX:+UnlockExperimentalVMOptions \
-  -XX:+DisableExplicitGC \
-  -XX:+AlwaysPreTouch \
-  -XX:G1NewSizePercent=30 \
-  -XX:G1MaxNewSizePercent=40 \
-  -XX:G1HeapRegionSize=8M \
-  -XX:G1ReservePercent=20 \
-  -XX:G1HeapWastePercent=5 \
-  -XX:G1MixedGCCountTarget=4 \
-  -XX:InitiatingHeapOccupancyPercent=15 \
-  -XX:G1MixedGCLiveThresholdPercent=90 \
-  -XX:G1RSetUpdatingPauseTimePercent=5 \
-  -XX:SurvivorRatio=32 \
-  -XX:+PerfDisableSharedMem \
-  -XX:MaxTenuringThreshold=1 \
-  -Dfile.encoding=UTF-8 \
-  -jar server.jar --nogui
+java -Xms4G -Xmx4G -jar server.jar --nogui
 ```
 
-For under 12 GB memory budgets, reduce heap and use smaller region size.
+Increase heap only when profiling and player load justify it. Add collector flags
+only after validating them against the exact JDK and Paper version.
 
 ### Step 5: Verify improvements
 
@@ -393,12 +374,12 @@ Adjust these only after profiling identifies an actionable bottleneck.
 ```yaml
 services:
   paper:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     container_name: mc-paper
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.21.11"
+      VERSION: "26.2"
       MEMORY: "10G"
     ports:
       - "25565:25565"
@@ -407,9 +388,9 @@ services:
     restart: unless-stopped
 ```
 
-This Docker example targets the repository's 1.21.x guidance and Java 21.
-Minecraft 26.1.x/Paper 26.x requires Java 25 and Paper's 26.x version line; use
-a Java 25 image and re-check plugin compatibility before changing `VERSION`.
+This Docker example targets current Paper 26.2 and Java 25. Re-check plugin
+compatibility and take a restorable backup before changing an existing server's
+Minecraft or Java line.
 
 ### Pterodactyl/Wings notes
 

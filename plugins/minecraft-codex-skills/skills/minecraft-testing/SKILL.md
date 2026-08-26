@@ -1,6 +1,6 @@
 ---
 name: minecraft-testing
-description: "Design and implement automated tests for Minecraft 1.21.x mods and plugins using JUnit, MockBukkit, NeoForge GameTests, or Fabric GameTests. Use for test code and test execution, not release publishing or gameplay implementation."
+description: "Design and implement automated tests for Minecraft 26.x and 1.21.x mods and plugins using JUnit, MockBukkit, NeoForge GameTests, or Fabric GameTests. Use for test code and test execution, not release publishing or gameplay implementation."
 ---
 
 # Minecraft Testing Skill
@@ -26,7 +26,7 @@ description: "Design and implement automated tests for Minecraft 1.21.x mods and
 - Fixture/layout validator: `./scripts/validate-test-layout.sh --root <project>`
 
 Use the validator before copying a test layout into a real project. It checks for
-the common breakpoints that show up in 1.21.x plugin/mod test repos: missing
+the common breakpoints that show up in plugin/mod test repos: missing
 `useJUnitPlatform()`, MockBukkit tests without the dependency, GameTests with
 missing committed template files, and missing NeoForge/Fabric GameTest registration
 metadata.
@@ -86,9 +86,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
-    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.0.0")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.2:4.116.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -337,7 +337,7 @@ public class MyGameTests {
 
 ### Structure templates (`.nbt` files)
 Place empty structure files at:  
-`src/main/resources/data/mymod/structures/empty.nbt`
+`src/main/resources/data/mymod/structure/empty.nbt`
 
 Generate them in-game using `/test create mymod:empty 3 3 3` (NeoForge test command).
 Commit the `.nbt` files to version control, and keep the namespace/path aligned
@@ -346,7 +346,7 @@ catch missing templates before runtime.
 
 ### GameTest setup checklist
 
-1. Verify `.nbt` structure files exist at `src/main/resources/data/<modid>/structures/`
+1. Verify `.nbt` structure files exist at `src/main/resources/data/<modid>/structure/`
 2. Verify the GameTest class is actually registered (for example `modEventBus.register(MyGameTests.class)`)
 3. Run `./gradlew runGameTestServer` — if tests fail with "Missing template", the `.nbt` file path or name is wrong
 4. Check Gradle output for `PASSED`/`FAILED` per test
@@ -452,7 +452,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - { uses: actions/setup-java@v4, with: { java-version: '21', distribution: 'temurin' } }
+            - { uses: actions/setup-java@v4, with: { java-version: '25', distribution: 'temurin' } }
             - uses: gradle/actions/setup-gradle@v4
             - { name: Run unit tests, run: ./gradlew test }
 
@@ -460,7 +460,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - { uses: actions/setup-java@v4, with: { java-version: '21', distribution: 'temurin' } }
+            - { uses: actions/setup-java@v4, with: { java-version: '25', distribution: 'temurin' } }
             - uses: gradle/actions/setup-gradle@v4
             - { name: Run GameTests (headless), run: ./gradlew runGameTestServer, env: { CI: true } }
 

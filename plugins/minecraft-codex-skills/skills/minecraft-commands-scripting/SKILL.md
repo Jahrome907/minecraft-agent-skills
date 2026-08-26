@@ -1,6 +1,6 @@
 ---
 name: minecraft-commands-scripting
-description: "Write and debug Minecraft Java 1.21.x commands, selectors, execute chains, scoreboards, NBT, and RCON scripts. Use for command-only work; use minecraft-datapack for complete datapack structures."
+description: "Write and debug Minecraft Java 26.x and 1.21.x commands, selectors, execute chains, scoreboards, NBT, and RCON scripts. Use for command-only work; use minecraft-datapack for complete datapack structures."
 ---
 
 # Minecraft Commands & Scripting Skill

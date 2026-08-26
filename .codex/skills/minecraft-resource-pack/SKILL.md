@@ -1,6 +1,6 @@
 ---
 name: minecraft-resource-pack
-description: "Create and debug Minecraft 1.21.x resource packs, including pack metadata, textures, models, blockstates, item definitions, sounds, fonts, animations, and shaders. Use for client-side visual or audio assets without gameplay code."
+description: "Create and debug Minecraft 26.x and 1.21.x resource packs, including pack metadata, textures, models, blockstates, item definitions, sounds, fonts, animations, and shaders. Use for client-side visual or audio assets without gameplay code."
 ---
 
 # Minecraft Resource Pack Skill
@@ -18,7 +18,7 @@ or mod loader required. Works on vanilla clients and servers.
 
 ---
 
-## Pack Metadata (1.21.x)
+## Pack Metadata
 
 | Minecraft Version | Preferred `pack` metadata |
 |-------------------|---------------------------|
@@ -30,6 +30,8 @@ or mod loader required. Works on vanilla clients and servers.
 | 1.21.7 / 1.21.8   | `pack_format: 64` |
 | 1.21.9 / 1.21.10  | `min_format: [69, 0]`, `max_format: [69, 0]` |
 | 1.21.11           | `min_format: [75, 0]`, `max_format: [75, 0]` |
+| 26.1              | `min_format: [84, 0]`, `max_format: [84, 0]` |
+| 26.2              | `min_format: [88, 0]`, `max_format: [88, 0]` |
 
 Use `pack_format` through 1.21.8. Starting in 1.21.9, `pack.mcmeta` switches to
 `min_format` / `max_format` instead of the older single-number field.
@@ -117,6 +119,18 @@ my-pack/
   "pack": {
     "min_format": [75, 0],
     "max_format": [75, 0],
+    "description": "My Custom Resource Pack v1.0"
+  }
+}
+```
+
+### 26.2
+
+```json
+{
+  "pack": {
+    "min_format": [88, 0],
+    "max_format": [88, 0],
     "description": "My Custom Resource Pack v1.0"
   }
 }
