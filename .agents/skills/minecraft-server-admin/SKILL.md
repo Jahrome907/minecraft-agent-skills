@@ -21,7 +21,8 @@ description: "Set up, operate, tune, and troubleshoot Minecraft Java 26.x and le
 
 ## Deployment Decision Matrix
 
-Use this table first. Pick a deployment type before changing configs.
+Use this table when choosing a deployment. For an existing server, inspect its
+stack and version first and preserve them unless migration is requested.
 
 | Deployment profile | Recommended stack | Pick this when | Watch-outs |
 |---|---|---|---|
@@ -227,7 +228,7 @@ not enable BungeeCord forwarding and Velocity modern forwarding at the same time
 
 | Asset | Frequency | Retention | Notes |
 |---|---|---|---|
-| World folders (`world*`) | Hourly incremental + daily full | 7 daily, 4 weekly | Highest priority |
+| Every configured world folder | Hourly incremental + daily full | 7 daily, 4 weekly | Include custom and externally stored worlds |
 | `plugins/`, `config/`, and root server state | Daily | 14 daily | Required for operational restore |
 | Proxy config/secrets | Daily | 30 daily | Store encrypted off-host |
 | Container/orchestration files | On change + weekly | 8 weeks | Git-tracked where possible |
@@ -239,6 +240,10 @@ The example below assumes a maintenance window and a cleanly stopped server. If
 you use RCON-based live backups instead, choose a client/secret mechanism that
 does not expose the password in command arguments, flush chunks first, and test
 the restore path before trusting the backup.
+
+Supply the complete world-folder list as arguments, relative to `SERVER_ROOT`,
+after checking `level-name` and any multi-world plugin configuration. Back up
+worlds stored outside that root separately; do not infer coverage from `world*`.
 
 ```bash
 #!/usr/bin/env bash
@@ -254,9 +259,20 @@ BACKUP_ROOT="/backups/minecraft"
 SERVER_ROOT="/srv/minecraft"
 DEST="${BACKUP_ROOT}/${DATE}"
 
+if [[ "$#" -eq 0 ]]; then
+  echo "Usage: backup.sh <world-folder> [additional-world-folders...]" >&2
+  exit 1
+fi
+for world_dir in "$@"; do
+  if [[ ! -d "$SERVER_ROOT/$world_dir" ]]; then
+    echo "Missing configured world folder: $world_dir" >&2
+    exit 1
+  fi
+done
+
 mkdir -p "$DEST"
 
-tar -czf "${DEST}/worlds.tar.gz" -C "$SERVER_ROOT" world world_nether world_the_end
+tar -czf "${DEST}/worlds.tar.gz" -C "$SERVER_ROOT" -- "$@"
 
 state_items=()
 for item in \

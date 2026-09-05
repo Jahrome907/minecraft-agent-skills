@@ -18,33 +18,51 @@ Files needed:
 1. Java class (if custom behavior) or `registerSimpleBlock()` call
 2. `assets/<modid>/blockstates/<name>.json`
 3. `assets/<modid>/models/block/<name>.json`
-4. `assets/<modid>/models/item/<name>.json`
-5. `assets/<modid>/textures/block/<name>.png`
-6. `data/<modid>/loot_table/blocks/<name>.json`
-7. `en_us.json` entry
+4. `assets/<modid>/items/<name>.json` (1.21.x item definition)
+5. `assets/<modid>/models/item/<name>.json`
+6. `assets/<modid>/textures/block/<name>.png`
+7. `data/<modid>/loot_table/blocks/<name>.json`
+8. `en_us.json` entry
 
+`assets/mymod/blockstates/my_block.json`:
 ```json
-// blockstates/my_block.json
 {
   "variants": {
     "": { "model": "mymod:block/my_block" }
   }
 }
+```
 
-// models/block/my_block.json
+`assets/mymod/models/block/my_block.json`:
+```json
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
     "all": "mymod:block/my_block"
   }
 }
+```
 
-// models/item/my_block.json
+`assets/mymod/items/my_block.json`:
+```json
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "mymod:block/my_block"
+  }
+}
+```
+
+`assets/mymod/models/item/my_block.json` is only needed when the block item needs
+a model distinct from the block model. For that case:
+```json
 {
   "parent": "mymod:block/my_block"
 }
+```
 
-// loot_table/blocks/my_block.json  (drops itself)
+`data/mymod/loot_table/blocks/my_block.json`:
+```json
 {
   "type": "minecraft:block",
   "pools": [{
@@ -85,8 +103,8 @@ public class MyDirectionalBlock extends DirectionalBlock {
 }
 ```
 
+`assets/mymod/blockstates/my_directional_block.json`:
 ```json
-// blockstates/my_directional_block.json
 {
   "variants": {
     "facing=north": { "model": "mymod:block/my_directional_block" },
@@ -109,8 +127,8 @@ public static final DeferredBlock<SlabBlock> MY_SLAB =
         BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB)));
 ```
 
+`assets/mymod/models/block/my_slab.json`:
 ```json
-// models/block/my_slab.json
 {
   "parent": "minecraft:block/slab",
   "textures": {
@@ -119,8 +137,10 @@ public static final DeferredBlock<SlabBlock> MY_SLAB =
     "side": "mymod:block/my_block"
   }
 }
+```
 
-// models/block/my_slab_top.json
+`assets/mymod/models/block/my_slab_top.json`:
+```json
 {
   "parent": "minecraft:block/slab_top",
   "textures": {
@@ -129,8 +149,10 @@ public static final DeferredBlock<SlabBlock> MY_SLAB =
     "side": "mymod:block/my_block"
   }
 }
+```
 
-// blockstates/my_slab.json
+`assets/mymod/blockstates/my_slab.json`:
+```json
 {
   "variants": {
     "type=bottom": { "model": "mymod:block/my_slab" },
@@ -151,8 +173,8 @@ public static final DeferredBlock<StairBlock> MY_STAIRS =
         BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_STAIRS)));
 ```
 
+`assets/mymod/models/block/my_stairs.json`:
 ```json
-// models/block/my_stairs.json
 {
   "parent": "minecraft:block/stairs",
   "textures": {
@@ -161,8 +183,10 @@ public static final DeferredBlock<StairBlock> MY_STAIRS =
     "side": "mymod:block/my_block"
   }
 }
-// Also create: my_stairs_inner.json, my_stairs_outer.json (inherit from minecraft:block/inner_stairs / outer_stairs)
 ```
+
+Also create `my_stairs_inner.json` and `my_stairs_outer.json`, inheriting from
+`minecraft:block/inner_stairs` and `minecraft:block/outer_stairs` respectively.
 
 ---
 
@@ -181,8 +205,18 @@ public static final DeferredItem<Item> MY_FOOD =
             .build()));
 ```
 
+`assets/mymod/items/my_food.json`:
 ```json
-// models/item/my_food.json
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "mymod:item/my_food"
+  }
+}
+```
+
+`assets/mymod/models/item/my_food.json`:
+```json
 {
   "parent": "minecraft:item/generated",
   "textures": {
@@ -308,8 +342,8 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
 
 ### Shaped Crafting Recipe
 
+`data/mymod/recipes/my_item.json`:
 ```json
-// data/mymod/recipes/my_item.json
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
@@ -371,20 +405,24 @@ public class MyRecipe implements Recipe<SingleRecipeInput> {
 
 Tags group blocks/items for use in recipes and game logic.
 
+`data/mymod/tags/block/mineable/pickaxe.json`:
 ```json
-// data/mymod/tags/block/mineable/pickaxe.json  — mark my_block as pickaxe-mineable
 {
   "replace": false,
   "values": ["mymod:my_block"]
 }
+```
 
-// data/mymod/tags/block/needs_iron_tool.json  — require iron tier
+`data/mymod/tags/block/needs_iron_tool.json`:
+```json
 {
   "replace": false,
   "values": ["mymod:my_block"]
 }
+```
 
-// data/mymod/tags/item/my_material.json  — custom item tag
+`data/mymod/tags/item/my_material.json`:
+```json
 {
   "replace": false,
   "values": ["mymod:my_ingot", "mymod:my_nugget"]

@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "mypack:setup",
+      "required": "false"
+    }
+  ]
+}

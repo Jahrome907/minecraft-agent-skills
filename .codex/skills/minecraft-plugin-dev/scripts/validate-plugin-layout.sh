@@ -25,10 +25,11 @@ while [[ $# -gt 0 ]]; do
 Usage: validate-plugin-layout.sh [--root <path>] [--strict]
 
 Checks Paper/Bukkit plugin layout:
-- required plugin.yml keys (name, version, main, api-version)
-- optional paper-plugin.yml keys (name, version, api-version, and matching main when declared)
+- required active descriptor keys (name, version, main, api-version)
+- supports plugin.yml-only, paper-plugin.yml-only, or both descriptors
+- uses paper-plugin.yml as the active descriptor when both are present
 - descriptor YAML syntax before key extraction
-- main class path exists and extends JavaPlugin
+- active descriptor main class path exists and extends JavaPlugin
 - warns on actual server /reload anti-pattern usage
 USAGE
       exit 0
@@ -190,14 +191,18 @@ name_val=""
 version_val=""
 main_val=""
 api_val=""
+paper_name_val=""
+paper_version_val=""
+paper_main_val=""
+paper_api_val=""
+active_label=""
+active_main_val=""
 
 PLUGIN_YML=""
 if [[ -f "$ROOT/src/main/resources/plugin.yml" ]]; then
   PLUGIN_YML="$ROOT/src/main/resources/plugin.yml"
 elif [[ -f "$ROOT/plugin.yml" ]]; then
   PLUGIN_YML="$ROOT/plugin.yml"
-else
-  fail "missing plugin.yml (expected src/main/resources/plugin.yml)"
 fi
 
 if [[ -n "$PLUGIN_YML" ]]; then
@@ -226,29 +231,6 @@ if [[ -n "$PLUGIN_YML" ]]; then
       fail "plugin.yml api-version has invalid format: $api_val"
     fi
 
-    if [[ -n "$main_val" ]]; then
-      class_path="${main_val//./\/}"
-      java_file="$ROOT/src/main/java/$class_path.java"
-      kotlin_file="$ROOT/src/main/kotlin/$class_path.kt"
-
-      if [[ -f "$java_file" ]]; then
-        pass "main class file exists: ${java_file#$ROOT/}"
-        if grep -qE 'extends[[:space:]]+JavaPlugin' "$java_file"; then
-          pass "main class extends JavaPlugin"
-        else
-          fail "main class does not extend JavaPlugin: ${java_file#$ROOT/}"
-        fi
-      elif [[ -f "$kotlin_file" ]]; then
-        pass "main class file exists: ${kotlin_file#$ROOT/}"
-        if grep -qE ':[[:space:]]*JavaPlugin\(\)' "$kotlin_file"; then
-          pass "main Kotlin class extends JavaPlugin"
-        else
-          fail "main Kotlin class does not extend JavaPlugin: ${kotlin_file#$ROOT/}"
-        fi
-      else
-        fail "main class file not found for '$main_val'"
-      fi
-    fi
   fi
 fi
 
@@ -270,6 +252,7 @@ if [[ -n "$PAPER_PLUGIN_YML" ]]; then
 
     [[ -n "$paper_name_val" ]] && pass "paper-plugin.yml has name" || fail "paper-plugin.yml missing key: name"
     [[ -n "$paper_version_val" ]] && pass "paper-plugin.yml has version" || fail "paper-plugin.yml missing key: version"
+    [[ -n "$paper_main_val" ]] && pass "paper-plugin.yml has main" || fail "paper-plugin.yml missing key: main"
 
     if [[ -z "$paper_api_val" ]]; then
       fail "paper-plugin.yml missing key: api-version"
@@ -291,10 +274,44 @@ if [[ -n "$PAPER_PLUGIN_YML" ]]; then
 
       if [[ -n "$paper_main_val" ]]; then
         [[ "$paper_main_val" == "$main_val" ]] && pass "paper-plugin.yml main matches plugin.yml" || fail "paper-plugin.yml main must match plugin.yml when declared"
-      else
-        warn "paper-plugin.yml omits main; verify the descriptor is intentional for your Paper plugin bootstrap flow"
       fi
     fi
+  fi
+fi
+
+if [[ -z "$PLUGIN_YML" && -z "$PAPER_PLUGIN_YML" ]]; then
+  fail "missing plugin descriptor (expected src/main/resources/plugin.yml or paper-plugin.yml)"
+elif [[ -n "$PAPER_PLUGIN_YML" ]]; then
+  active_label="paper-plugin.yml"
+  active_main_val="$paper_main_val"
+  pass "using paper-plugin.yml as the active descriptor"
+else
+  active_label="plugin.yml"
+  active_main_val="$main_val"
+  pass "using plugin.yml as the active descriptor"
+fi
+
+if [[ -n "$active_main_val" ]]; then
+  class_path="${active_main_val//./\/}"
+  java_file="$ROOT/src/main/java/$class_path.java"
+  kotlin_file="$ROOT/src/main/kotlin/$class_path.kt"
+
+  if [[ -f "$java_file" ]]; then
+    pass "$active_label main class file exists: ${java_file#$ROOT/}"
+    if grep -qE 'extends[[:space:]]+JavaPlugin' "$java_file"; then
+      pass "$active_label main class extends JavaPlugin"
+    else
+      fail "$active_label main class does not extend JavaPlugin: ${java_file#$ROOT/}"
+    fi
+  elif [[ -f "$kotlin_file" ]]; then
+    pass "$active_label main class file exists: ${kotlin_file#$ROOT/}"
+    if grep -qE ':[[:space:]]*JavaPlugin\(\)' "$kotlin_file"; then
+      pass "$active_label main Kotlin class extends JavaPlugin"
+    else
+      fail "$active_label main Kotlin class does not extend JavaPlugin: ${kotlin_file#$ROOT/}"
+    fi
+  else
+    fail "$active_label main class file not found for '$active_main_val'"
   fi
 fi
 

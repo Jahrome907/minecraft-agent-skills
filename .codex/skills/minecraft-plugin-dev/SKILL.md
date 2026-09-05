@@ -77,8 +77,12 @@ must not be shaded into the plugin JAR.
 
 ### `gradle/wrapper/gradle-wrapper.properties`
 ```properties
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.8-bin.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-9.1.0-bin.zip
 ```
+
+Gradle 8.8 cannot run on Java 25. Use Gradle 9.1 or newer for a current Java 25
+project. Preserve the existing wrapper and Java 21 toolchain for a legacy 1.21.x
+project unless its build is intentionally upgraded and verified.
 
 ---
 
@@ -100,8 +104,8 @@ my-plugin/
     │   └── managers/
     │       └── DataManager.java
     └── resources/
-        ├── plugin.yml
-        ├── paper-plugin.yml      ← optional, Paper-only metadata
+        ├── plugin.yml            ← Bukkit-compatible descriptor
+        ├── paper-plugin.yml      ← active descriptor for a Paper plugin
         └── config.yml
 ```
 
@@ -144,8 +148,11 @@ permissions:
 
 Prefer `plugin.yml` for ordinary plugins. Paper's newer plugin format is still
 experimental; use `paper-plugin.yml` only when you need its bootstrap, loader,
-or dependency model. Keep `plugin.yml` when the JAR must also load on other
-Bukkit-derived servers. Either format can declare `folia-supported`.
+or dependency model. `paper-plugin.yml` can be the only descriptor in a
+Paper-only JAR. Keep `plugin.yml` when the JAR must also load on other
+Bukkit-derived servers. When both descriptors are present, Paper uses
+`paper-plugin.yml`; keep their shared metadata and main class aligned. Either
+format can declare `folia-supported`.
 
 ```yaml
 name: MyPlugin
@@ -472,9 +479,9 @@ profile lookup, and protection-plugin integration examples.
    use that project's documented dev task instead of assuming `./gradlew runServer` exists.
 
 The validator checks:
-- `plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported current `26.<release>` or legacy `1.21` / positive `1.21.<patch>` values, with warnings for versions newer than the documented examples
-- optional `paper-plugin.yml` metadata consistency for `name`, `version`, `api-version`, and declared `main`
-- Main class path exists and extends `JavaPlugin`
+- active `plugin.yml` or `paper-plugin.yml` required keys (`name`, `version`, `main`, `api-version`) and repo-supported current `26.<release>` or legacy `1.21` / positive `1.21.<patch>` values, with warnings for versions newer than the documented examples
+- cross-descriptor metadata consistency when both descriptors are present; `paper-plugin.yml` is selected as active
+- Active main class path exists and extends `JavaPlugin`
 - actual server `/reload` anti-patterns such as `Bukkit.reload()` or dispatching the server reload command
 
 ---
@@ -482,7 +489,9 @@ The validator checks:
 ## References
 
 - Paper API Javadoc: https://jd.papermc.io/paper/
-- Paper Dev Docs: https://docs.papermc.io/paper/dev/getting-started/
+- Paper plugin descriptor: https://docs.papermc.io/paper/dev/plugin-yml/
+- Paper plugins: https://docs.papermc.io/paper/dev/getting-started/paper-plugins/
+- Gradle Java compatibility: https://docs.gradle.org/current/userguide/compatibility.html
 - Adventure (text API): https://docs.advntr.dev/
 - MiniMessage format: https://docs.advntr.dev/minimessage/format.html
 - Vault API: https://github.com/MilkBowl/VaultAPI

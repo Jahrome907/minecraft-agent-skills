@@ -21,7 +21,7 @@ server brand asset.
 
 - Read `references/prompt-patterns.md` when the request is underspecified or you need a stronger generation vs edit prompt shape.
 - Read `references/asset-recipes.md` when the user names a concrete deliverable such as `pack.png`, a release banner, a server header, or a texture concept sheet.
-- Use `scripts/scaffold-asset-brief.sh` to create a reviewable asset brief in the active workspace before generation when the task needs multiple rounds or stakeholder feedback.
+- Use `scripts/scaffold-asset-brief.sh` only when a saved brief is useful for stakeholder feedback or repeated rounds; a clear image request can proceed directly.
 - Relative `--out` values such as `docs/briefs` are resolved from the project workspace, not from the installed skill directory.
 - If you invoke the script from the installed skill directory and the workspace cannot be inferred cleanly, pass an absolute `--out <project-dir>` path or set `CODEX_WORKSPACE_ROOT`.
 
@@ -31,11 +31,11 @@ server brand asset.
 
 - If the current host does not expose built-in image generation or an equivalent image-editing tool, stop and tell the user this skill is unavailable on that host; offer to continue with prompt/brief preparation only, or switch to Codex or another supported host for actual generation.
 - Use the built-in `image_gen` tool by default when the host supports it.
-- Treat the first pass as concepting unless the user explicitly needs near-final artwork.
+- Match the requested deliverable: complete a requested asset, or produce concepts when the user asks for exploration. Do not require a separate concept approval for a clear generation or edit request.
 - The built-in image generation workflow supports fresh generations and edits against existing local/reference images; prefer that over describing a manual paint-over process.
-- Save any chosen final asset into the current workspace; do not leave project assets only in Codex's default generated-images area.
+- Save a requested project asset at the intended workspace path when the host exposes the output file; otherwise return the generated image and state that a local save could not be verified.
 - Preserve existing assets non-destructively by using versioned filenames unless the user explicitly asked to overwrite.
-- If editing a local image, load or attach it first so the image is visible to Codex before requesting an edit.
+- If editing a local image, load or attach it first so the image is visible to the agent before requesting an edit.
 
 ---
 
@@ -55,13 +55,13 @@ server brand asset.
 1. Confirm the current host actually exposes image generation or an equivalent image-editing tool; if it does not, stop at briefing or prompt-prep work instead of promising a generated asset.
 2. Decide whether the asset is a concept, a reviewable mockup, or near-final artwork.
 3. Decide whether this is a fresh generation or an edit of an existing image.
-4. If the request is still fuzzy, scaffold a brief with `bash ./scripts/scaffold-asset-brief.sh --type <asset-type> --name <slug>` when the script is already being run from your project workspace.
+4. Resolve the helper from this skill's installed directory. When a saved brief helps, invoke that script by absolute path from the project workspace, or run `bash ./scripts/scaffold-asset-brief.sh --type <asset-type> --name <slug>` from the skill directory with an explicit workspace destination.
 5. If you are invoking the script from the installed skill directory instead, relative `--out` values still resolve from the project workspace; if the workspace cannot be inferred, pass an absolute project destination such as `bash ./scripts/scaffold-asset-brief.sh --type <asset-type> --name <slug> --out /abs/path/to/project/docs/briefs` or set `CODEX_WORKSPACE_ROOT`.
 6. If style consistency matters, gather one or more reference images first.
 7. Structure the prompt as scene or backdrop -> subject -> important details -> constraints.
 8. Iterate with single targeted changes instead of rewriting the whole prompt every round.
 9. Save the chosen final into the workspace with a descriptive filename such as `pack-icon-v2.png` or `release-banner-hero.png`.
-10. If the asset will ship inside a resource pack, hand off final pack wiring to `minecraft-resource-pack`.
+10. Complete pack wiring only when requested: check the destination, dimensions, tiling, and any JSON references. Additional skills are optional and are not required to use this one.
 
 ---
 
@@ -94,7 +94,7 @@ For edits, explicitly say what must stay unchanged, for example: `change only th
 
 - Design for square cropping and tiny-size readability.
 - Keep the silhouette bold and text minimal.
-- Generate high-resolution source art, then downscale to the final `64x64` icon manually if needed.
+- Check readability at `64x64`; that is a useful preview size, not a required `pack.png` resolution. Use the project's target dimensions and the host's supported image-editing workflow.
 
 ### Texture Concepts
 
@@ -132,14 +132,14 @@ For edits, explicitly say what must stay unchanged, for example: `change only th
 
 1. Load the current `pack.png`.
 2. Ask for an edit that preserves the core silhouette or theme while improving readability at icon size.
-3. Keep at least one conservative variant and one bolder variant.
+3. Produce the requested edit; add conservative or bolder variants only when alternatives were requested or materially help selection.
 4. Save the selected result into the workspace with a versioned filename such as `pack-v2.png`.
 
 ### Texture Concept to Pack Handoff
 
 1. Generate a flat texture concept with neutral lighting and no perspective.
 2. Treat the result as look-dev, not an automatic ship-ready texture.
-3. Hand the approved concept to `minecraft-resource-pack` for final pack structure, sizing, tiling, and JSON wiring.
+3. If pack integration was requested, finish the pixel cleanup, tiling, sizing, and file references before reporting it ready to ship.
 
 ### UI or Server Brand Mockup
 

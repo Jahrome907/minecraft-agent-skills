@@ -1,6 +1,6 @@
 ---
 name: minecraft-testing
-description: "Design and implement automated tests for Minecraft 26.x and 1.21.x mods and plugins using JUnit, MockBukkit, NeoForge GameTests, or Fabric GameTests. Use for test code and test execution, not release publishing or gameplay implementation."
+description: "Design and implement automated tests for current Minecraft 26.x or legacy 1.21.x mods and plugins using JUnit, MockBukkit, NeoForge Game Tests, or Fabric Game Tests. Use for test code and test execution, not release publishing or gameplay implementation."
 ---
 
 # Minecraft Testing Skill
@@ -15,6 +15,9 @@ description: "Design and implement automated tests for Minecraft 26.x and 1.21.x
 | **Fabric GameTests** | In-game block/entity/world interaction | Yes (test environment) |
 | **Integration server** | Full plugin/mod lifecycle | Yes (dedicated test server) |
 
+Use Java 25 for current 26.x projects. Keep legacy 1.21.x examples on Java 21
+and Forge 1.20.1 on Java 17. Do not combine source layouts or APIs across lanes.
+
 ### Routing Boundaries
 - `Use when`: the task is designing or implementing automated tests (unit, mock, gametest, CI test jobs) for Minecraft projects.
 - `Do not use when`: the task is implementing gameplay features rather than testing them (`minecraft-modding`, `minecraft-plugin-dev`, `minecraft-datapack`).
@@ -25,23 +28,16 @@ description: "Design and implement automated tests for Minecraft 26.x and 1.21.x
 - Layout guide: `references/test-layouts.md`
 - Fixture/layout validator: `./scripts/validate-test-layout.sh --root <project>`
 
-Use the validator before copying a test layout into a real project. It checks for
-the common breakpoints that show up in plugin/mod test repos: missing
-`useJUnitPlatform()`, MockBukkit tests without the dependency, GameTests with
-missing committed template files, and missing NeoForge/Fabric GameTest registration
-metadata.
+Use the validator before copying a test layout into a real project. It checks
+visible static dependencies, metadata, and literal structure references. It does
+not compile the project or prove a Game Test can run.
 
 ---
 
 ## Unit Testing (JUnit 5 — No Minecraft)
 
-### `build.gradle.kts` additions
+### JUnit Platform task
 ```kotlin
-dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
 tasks.test {
     useJUnitPlatform()
     testLogging {
@@ -49,6 +45,23 @@ tasks.test {
     }
 }
 ```
+
+For Fabric code that needs loader setup, use Fabric Loader JUnit rather than
+assuming ordinary JUnit initialized Minecraft:
+
+```groovy
+dependencies {
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+}
+
+test {
+    useJUnitPlatform()
+}
+```
+
+When a unit test reaches registry-dependent Minecraft classes, initialize only
+the required bootstrap in test setup. The current Fabric guide uses
+`SharedConstants.tryDetectVersion()` and `Bootstrap.bootStrap()` for that case.
 
 ### Example pure unit test
 ```java
@@ -274,202 +287,152 @@ void itemPdc_roundTripsCustomId() {
 
 ---
 
-## NeoForge GameTests
+## Current NeoForge Game Tests (26.x)
 
-GameTests run inside a Minecraft world. They place a **structure** (the test environment),
-then run assertions using `GameTestHelper`.
+NeoForge 1.21.5 and later uses data-driven test environments and test instances,
+not the old `@GameTestHolder` method-registration API. Store resources under
+`data/<namespace>/test_environment/` and `data/<namespace>/test_instance/`.
+A `test_instance` selects its environment, structure, timing, and either a
+registered function or a block-based test.
 
-### Registration
-```java
-// In your mod main class:
-@Mod(MyMod.MOD_ID)
-public class MyMod {
-    public MyMod(IEventBus modEventBus) {
-        modEventBus.register(MyGameTests.class);
-    }
+```json
+{
+  "environment": "minecraft:default",
+  "structure": "examplemod:example_structure",
+  "max_ticks": 200,
+  "setup_ticks": 0,
+  "required": true,
+  "type": "minecraft:function",
+  "function": "examplemod:example_function"
 }
 ```
 
-### Test class
-```java
-import net.minecraft.gametest.framework.*;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-
-@GameTestHolder(MyMod.MOD_ID)                // registers test namespace
-@PrefixGameTestTemplate(false)               // don't prefix template names
-public class MyGameTests {
-
-    // Default template: 3x3x3 air structure called "mymod:empty"
-    @GameTest(template = "mymod:empty")
-    public static void testBlockInteraction(GameTestHelper helper) {
-        // Place a block
-        helper.setBlock(1, 1, 1, net.minecraft.world.level.block.Blocks.FURNACE);
-        
-        // Run after 1 tick
-        helper.runAfterDelay(1, () -> {
-            // Assert block state
-            helper.assertBlock(new net.minecraft.core.BlockPos(1, 1, 1),
-                b -> b.is(net.minecraft.world.level.block.Blocks.FURNACE),
-                "Expected furnace");
-            
-            helper.succeed();
-        });
-    }
-
-    @GameTest(template = "mymod:empty", timeoutTicks = 200)
-    public static void testEntitySpawn(GameTestHelper helper) {
-        // Spawn entity
-        var entity = helper.spawnWithNoFreeWill(
-            net.minecraft.world.entity.EntityType.ZOMBIE, new net.minecraft.core.BlockPos(2, 2, 2)
-        );
-        
-        helper.runAfterDelay(5, () -> {
-            helper.assertEntityPresent(
-                net.minecraft.world.entity.EntityType.ZOMBIE,
-                new net.minecraft.core.BlockPos(2, 2, 2), 1.0
-            );
-            helper.succeed();
-        });
-    }
-}
-```
-
-### Structure templates (`.nbt` files)
-Place empty structure files at:  
-`src/main/resources/data/mymod/structure/empty.nbt`
-
-Generate them in-game using `/test create mymod:empty 3 3 3` (NeoForge test command).
-Commit the `.nbt` files to version control, and keep the namespace/path aligned
-with each literal `@GameTest(template = "mymod:...")` value so the validator can
-catch missing templates before runtime.
-
-### GameTest setup checklist
-
-1. Verify `.nbt` structure files exist at `src/main/resources/data/<modid>/structure/`
-2. Verify the GameTest class is actually registered (for example `modEventBus.register(MyGameTests.class)`)
-3. Run `./gradlew runGameTestServer` — if tests fail with "Missing template", the `.nbt` file path or name is wrong
-4. Check Gradle output for `PASSED`/`FAILED` per test
-5. If a test times out, increase `timeoutTicks` in the `@GameTest` annotation or add intermediate assertions with `runAfterDelay`
-
-### Running GameTests
-```bash
-./gradlew runGameTestServer
-
-# In-game (dev environment):
-# /test runall
-# /test run mymod:test_block_interaction
-```
-
----
-
-## Fabric GameTests
+Register the `Consumer<GameTestHelper>` test function with the current
+`BuiltInRegistries.TEST_FUNCTION` registry. For programmatic rather than
+datapack registration, listen for `RegisterGameTestsEvent` on the mod event bus
+and call `registerEnvironment` and `registerTest`. Keep the referenced structure
+in `data/<namespace>/structure/<path>.nbt` and mark success explicitly.
 
 ```java
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Blocks;
 
-public class MyFabricGameTests implements FabricGameTest {
-
-    @GameTest(template = EMPTY_STRUCTURE)
-    public void testCustomBlock(GameTestHelper helper) {
-        helper.setBlock(1, 1, 1, Blocks.GOLD_BLOCK.defaultBlockState());
-        
-        helper.runAfterDelay(2, () -> {
-            helper.assertBlock(
-                new BlockPos(1, 1, 1),
-                b -> b.is(Blocks.GOLD_BLOCK),
-                "Gold block should be placed"
-            );
-            helper.succeed();
-        });
+public final class ExampleGameTestFunctions {
+    public static void exampleTest(GameTestHelper helper) {
+        helper.assertBlockPresent(Blocks.AIR, 0, 0, 0);
+        helper.succeed();
     }
 }
 ```
 
-### Register in `fabric.mod.json`
+Run `./gradlew runGameTestServer`; the server exits with the count of required
+failed tests. This command is for a real project, not this skills repository.
+
+---
+
+## Current Fabric Game Tests (26.x)
+
+Use Fabric Loom's dedicated Game Test source set. Configure it in the existing
+`fabricApi` block and keep its metadata and code under `src/gametest`, separate
+from ordinary unit tests.
+
+```groovy
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "example-mod-test-${project.name}"
+        enableGameTests = true
+        enableClientGameTests = true
+        eula = true
+    }
+}
+```
+
+Place `fabric.mod.json` in `src/gametest/resources/` and register server tests
+under `fabric-gametest`; use `fabric-client-gametest` for client tests. Implement
+server methods with Fabric's `net.fabricmc.fabric.api.gametest.v1.GameTest` and,
+when setup is needed before a method runs, `CustomTestMethodInvoker`.
+
+```java
+package com.example.mymod;
+
+import java.lang.reflect.Method;
+import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.block.Blocks;
+
+public final class ExampleGameTest implements CustomTestMethodInvoker {
+    @GameTest
+    public void testBlock(GameTestHelper context) {
+        context.assertBlockPresent(Blocks.AIR, 0, 0, 0);
+        context.succeed();
+    }
+
+    @Override
+    public void invokeTestMethod(GameTestHelper context, Method method)
+            throws ReflectiveOperationException {
+        method.invoke(this, context);
+    }
+}
+```
+
+### `src/gametest/resources/fabric.mod.json`
 ```json
 {
   "entrypoints": {
     "fabric-gametest": [
-      "com.example.mymod.fabric.MyFabricGameTests"
+      "com.example.mymod.ExampleGameTest"
     ]
   }
 }
 ```
 
-Keep the `fabric-gametest` entrypoint in sync with the concrete GameTest class
-name. The validator checks both the metadata file and the entry itself.
+Keep the `fabric-gametest` entrypoint in sync with the concrete Game Test class.
+Fabric's server Game Tests run with `build`; use `runClientGameTest` for client
+tests. Follow the current Fabric documentation for project-specific Loom options
+and headless client CI.
 
 ---
 
-## `GameTestHelper` Assertions Reference
+## Legacy NeoForge Game Tests (1.21.3 only)
+
+Keep annotation-based tests isolated to an explicit 1.21.3 lane. The class can
+be registered by either `@GameTestHolder(MOD_ID)` or a
+`RegisterGameTestsEvent` listener. Do not register a `@GameTestHolder` class
+again with `modEventBus.register(MyGameTests.class)`.
 
 ```java
-// Block assertions
-helper.assertBlock(pos, predicate, "message");
-helper.assertBlockState(pos, state -> state.is(Blocks.STONE), "Expected stone");
-helper.assertBlockPresent(Blocks.GOLD_BLOCK, pos);
-helper.assertBlockNotPresent(Blocks.TNT, pos);
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-// Entity assertions
-helper.assertEntityPresent(EntityType.ZOMBIE, pos, radius);
-helper.assertEntityNotPresent(EntityType.ZOMBIE);
-helper.assertEntityCount(EntityType.ZOMBIE, expectedCount);
-helper.assertEntityProperty(entity, entity -> entity.getHealth() > 0, "alive");
-
-// Item assertions
-helper.assertContainerContains(pos, Items.DIAMOND);
-helper.assertContainerEmpty(pos);
-
-// Control flow
-helper.succeed();        // mark test as passed — REQUIRED at end
-helper.fail("reason");   // mark test as failed
-helper.runAfterDelay(ticks, runnable); // schedule assertion
-helper.onEachTick(runnable);          // run every tick (use with care)
-helper.succeedWhen(() -> { /* assertions */ }); // poll until assertions pass or timeout
-helper.succeedOnTickWhen(tick, () -> { /* assertions */ });
+@GameTestHolder("examplemod")
+@PrefixGameTestTemplate(false)
+public final class ExampleGameTests {
+    @GameTest(template = "example_structure")
+    public static void smoke(GameTestHelper helper) {
+        helper.succeed();
+    }
+}
 ```
+
+For `RegisterGameTestsEvent`, register the class on the mod event bus and set
+`templateNamespace = MOD_ID` on each `@GameTest`. Legacy templates are `.nbt`
+files under `data/<namespace>/structure/`; `@PrefixGameTestTemplate(false)`
+controls whether the class name is added to the template path.
 
 ---
 
-## CI: Running Tests in GitHub Actions
+## CI
 
-Split CI into fast unit/mock coverage and slower runtime-facing jobs. MockBukkit is great
-for command/event logic, but it does not prove Folia thread safety or real server bootstrap.
-
-```yaml
-# .github/workflows/test.yml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-    unit-tests:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - { uses: actions/setup-java@v4, with: { java-version: '25', distribution: 'temurin' } }
-            - uses: gradle/actions/setup-gradle@v4
-            - { name: Run unit tests, run: ./gradlew test }
-
-    game-tests:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - { uses: actions/setup-java@v4, with: { java-version: '25', distribution: 'temurin' } }
-            - uses: gradle/actions/setup-gradle@v4
-            - { name: Run GameTests (headless), run: ./gradlew runGameTestServer, env: { CI: true } }
-
-    layout-checks:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - { name: Validate test layout, run: ./scripts/validate-test-layout.sh --root . }
-```
+Keep fast unit/mock tests separate from a loader's Game Test task, and select
+the Java version by lane: 25 for 26.x, 21 for 1.21.x, and 17 for Forge 1.20.1.
+Upload test reports when a runtime-facing job fails. Do not assume a task name
+from another loader: Fabric server Game Tests run with `build`, while NeoForge
+uses `runGameTestServer`. MockBukkit does not prove Folia thread safety or real
+server bootstrap.
 
 ---
 
@@ -477,6 +440,7 @@ jobs:
 
 - MockBukkit GitHub: https://github.com/MockBukkit/MockBukkit
 - MockBukkit docs: https://docs.mockbukkit.org/
-- NeoForge GameTest docs: https://docs.neoforged.net/docs/misc/gametest/
-- Fabric GameTest API: https://wiki.fabricmc.net/tutorial:gametests
+- Fabric automated testing: https://docs.fabricmc.net/develop/automatic-testing
+- NeoForge 26.x Game Tests: https://docs.neoforged.net/docs/1.21.8/misc/gametest/
+- NeoForge 1.21.3 Game Tests: https://docs.neoforged.net/docs/1.21.3/misc/gametest/
 - JUnit 5 user guide: https://junit.org/junit5/docs/current/user-guide/

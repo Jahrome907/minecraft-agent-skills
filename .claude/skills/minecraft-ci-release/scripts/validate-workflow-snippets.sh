@@ -25,6 +25,7 @@ Validates workflow snippets inside SKILL.md:
 - checks required workflow keys (name/on/jobs) for workflow-like snippets
 - detects unresolved placeholders and obviously broken globs
 - checks secret usage vs documented secret list in SKILL.md
+- requires remote workflow actions to use a full commit SHA
 USAGE
       exit 0
       ;;
@@ -133,6 +134,7 @@ for (const secret of documentedSecrets) {
 const placeholderRe = /(REPLACE_ME|TODO|<[^>]+>|yourname|your-repo|path\/to\/|example\/repo)/i;
 const badGlobRe = /\*\*\*|\*\*\/\*\*\/|\.\*\*/;
 const mappingLineRe = /^(?:"[^"]+"|'[^']+'|[^:#][^:]*?):(?:\s+.*)?$/;
+const usesLineRe = /^\s*(?:-\s*)?uses:\s*['"]?([^'"#\s]+)['"]?(?:\s+#.*)?$/;
 
 function inspectBlock(block) {
   const topLevelKeys = new Set();
@@ -171,6 +173,7 @@ blocks.forEach((block, idx) => {
   const label = `block #${idx + 1}`;
   const { topLevelKeys } = inspectBlock(block);
   const isWorkflowLike = topLevelKeys.has('jobs') || topLevelKeys.has('on');
+  const blockLines = block.split(/\r?\n/);
 
   if (isWorkflowLike) {
     let parsed;
@@ -191,6 +194,16 @@ blocks.forEach((block, idx) => {
     if (!parsedTopLevelKeys.has('name')) fail(`${label} missing top-level \`name:\``);
     if (!parsedTopLevelKeys.has('on')) fail(`${label} missing top-level \`on:\``);
     if (!parsedTopLevelKeys.has('jobs')) fail(`${label} missing top-level \`jobs:\``);
+
+    blockLines.forEach((line, lineIdx) => {
+      const action = line.match(usesLineRe)?.[1];
+      if (!action || action.startsWith('./') || action.startsWith('docker://')) return;
+      if (!action.includes('@')) {
+        fail(`${label} line ${lineIdx + 1} action reference is missing a ref: ${action}`);
+      } else if (!/@[0-9a-f]{40}$/.test(action)) {
+        fail(`${label} line ${lineIdx + 1} action must be pinned to a full commit SHA: ${action}`);
+      }
+    });
   }
 
   if (placeholderRe.test(block)) {
@@ -203,7 +216,6 @@ blocks.forEach((block, idx) => {
     warn(`${label} contains suspicious glob pattern`);
   }
 
-  const blockLines = block.split(/\r?\n/);
   blockLines.forEach((line, lineIdx) => {
     if (/\t/.test(line)) {
       fail(`${label} line ${lineIdx + 1} contains tab indentation`);

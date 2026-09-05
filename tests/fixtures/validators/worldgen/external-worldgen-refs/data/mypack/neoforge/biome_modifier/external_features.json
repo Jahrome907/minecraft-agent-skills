@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "minecraft:plains",
+  "features": ["minecraft:ore_diamond", "dependency:surface_vegetation"],
+  "step": "underground_ores"
+}

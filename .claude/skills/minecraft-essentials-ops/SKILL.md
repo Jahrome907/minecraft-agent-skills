@@ -134,7 +134,7 @@ Typical kit lifecycle:
 2. set cooldown and permission
 3. test with player-rank account
 
-Kit entry in `config.yml`:
+Kit entry in `plugins/Essentials/kits.yml`:
 ```yaml
 kits:
   starter:
@@ -150,7 +150,7 @@ Common commands:
 ```text
 /kit
 /kit starter
-/createkit starter
+/createkit starter 86400
 ```
 
 ### Warps and homes
@@ -255,13 +255,17 @@ Troubleshooting: jail not working → confirm jail location exists with `/setjai
 
 ```text
 /tempban Alex 7d Repeated harassment
-/banip Alex Severe evasion case
 /unban Alex
 ```
 
 Practice:
 - align durations with policy tiers
 - document evidence and staff actor
+
+IP bans are separate: `/banip Alex <reason>` resolves the player's last IP and
+can affect other players sharing it. Undo an authorized IP ban with
+`/unbanip <address>` using the exact banned address; `/unban Alex` only removes
+the account ban.
 
 Troubleshooting: tempban not sticking → check `essentials.tempban` permission and that no override plugin (e.g., LiteBans) is conflicting.
 

@@ -24,7 +24,7 @@ jobs:
           - { platform: fabric, dir: fabric }
           - { platform: neoforge, dir: neoforge }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       - env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: "./gradlew :${{ matrix.dir }}:build --no-daemon"

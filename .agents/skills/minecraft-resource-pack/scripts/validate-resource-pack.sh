@@ -120,6 +120,8 @@ resolve_texture() {
   target="$ROOT/assets/$ns/textures/$path.png"
   if [[ -f "$target" ]]; then
     pass "texture exists: $ns:$path"
+  elif [[ "$ns" != "$current_ns" ]]; then
+    warn "external texture not locally verifiable: $ns:$path"
   else
     fail "missing texture: $ns:$path (expected ${target#$ROOT/})"
   fi
@@ -153,10 +155,19 @@ resolve_model() {
 
 resolve_sound() {
   local current_ns="$1"
-  local ref="$2"
+  local sound_type="$2"
+  local ref="$3"
   local ns path target
 
   [[ -z "$ref" ]] && return
+  if [[ "$sound_type" == "event" ]]; then
+    pass "sound event reference does not map to an .ogg file: $ref"
+    return
+  fi
+  if [[ "$sound_type" != "sound" && "$sound_type" != "file" ]]; then
+    fail "unsupported sounds.json entry type '$sound_type' for $ref (expected sound/file or event)"
+    return
+  fi
   if [[ "$ref" == *:* ]]; then
     ns="${ref%%:*}"
     path="${ref#*:}"
@@ -239,10 +250,11 @@ echo "Checking sounds.json references..."
 while IFS= read -r -d '' sounds_file; do
   rel="${sounds_file#"$ROOT/assets/"}"
   ns="${rel%%/*}"
-  while IFS= read -r sound_ref; do
+  while IFS=$'\t' read -r sound_type sound_ref; do
+    sound_type="$(strip_cr "$sound_type")"
     sound_ref="$(strip_cr "$sound_ref")"
-    resolve_sound "$ns" "$sound_ref"
-  done < <(jq -r '.. | objects | select(has("sounds")) | .sounds[]? | if type == "string" then . else .name? // empty end' "$sounds_file")
+    resolve_sound "$ns" "$sound_type" "$sound_ref"
+  done < <(jq -r '.. | objects | select(has("sounds")) | .sounds[]? | if type == "string" then ["sound", .] else [(.type // "sound"), (.name // empty)] end | @tsv' "$sounds_file")
 done < <(find "$ROOT/assets" -type f -name 'sounds.json' -print0 2>/dev/null)
 
 echo "Checking font provider file references..."
@@ -263,6 +275,8 @@ while IFS= read -r -d '' font_file; do
     target="$ROOT/assets/$target_ns/textures/$target_path"
     if [[ -f "$target" ]]; then
       pass "font texture exists: $target_ns:$target_path"
+    elif [[ "$target_ns" != "$ns" ]]; then
+      warn "external font texture not locally verifiable: $target_ns:$target_path"
     else
       fail "missing font texture: $target_ns:$target_path (expected ${target#$ROOT/})"
     fi
@@ -271,6 +285,7 @@ done < <(find "$ROOT/assets" -type f -path '*/font/*.json' -print0 2>/dev/null)
 
 echo "Checking .png.mcmeta pairs..."
 while IFS= read -r -d '' mcmeta_file; do
+  check_json "$mcmeta_file"
   png_file="${mcmeta_file%.mcmeta}"
   if [[ -f "$png_file" ]]; then
     pass "animation pair exists: ${mcmeta_file#$ROOT/}"

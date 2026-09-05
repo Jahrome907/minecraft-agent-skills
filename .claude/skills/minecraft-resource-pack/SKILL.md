@@ -8,11 +8,11 @@ description: "Create and debug Minecraft 26.x and 1.21.x resource packs, includi
 ## What Is a Resource Pack?
 
 A resource pack is a folder (or `.zip`) that overrides or adds Minecraft's visual and
-audio assets: textures, models, sounds, language files, fonts, and shaders. No Java
-or mod loader required. Works on vanilla clients and servers.
+audio assets: textures, models, sounds, language files, and fonts. No Java or mod
+loader is required for those vanilla assets.
 
 ### Routing Boundaries
-- `Use when`: the deliverable is visual/audio assets (textures, models, sounds, fonts, shaders) in resource-pack format.
+- `Use when`: the deliverable is visual/audio assets (textures, models, sounds, fonts) in resource-pack format.
 - `Do not use when`: the task requires gameplay logic or runtime behavior changes (use `minecraft-datapack`, `minecraft-plugin-dev`, or `minecraft-modding`).
 - `Do not use when`: the task is server infrastructure/runtime administration (`minecraft-server-admin`).
 
@@ -77,13 +77,13 @@ my-pack/
         ├── sounds.json
         ├── font/
         │   └── default.json
-        ├── lang/
-        │   └── en_us.json
-        ├── shaders/           ← core shader overrides (advanced)
-        └── optifine/          ← OptiFine CIT / CTM (OptiFine only)
-            └── cit/
-                └── my_item.properties
+        └── lang/
+            └── en_us.json
 ```
+
+Client-mod-specific files such as OptiFine CIT and Iris shader packs use their
+own formats. Read [conditional assets](references/conditional-assets.md) before
+adding them.
 
 ---
 
@@ -223,73 +223,10 @@ Cross model (flowers, plants):
 
 ## Item Models
 
-### Simple flat item
-```json
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "mypack:item/my_item"
-  }
-}
-```
-
-### Held item (in-hand model)
-```json
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "mypack:item/my_sword"
-  }
-}
-```
-
-### Two-layer item (colored like leather armor)
-```json
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "minecraft:item/leather_helmet",
-    "layer1": "minecraft:item/leather_helmet_overlay"
-  }
-}
-```
-
-### Custom model data overrides (1.21.4 and prior)
-Each `predicate` entry routes to a different model based on `custom_model_data`:
-```json
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "minecraft:item/stick"
-  },
-  "overrides": [
-    { "predicate": { "custom_model_data": 1001 }, "model": "mypack:item/magic_wand" },
-    { "predicate": { "custom_model_data": 1002 }, "model": "mypack:item/fire_staff" }
-  ]
-}
-```
-
-### 1.21.4+ Item Model (new format)
-In 1.21.4, Mojang introduced a new item model system. Place model definitions at
-`assets/<namespace>/items/<item_name>.json`:
-```json
-{
-  "model": {
-    "type": "minecraft:select",
-    "property": "minecraft:custom_model_data",
-    "fallback": {
-      "type": "minecraft:model",
-      "model": "minecraft:item/stick"
-    },
-    "cases": [
-      {
-        "when": 1001,
-        "model": { "type": "minecraft:model", "model": "mypack:item/magic_wand" }
-      }
-    ]
-  }
-}
-```
+Use current item definitions in `assets/<namespace>/items/` when the target
+release supports them. Read [conditional assets](references/conditional-assets.md)
+for current custom-model-data lists and the legacy `overrides` format; the two
+formats have different selector shapes.
 
 ---
 
@@ -371,28 +308,11 @@ Reference them with `<category>/<name>` in code/JSON.
 
 ## Sounds
 
-### `assets/minecraft/sounds.json`
-```json
-{
-  "my_sound.play": {
-    "sounds": [
-      { "name": "mypack:custom/my_sound", "volume": 1.0, "pitch": 1.0, "weight": 1 },
-      { "name": "mypack:custom/my_sound_alt", "weight": 2 }
-    ],
-    "category": "players"
-  },
-  "entity.player.levelup": {
-    "replace": true,
-    "sounds": [
-      { "name": "mypack:custom/levelup_replaced", "volume": 0.75, "pitch": 1.0 }
-    ]
-  }
-}
-```
-
-- Sound files go in `assets/<namespace>/sounds/` as `.ogg` files (Vorbis encoded)
-- Use `"replace": true` to replace vanilla sounds instead of adding to them
-- Categories: `master`, `music`, `record`, `weather`, `block`, `hostile`, `neutral`, `player`, `ambient`, `voice`
+An event's namespace comes from the namespace containing `sounds.json`; a
+sound entry's `name` identifies the sound-file namespace. Sound files are Vorbis
+`.ogg` under `assets/<namespace>/sounds/`. Read
+[conditional assets](references/conditional-assets.md) for a correct event
+example, categories, aliases, and replacement behavior.
 
 ---
 
@@ -416,64 +336,16 @@ Reference them with `<category>/<name>` in code/JSON.
 
 ## Fonts
 
-### `assets/minecraft/font/default.json` — add glyph
-```json
-{
-  "providers": [
-    {
-      "type": "bitmap",
-      "file": "mypack:font/icons.png",
-      "ascent": 8,
-      "height": 9,
-      "chars": ["\uE000", "\uE001", "\uE002"]
-    }
-  ]
-}
-```
-
-Custom icons via private use area (U+E000–U+F8FF). Reference in text with `\uE000`.
-The `icons.png` must have each character cell `height` pixels tall.
+Read [conditional assets](references/conditional-assets.md) for bitmap provider
+layout and private-use icon guidance.
 
 ---
 
-## OptiFine CIT (Custom Item Textures)
+## OptiFine and shaders
 
-> OptiFine-only feature. Does not work in vanilla or Iris.
-
-### `assets/minecraft/optifine/cit/my_sword.properties`
-```properties
-type=item
-items=minecraft:diamond_sword
-texture=my_sword_texture.png
-model=my_sword_model
-nbt.display.Name=ipattern:*Excalibur*
-```
-
-Common CIT properties:
-- `type=item` — item texture override
-- `type=enchantment` — custom enchantment glint
-- `type=armor` — armor overlay
-- `items=` — comma-separated item IDs
-- `damage=` — damage range (e.g., `0-50%`)
-- `nbt.display.Name=ipattern:*text*` — NBT name filter
-- `texture=` — PNG file (relative to `.properties` file)
-- `model=` — JSON model file (relative)
-
----
-
-## Iris Shaders (Resource Pack Method)
-
-Iris shaders live inside a resource pack at:
-```
-assets/iris/
-    shaders/
-        core/
-            rendertype_terrain.vsh    ← vertex shader override
-            rendertype_terrain.fsh    ← fragment shader override
-```
-
-Full shader pack distribution uses the `.zip` format with a `shaders/` root folder
-(not inside `assets/`). Resource pack shader overrides target specific render types.
+OptiFine CIT and Iris shader packs have client-mod-specific formats. Read
+[conditional assets](references/conditional-assets.md) before adding either;
+they are not portable vanilla resource-pack features.
 
 ---
 

@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "dependency:font/shared.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": ["\\uE000"]
+    }
+  ]
+}

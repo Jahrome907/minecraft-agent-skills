@@ -14,7 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: ./.github/actions/example
+      - uses: docker://alpine:3.22
       - run: echo ok
       - env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

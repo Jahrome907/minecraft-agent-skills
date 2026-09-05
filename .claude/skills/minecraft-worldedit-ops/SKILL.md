@@ -143,8 +143,8 @@ Operational guidance:
 ```text
 //brush sphere stone 4
 //brush smooth 3
-//brush raise 2
-//brush lower 2
+//brush raise sphere 2
+//brush lower sphere 2
 //mask #existing
 ```
 
@@ -157,7 +157,7 @@ Reset brush:
 Terraforming safety:
 - start with small radius (3-5) and iterate
 - keep masks active to avoid damaging structures
-- run periodic `//undo` checkpoints during long sessions
+- save periodic schematic or backup checkpoints; `//undo` reverts an edit
 
 ---
 
@@ -203,23 +203,26 @@ checkpoint exists, and the rollback window is closed.
 ```
 
 - Validate spawn safety (voids, lighting, navigation).
-- Save final state:
+- Reselect the edited area if needed, then copy its final state before saving:
 
 ```text
+//copy
 //schem save spawn-after-refresh
 ```
 
 ## Runbook: Arena Reset Between Matches
 
-- Keep a pristine arena schematic.
+- Keep a pristine arena schematic with its original placement recorded.
 - After each match:
 
 ```text
 //schem load arena-pristine
-//paste -a
+//paste -o
 ```
 
-- Rebuild only arena boundary if needed.
+- Verify the world and original location before pasting. Include air to remove
+  player-added blocks; `-a` would leave those blocks behind. Entity and biome
+  restoration require intentional copy/paste flags and separate verification.
 - Validate command blocks/signals associated with arena logic.
 
 ## Runbook: Block Cleanup (Lag and Visual Noise)

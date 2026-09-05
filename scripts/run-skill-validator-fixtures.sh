@@ -119,6 +119,21 @@ expect_path "tests/fixtures/validators/datapack/invalid-pack-version"
 expect_pass "datapack valid" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/valid
+expect_pass "datapack nested function tags strict" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/nested-function-tag-refs --strict
+expect_fail_contains "datapack missing required function reference" "missing function for tag reference" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/missing-required-function-tag-ref
+expect_fail_contains "datapack invalid function tag entry" "invalid function tag entry" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/invalid-function-tag-entry
+expect_pass_contains "datapack external function reference" "external function tag reference not verified" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/external-function-tag-ref
+expect_fail_contains "datapack external reference strict" "strict mode failed" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/external-function-tag-ref --strict
 expect_pass "datapack legacy pack metadata" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/legacy-pack-metadata
@@ -140,6 +155,12 @@ expect_path "tests/fixtures/validators/resource-pack/invalid-item-model"
 expect_pass "resource-pack valid" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/valid
+expect_pass_contains "resource-pack external textures warn" "external texture not locally verifiable" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/external-textures
+expect_fail_contains "resource-pack invalid png mcmeta" "invalid JSON: assets/mypack/textures/block/animated.png.mcmeta" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/invalid-png-mcmeta
 expect_pass "resource-pack legacy pack metadata" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/legacy-pack-metadata
@@ -163,6 +184,9 @@ expect_path "tests/fixtures/validators/ci-release/warn-only/SKILL.md"
 expect_pass "ci-release valid" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/valid
+expect_fail_contains "ci-release mutable action" "action must be pinned to a full commit SHA" \
+  ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
+  --root tests/fixtures/validators/ci-release/mutable-action
 expect_pass "ci-release multiline flow yaml" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/multiline-flow
@@ -198,6 +222,9 @@ expect_path "tests/fixtures/validators/plugin-dev/invalid-reload-misuse"
 expect_pass "plugin-dev valid" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/valid
+expect_pass_contains "plugin-dev valid paper-plugin.yml only" "using paper-plugin.yml as the active descriptor" \
+  ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
+  --root tests/fixtures/validators/plugin-dev/valid-paper-plugin-only --strict
 expect_pass "plugin-dev valid paper-plugin.yml" \
   ./.agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh \
   --root tests/fixtures/validators/plugin-dev/valid-paper-plugin
@@ -279,61 +306,38 @@ else
 fi
 rm -rf "$imagegen_workspace" "$imagegen_install_root"
 
-imagegen_home="$(mktemp -d)"
-imagegen_skill_dir="$imagegen_home/.codex/skills/minecraft-imagegen"
-mkdir -p "$imagegen_skill_dir"
-cp -R ./.agents/skills/minecraft-imagegen/. "$imagegen_skill_dir"
-imagegen_output="$(mktemp)"
-if (
-  cd "$imagegen_skill_dir"
-  unset OLDPWD CODEX_WORKSPACE_ROOT
-  HOME="$imagegen_home" bash ./scripts/scaffold-asset-brief.sh --type pack-icon --name raw-install
-) >"$imagegen_output" 2>&1; then
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$FAIL imagegen scaffold raw ~/.codex install requires explicit workspace (expected failure)" >&2
-  exit 1
-elif grep -Fq "Could not infer a project workspace for the asset brief." "$imagegen_output"; then
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$PASS imagegen scaffold raw ~/.codex install requires explicit workspace"
-else
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$FAIL imagegen scaffold raw ~/.codex install requires explicit workspace (missing expected output)" >&2
-  exit 1
-fi
-
-imagegen_home="$(mktemp -d)"
-imagegen_skill_dir="$imagegen_home/.claude/skills/minecraft-imagegen"
-mkdir -p "$imagegen_skill_dir"
-cp -R ./.agents/skills/minecraft-imagegen/. "$imagegen_skill_dir"
-imagegen_output="$(mktemp)"
-if (
-  cd "$imagegen_skill_dir"
-  unset OLDPWD CODEX_WORKSPACE_ROOT
-  HOME="$imagegen_home" bash ./scripts/scaffold-asset-brief.sh --type pack-icon --name raw-install
-) >"$imagegen_output" 2>&1; then
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$FAIL imagegen scaffold raw ~/.claude install requires explicit workspace (expected failure)" >&2
-  exit 1
-elif grep -Fq "Could not infer a project workspace for the asset brief." "$imagegen_output"; then
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$PASS imagegen scaffold raw ~/.claude install requires explicit workspace"
-else
-  cat "$imagegen_output"
-  rm -f "$imagegen_output"
-  rm -rf "$imagegen_home"
-  echo "$FAIL imagegen scaffold raw ~/.claude install requires explicit workspace (missing expected output)" >&2
-  exit 1
-fi
+for surface in .agents .codex .claude; do
+  imagegen_home="$(mktemp -d)"
+  imagegen_skill_dir="$imagegen_home/$surface/skills/minecraft-imagegen"
+  mkdir -p "$imagegen_skill_dir"
+  cp -R ./.agents/skills/minecraft-imagegen/. "$imagegen_skill_dir"
+  imagegen_output="$(mktemp)"
+  if (
+    cd "$imagegen_skill_dir"
+    unset OLDPWD CODEX_WORKSPACE_ROOT
+    HOME="$imagegen_home" bash ./scripts/scaffold-asset-brief.sh --type pack-icon --name raw-install
+  ) >"$imagegen_output" 2>&1; then
+    cat "$imagegen_output"
+    rm -f "$imagegen_output"
+    rm -rf "$imagegen_home"
+    echo "$FAIL imagegen scaffold raw ~/$surface install requires explicit workspace (expected failure)" >&2
+    exit 1
+  elif grep -Fq "Could not infer a project workspace for the asset brief." "$imagegen_output"; then
+    if [[ -e "$imagegen_home/raw-install-asset-brief.md" ]]; then
+      echo "$FAIL imagegen scaffold wrote an asset into the user home" >&2
+      exit 1
+    fi
+    rm -f "$imagegen_output"
+    rm -rf "$imagegen_home"
+    echo "$PASS imagegen scaffold raw ~/$surface install requires explicit workspace"
+  else
+    cat "$imagegen_output"
+    rm -f "$imagegen_output"
+    rm -rf "$imagegen_home"
+    echo "$FAIL imagegen scaffold raw ~/$surface install requires explicit workspace (missing expected output)" >&2
+    exit 1
+  fi
+done
 
 expect_path "tests/fixtures/validators/testing/valid"
 expect_path "tests/fixtures/validators/testing/invalid"
@@ -345,6 +349,11 @@ expect_path "tests/fixtures/validators/testing/fabric-missing-entrypoint"
 expect_pass "testing valid" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/valid
+for fixture in current-neoforge-gametest-only current-fabric-gametest-only legacy-neoforge-gametest-only; do
+  expect_pass "testing $fixture strict" \
+    ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
+    --root "tests/fixtures/validators/testing/$fixture" --strict
+done
 expect_fail_contains "testing invalid" "MockBukkit tests detected but build file is missing MockBukkit dependency" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/invalid
@@ -354,7 +363,7 @@ expect_pass "testing neoforge valid" \
 expect_fail_contains "testing neoforge missing template" "GameTest template fixture missing: mymod:missing_template" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/neoforge-missing-template
-expect_fail_contains "testing neoforge missing registration" "NeoForge GameTest class is not registered on an event bus" \
+expect_fail_contains "testing neoforge missing registration" "legacy NeoForge GameTest class needs @GameTestHolder or RegisterGameTestsEvent registration" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/neoforge-missing-registration
 expect_pass "testing fabric valid" \
@@ -371,6 +380,9 @@ expect_path "tests/fixtures/validators/multiloader/invalid-missing-mod-version"
 expect_pass "multiloader valid" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/valid
+expect_pass "multiloader valid properties separators" \
+  ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
+  --root tests/fixtures/validators/multiloader/valid-properties-format --strict
 expect_pass "multiloader valid 26.2" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/valid-26.2
@@ -399,6 +411,12 @@ expect_path "tests/fixtures/validators/worldgen/invalid-jigsaw-refs"
 expect_pass "worldgen valid" \
   ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
   --root tests/fixtures/validators/worldgen/valid
+expect_pass "worldgen external references strict" \
+  ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
+  --root tests/fixtures/validators/worldgen/external-worldgen-refs --strict
+expect_fail_contains "worldgen missing supplied namespace reference" "placed_feature references missing configured_feature: minecraft:missing_configured" \
+  ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
+  --root tests/fixtures/validators/worldgen/invalid-external-local-worldgen-refs
 expect_fail_contains "worldgen invalid" "placed_feature references missing configured_feature" \
   ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
   --root tests/fixtures/validators/worldgen/invalid

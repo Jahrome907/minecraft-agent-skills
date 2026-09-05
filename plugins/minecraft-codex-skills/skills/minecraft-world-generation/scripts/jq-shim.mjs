@@ -73,15 +73,11 @@ function collectSounds(input) {
 }
 
 function flattenOptionalField(input, field) {
-  const results = [];
   const value = input?.[field];
-  if (present(value)) results.push(value);
   if (Array.isArray(value)) {
-    for (const entry of value) {
-      if (present(entry)) results.push(entry);
-    }
+    return value.filter(present);
   }
-  return results;
+  return present(value) ? [value] : [];
 }
 
 function collectNestedFeatureRefs(input) {
@@ -154,9 +150,9 @@ function evaluateFilter(input, filter) {
       return collectTemplatePoolElementRows(input);
     case ".features[][]?//empty":
       return collectNestedFeatureRefs(input);
-    case "(.features?//empty),(.features[]?//empty)":
+    case "if(.features?|type)==\"array\"then.features[]?else.features?//emptyend":
       return flattenOptionalField(input, "features");
-    case "(.structures?//empty),(.structures[]?//empty)":
+    case "if(.structures?|type)==\"array\"then.structures[]?else.structures?//emptyend":
       return flattenOptionalField(input, "structures");
     default:
       throw new Error(`unsupported jq filter: ${filter}`);

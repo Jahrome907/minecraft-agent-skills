@@ -3,5 +3,13 @@
     "sounds": [
       "mypack:ui/click"
     ]
+  },
+  "ui.click_alias": {
+    "sounds": [
+      {
+        "name": "mypack:ui.click",
+        "type": "event"
+      }
+    ]
   }
 }

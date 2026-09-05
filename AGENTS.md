@@ -13,6 +13,13 @@ skills and a dual-target Codex/Claude Code plugin.
 
 ## Skill standards
 
+- Keep entrypoints focused on routing, version boundaries, and the requested
+  outcome. Load substantial examples from local references only when relevant.
+- Preserve the user's project, version pins, and authorized scope. A sample
+  workflow is not a requirement to migrate, publish, or add extra deliverables.
+- Verify changing APIs against primary documentation for the exact version.
+  Distinguish static helper checks from compilation and in-game validation.
+
 - Target current stable Minecraft 26.x and Java 25 for new work. Preserve
   explicit legacy lanes for Minecraft 1.21.x on Java 21 and Forge 1.20.1 on
   Java 17 with ForgeGradle 6.

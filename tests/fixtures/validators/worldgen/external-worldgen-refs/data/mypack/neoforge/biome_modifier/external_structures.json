@@ -1,0 +1,4 @@
+{
+  "type": "dependency:structure_modifier",
+  "structures": ["minecraft:fortress", "dependency:surface_ruin"]
+}

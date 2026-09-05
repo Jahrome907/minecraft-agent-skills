@@ -72,6 +72,23 @@ function collectSounds(input) {
   return results;
 }
 
+function collectSoundEntries(input) {
+  const results = [];
+  walk(input, (entry) => {
+    if (!isObject(entry) || !Array.isArray(entry.sounds)) return;
+    for (const sound of entry.sounds) {
+      if (typeof sound === "string") {
+        results.push(`sound\t${sound}`);
+        continue;
+      }
+      if (isObject(sound)) {
+        results.push(`${sound.type ?? "sound"}\t${sound.name ?? ""}`);
+      }
+    }
+  });
+  return results;
+}
+
 function collectItemDefinitionModels(input) {
   const results = [];
   walk(input, (entry) => {
@@ -152,6 +169,8 @@ function evaluateFilter(input, filter) {
       return collectItemDefinitionModels(input);
     case "..|objects|select(has(\"sounds\"))|.sounds[]?|iftype==\"string\"then.else.name?//emptyend":
       return collectSounds(input);
+    case "..|objects|select(has(\"sounds\"))|.sounds[]?|iftype==\"string\"then[\"sound\",.]else[(.type//\"sound\"),(.name//empty)]end|@tsv":
+      return collectSoundEntries(input);
     case ".providers[]?|.file?//empty":
       return Array.isArray(input?.providers) ? input.providers.map((entry) => entry?.file).filter(present) : [];
     case ".type?//empty":

@@ -132,15 +132,9 @@ done < <(find "$ROOT/data" -type f \( -path '*/loot_tables/*' -o -path '*/functi
 resolve_function_ref() {
   local tag_file="$1"
   local ref="$2"
-  local rel tag_ns target_ns target_path resolved
-
-  rel="${tag_file#"$ROOT/data/"}"
-  tag_ns="${rel%%/*}"
-
-  if [[ "$ref" == \#* ]]; then
-    warn "tag reference in function tag not resolved: ${tag_file#$ROOT/} -> $ref"
-    return
-  fi
+  local required="$3"
+  local ancestry="$4"
+  local target_ns target_path resolved kind
 
   if [[ "$ref" == *:* ]]; then
     target_ns="${ref%%:*}"
@@ -150,26 +144,60 @@ resolve_function_ref() {
     return
   fi
 
-  resolved="$ROOT/data/$target_ns/function/$target_path.mcfunction"
-  if [[ -f "$resolved" ]]; then
-    pass "function tag target exists: $ref"
+  if [[ "$ref" == \#* ]]; then
+    target_ns="${target_ns#\#}"
+    kind="function tag"
+    resolved="$ROOT/data/$target_ns/tags/function/$target_path.json"
   else
-    fail "missing function for tag reference: $ref (expected ${resolved#$ROOT/})"
+    kind="function"
+    resolved="$ROOT/data/$target_ns/function/$target_path.mcfunction"
   fi
+
+  if [[ ! -d "$ROOT/data/$target_ns" ]]; then
+    warn "external $kind reference not verified: ${tag_file#$ROOT/} -> $ref"
+    return
+  fi
+
+  if [[ -f "$resolved" ]]; then
+    pass "$kind target exists: $ref"
+    if [[ "$ref" == \#* ]]; then
+      if [[ "$ancestry" == *"|$resolved|"* ]]; then
+        fail "cyclic function tag reference: ${tag_file#$ROOT/} -> $ref"
+        return
+      fi
+      check_function_tag "$resolved" "$ancestry|$resolved|"
+    fi
+  elif [[ "$required" == "false" ]]; then
+    pass "optional $kind reference is absent: $ref"
+  else
+    fail "missing $kind for tag reference: $ref (expected ${resolved#$ROOT/})"
+  fi
+}
+
+check_function_tag() {
+  local tag_file="$1"
+  local ancestry="$2"
+  local required ref
+
+  if ! jq -e '.values | type == "array"' "$tag_file" >/dev/null 2>&1; then
+    fail "tag file missing array .values: ${tag_file#$ROOT/}"
+    return
+  fi
+
+  while IFS=$'\t' read -r required ref; do
+    required="$(strip_cr "$required")"
+    ref="$(strip_cr "$ref")"
+    if [[ "$required" == "invalid" || -z "$ref" ]]; then
+      fail "invalid function tag entry: ${tag_file#$ROOT/}"
+      continue
+    fi
+    resolve_function_ref "$tag_file" "$ref" "$required" "$ancestry"
+  done < <(jq -r '.values[]? | if type == "string" then "true\t" + . elif type == "object" and (.id | type == "string") and ((.required? // true) | type == "boolean") then ((if .required == false then "false" else "true" end) + "\t" + .id) else "invalid\t" end' "$tag_file")
 }
 
 echo "Checking load/tick function tag references..."
 while IFS= read -r -d '' tag_file; do
-  if ! jq -e '.values | type == "array"' "$tag_file" >/dev/null 2>&1; then
-    fail "tag file missing array .values: ${tag_file#$ROOT/}"
-    continue
-  fi
-
-  while IFS= read -r ref; do
-    ref="$(strip_cr "$ref")"
-    [[ -z "$ref" ]] && continue
-    resolve_function_ref "$tag_file" "$ref"
-  done < <(jq -r '.values[]? | strings' "$tag_file")
+  check_function_tag "$tag_file" "|$tag_file|"
 done < <(find "$ROOT/data" -type f \( -path '*/tags/function/load.json' -o -path '*/tags/function/tick.json' \) -print0 2>/dev/null)
 
 echo ""

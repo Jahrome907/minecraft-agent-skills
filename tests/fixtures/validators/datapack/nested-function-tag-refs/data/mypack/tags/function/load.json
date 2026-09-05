@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#mypack:bootstrap",
+    {
+      "id": "mypack:optional_function",
+      "required": false
+    },
+    {
+      "id": "#mypack:optional_tag",
+      "required": false
+    }
+  ]
+}

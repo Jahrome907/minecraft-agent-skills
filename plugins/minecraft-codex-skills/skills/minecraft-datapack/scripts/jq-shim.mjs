@@ -96,6 +96,21 @@ function collectNestedFeatureRefs(input) {
   return results;
 }
 
+function collectTagEntries(input) {
+  if (!Array.isArray(input?.values)) return [];
+  return input.values.map((entry) => {
+    if (typeof entry === "string") return `true\t${entry}`;
+    if (
+      isObject(entry)
+      && typeof entry.id === "string"
+      && (!present(entry.required) || typeof entry.required === "boolean")
+    ) {
+      return `${entry.required === false ? "false" : "true"}\t${entry.id}`;
+    }
+    return "invalid\t";
+  });
+}
+
 function normalizeFilter(filter) {
   return filter.replace(/\s+/g, "");
 }
@@ -129,6 +144,8 @@ function evaluateFilter(input, filter) {
       return [Array.isArray(input?.values)];
     case ".values[]?|strings":
       return Array.isArray(input?.values) ? input.values.filter((value) => typeof value === "string") : [];
+    case ".values[]?|iftype==\"string\"then\"true\\t\"+.eliftype==\"object\"and(.id|type==\"string\")and((.required?//true)|type==\"boolean\")then((if.required==falsethen\"false\"else\"true\"end)+\"\\t\"+.id)else\"invalid\\t\"end":
+      return collectTagEntries(input);
     case "(.textures//{}|to_entries[]?.value//empty)":
       return isObject(input?.textures) ? Object.values(input.textures).filter(present) : [];
     case ".parent?//empty":

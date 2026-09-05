@@ -74,42 +74,44 @@ public class MyModClient implements ClientModInitializer {
 ```java
 // ModBlocks.java
 public class ModBlocks {
+    public static final Identifier MY_BLOCK_ID = Identifier.of(MyMod.MOD_ID, "my_block");
+    public static final RegistryKey<Block> MY_BLOCK_KEY =
+        RegistryKey.of(RegistryKeys.BLOCK, MY_BLOCK_ID);
+
     public static final Block MY_BLOCK = new Block(
         AbstractBlock.Settings.create()
+            .registryKey(MY_BLOCK_KEY)
             .mapColor(MapColor.STONE)
             .strength(1.5f, 6.0f)
             .sounds(BlockSoundGroup.STONE)
             .requiresTool()
     );
 
-    public static final Block MY_LOG = new PillarBlock(
-        AbstractBlock.Settings.copyOf(Blocks.OAK_LOG).mapColor(MapColor.RED)
-    );
-
     public static void register() {
-        Registry.register(Registries.BLOCK,
-            Identifier.of(MyMod.MOD_ID, "my_block"), MY_BLOCK);
-        Registry.register(Registries.BLOCK,
-            Identifier.of(MyMod.MOD_ID, "my_log"), MY_LOG);
+        Registry.register(Registries.BLOCK, MY_BLOCK_KEY, MY_BLOCK);
     }
 }
 
 // ModItems.java
 public class ModItems {
+    public static final Identifier MY_ITEM_ID = Identifier.of(MyMod.MOD_ID, "my_item");
+    public static final RegistryKey<Item> MY_ITEM_KEY =
+        RegistryKey.of(RegistryKeys.ITEM, MY_ITEM_ID);
+    public static final RegistryKey<Item> MY_BLOCK_ITEM_KEY =
+        RegistryKey.of(RegistryKeys.ITEM, ModBlocks.MY_BLOCK_ID);
+
     public static final Item MY_ITEM = new Item(
-        new Item.Settings().maxCount(16)
+        new Item.Settings().registryKey(MY_ITEM_KEY).maxCount(16)
     );
 
     // BlockItem for a block
     public static final Item MY_BLOCK_ITEM = new BlockItem(
-        ModBlocks.MY_BLOCK, new Item.Settings()
+        ModBlocks.MY_BLOCK, new Item.Settings().registryKey(MY_BLOCK_ITEM_KEY)
     );
 
     public static void register() {
-        Registry.register(Registries.ITEM,
-            Identifier.of(MyMod.MOD_ID, "my_item"), MY_ITEM);
-        Registry.register(Registries.ITEM,
-            Identifier.of(MyMod.MOD_ID, "my_block"), MY_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, MY_ITEM_KEY, MY_ITEM);
+        Registry.register(Registries.ITEM, MY_BLOCK_ITEM_KEY, MY_BLOCK_ITEM);
 
         // Add to creative tab
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS)
@@ -125,23 +127,22 @@ public class ModItems {
 ```java
 // MyBlockEntity.java
 public class MyBlockEntity extends BlockEntity {
-    private final DefaultedList<ItemStack> inventory =
-        DefaultedList.ofSize(9, ItemStack.EMPTY);
+    private int processingTicks;
 
     public MyBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MY_BLOCK_ENTITY, pos, state);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
-        super.writeNbt(nbt, registries);
-        Inventories.writeNbt(nbt, inventory, registries);
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        view.putInt("processing_ticks", processingTicks);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
-        super.readNbt(nbt, registries);
-        Inventories.readNbt(nbt, inventory, registries);
+    protected void readData(ReadView view) {
+        super.readData(view);
+        processingTicks = view.getInt("processing_ticks", 0);
     }
 }
 
@@ -156,6 +157,10 @@ public class ModBlockEntities {
     }
 }
 ```
+
+In Yarn 1.21.11, block-entity persistence uses `ReadView` and `WriteView`.
+For compound state such as inventories, use the view's codec/list helpers; do not
+copy the earlier `readNbt` / `writeNbt` overloads into this lane.
 
 ---
 
@@ -192,8 +197,8 @@ Mixin config file (`mymod.mixins.json`):
   "minVersion": "0.8",
   "package": "com.example.mymod.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
-  "client": ["MixinServerPlayer"],
+  "mixins": ["MixinServerPlayer"],
+  "client": [],
   "server": [],
   "injectors": {
     "defaultRequire": 1
@@ -381,8 +386,8 @@ archives_base_name=mymod
 |Block sounds|`BlockSoundGroup.*`|
 |Tool materials|`ToolMaterials.*`|
 |Text/chat|`Text.literal("...")`, `Text.translatable("key")`|
-|NBT|`NbtCompound`, `NbtList`|
-|Inventories util|`Inventories.readNbt`, `Inventories.writeNbt`|
+|Block entity persistence|`ReadView`, `WriteView`|
+|NBT values when an API explicitly requires them|`NbtCompound`, `NbtList`|
 |Registries|`Registries.*`|
 |Data pack registry|`RegistryKey.of(RegistryKeys.BIOME, id)`|
 |Fabric events|`ServerTickEvents`, `UseBlockCallback`, etc.|

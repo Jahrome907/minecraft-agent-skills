@@ -281,6 +281,23 @@ should_validate_structure_template_ref() {
   [[ -d "$DATA_ROOT/$target_ns/structure" ]]
 }
 
+# A pack can reference vanilla or dependency-owned registry entries that are not
+# present in this source tree. Check own-namespace targets and any external
+# namespace that the supplied pack actually defines; leave the runtime to
+# resolve all other external entries.
+should_validate_worldgen_ref() {
+  local source_ns="$1"
+  local id="$2"
+  local registry_dir="$3"
+  local target_ns="${id%%:*}"
+
+  if [[ "$target_ns" == "$source_ns" ]]; then
+    return 0
+  fi
+
+  [[ -d "$DATA_ROOT/$target_ns/worldgen/$registry_dir" ]]
+}
+
 echo "=== Worldgen Validator ==="
 
 if [[ ! -d "$DATA_ROOT" ]]; then
@@ -428,6 +445,10 @@ while IFS= read -r -d '' pf_file; do
   fi
 
   feature_id="$(split_ref "$ns" "$feature_ref")"
+  if ! should_validate_worldgen_ref "$ns" "$feature_id" 'configured_feature'; then
+    continue
+  fi
+
   if [[ -n "${CONFIGURED_FEATURES[$feature_id]:-}" ]]; then
     pass "placed_feature target exists: $feature_id"
   else
@@ -447,6 +468,10 @@ while IFS= read -r -d '' ss_file; do
     sref="$(strip_cr "$sref")"
     [[ -z "$sref" ]] && continue
     sid="$(split_ref "$ns" "$sref")"
+    if ! should_validate_worldgen_ref "$ns" "$sid" 'structure'; then
+      continue
+    fi
+
     if [[ -n "${STRUCTURES[$sid]:-}" ]]; then
       pass "structure_set target exists: $sid"
     else
@@ -549,6 +574,10 @@ while IFS= read -r -d '' biome_file; do
     fi
 
     fid="$(split_ref "$ns" "$fref")"
+    if ! should_validate_worldgen_ref "$ns" "$fid" 'placed_feature'; then
+      continue
+    fi
+
     if [[ -n "${PLACED_FEATURES[$fid]:-}" ]]; then
       pass "biome feature target exists: $fid"
     else
@@ -575,23 +604,31 @@ while IFS= read -r -d '' mod_file; do
     fi
 
     rid="$(split_ref "$ns" "$ref")"
+    if ! should_validate_worldgen_ref "$ns" "$rid" 'placed_feature'; then
+      continue
+    fi
+
     if [[ -n "${PLACED_FEATURES[$rid]:-}" ]]; then
       pass "biome_modifier feature target exists: $rid"
     else
       fail "biome_modifier references missing placed_feature: $rid"
     fi
-  done < <(jq -r '(.features? // empty), (.features[]? // empty)' "$mod_file")
+  done < <(jq -r 'if (.features? | type) == "array" then .features[]? else .features? // empty end' "$mod_file")
 
   while IFS= read -r ref; do
     ref="$(strip_cr "$ref")"
     [[ -z "$ref" ]] && continue
     rid="$(split_ref "$ns" "$ref")"
+    if ! should_validate_worldgen_ref "$ns" "$rid" 'structure'; then
+      continue
+    fi
+
     if [[ -n "${STRUCTURES[$rid]:-}" ]]; then
       pass "biome_modifier structure target exists: $rid"
     else
       fail "biome_modifier references missing structure: $rid"
     fi
-  done < <(jq -r '(.structures? // empty), (.structures[]? // empty)' "$mod_file")
+  done < <(jq -r 'if (.structures? | type) == "array" then .structures[]? else .structures? // empty end' "$mod_file")
 done < <(find_neoforge_jsons 'biome_modifier')
 
 echo ""

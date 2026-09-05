@@ -38,6 +38,7 @@ const checks = [
   },
   {
     file: ".agents/skills/minecraft-multiloader/SKILL.md",
+    references: [".agents/skills/minecraft-multiloader/references/legacy-1.21.11-template.md"],
     required: [
       /mod_version=1\.0\.0/,
       /minecraft_version=1\.21\.11/,
@@ -45,10 +46,7 @@ const checks = [
       /fabric_loader_version=0\.19\.3/,
       /fabric_api_version=0\.141\.4\+1\.21\.11/,
       /neoforge_version=21\.11\.42/,
-      /id "architectury-plugin" version "3\.4"/,
       /loom_version=1\.17\.11/,
-      /dev\.architectury:architectury-fabric/,
-      /dev\.architectury:architectury-neoforge/,
       /"fabric-api": ">=0\.141\.4\+1\.21\.11"/,
       /"minecraft": "~1\.21\.11"/,
       /loaderVersion = "\[1,\)"/
@@ -66,10 +64,12 @@ const checks = [
   },
   {
     file: ".agents/skills/minecraft-ci-release/SKILL.md",
+    references: [".agents/skills/minecraft-ci-release/references/publishing-gradle.md"],
     required: [
       /1\.0\.0\+26\.2/,
-      /gameVersions\.addAll\("26\.2"\)/,
-      /cf\.addGameVersion\("26\.2"\)/,
+      /gameVersions\.add\(minecraftVersion\)/,
+      /mainFile\.addGameVersion\(minecraftVersion\)/,
+      /providers\.gradleProperty\("minecraft_version"\)/,
       /minecraft_version=26\.2/,
       /java-version: "25"/
     ],
@@ -142,8 +142,8 @@ const checks = [
     file: ".agents/skills/minecraft-testing/SKILL.md",
     required: [
       /mockbukkit-v26\.2:4\.116\.1/,
-      /data\/mymod\/structure\/empty\.nbt/,
-      /java-version: '25'/
+      /data\/<namespace>\/structure\/<path>\.nbt/,
+      /25 for 26\.x, 21 for 1\.21\.x/
     ],
     forbidden: [
       /data\/mymod\/structures\/empty\.nbt/
@@ -152,8 +152,7 @@ const checks = [
   {
     file: ".agents/skills/minecraft-testing/scripts/validate-test-layout.sh",
     required: [
-      /data\/\$namespace\/structure\/\$path\.nbt/,
-      /data\/\*\/structure\/\*\.nbt/
+      /data\/\$namespace\/structure\/\$path\.nbt/
     ],
     forbidden: [
       /data\/\$namespace\/structures\/\$path\.nbt/,
@@ -227,7 +226,9 @@ let failures = 0;
 
 for (const check of checks) {
   const target = path.join(repoRoot, check.file);
-  const text = fs.readFileSync(target, "utf8");
+  const text = [target, ...(check.references ?? []).map((file) => path.join(repoRoot, file))]
+    .map((file) => fs.readFileSync(file, "utf8"))
+    .join("\n");
 
   for (const pattern of check.required ?? []) {
     if (!pattern.test(text)) {

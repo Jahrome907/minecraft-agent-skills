@@ -24,7 +24,7 @@ Recommended filenames:
 
 Recipe:
 
-1. Generate 2-3 square concepts with a single strong subject.
+1. Generate one square asset with a strong subject, or multiple concepts when alternatives were requested.
 2. Down-select based on tiny-size readability, not only full-size detail.
 3. Keep decorative text out unless the brand absolutely requires it.
 4. Save the approved version into the pack root as `pack.png`.
@@ -61,7 +61,7 @@ Recipe:
 
 1. Keep the image flat, front-on, and lighting-neutral.
 2. Ask for material qualities, not scene storytelling.
-3. Hand the approved concept to `minecraft-resource-pack` for the final pixel-pass, tiling, and pack integration.
+3. When pack integration is in scope, complete the pixel cleanup, tiling, and file references; otherwise deliver the concept as requested.
 
 ## Server Banner or Header
 

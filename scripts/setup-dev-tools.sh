@@ -24,8 +24,8 @@ install_with_brew() {
 }
 
 if ! need_cmd node || ! need_cmd npm; then
-  echo "$FAIL Node 20+ and npm are required but were not found on PATH."
-  echo "$WARN Install Node 20+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
+  echo "$FAIL Node 22+ and npm are required but were not found on PATH."
+  echo "$WARN Install Node 22+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
   exit 1
 fi
 
@@ -76,9 +76,9 @@ else
 fi
 
 node_major="$(node --version | sed -E 's/^v([0-9]+).*/\1/')"
-if [[ -z "$node_major" || "$node_major" -lt 20 ]]; then
-  echo "$FAIL Node 20+ is required, but found $(node --version 2>/dev/null || echo missing)"
-  echo "$WARN Install Node 20+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
+if [[ -z "$node_major" || "$node_major" -lt 22 ]]; then
+  echo "$FAIL Node 22+ is required, but found $(node --version 2>/dev/null || echo missing)"
+  echo "$WARN Install Node 22+ with nvm, fnm, Volta, Homebrew, or NodeSource, then rerun."
   exit 1
 fi
 

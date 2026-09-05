@@ -60,7 +60,21 @@ fail() { echo "$FAIL $*"; FAILURES=$((FAILURES + 1)); }
 read_prop() {
   local key="$1"
   local value
-  value="$(sed -n -E "s/^${key}=//p" "$PROPS" | head -n 1)"
+  value="$(awk -v key="$key" '
+    /^[[:space:]]*[#!]/ { next }
+    {
+      line = $0
+      sub(/\r$/, "", line)
+      sub(/^[[:space:]]+/, "", line)
+      pattern = "^" key "[[:space:]]*([:=]|[[:space:]])"
+      if (line ~ pattern) {
+        sub("^" key "[[:space:]]*([:=][[:space:]]*|[[:space:]]+)", "", line)
+        sub(/[[:space:]]+$/, "", line)
+        print line
+        exit
+      }
+    }
+  ' "$PROPS")"
   value="${value//$'\r'/}"
   printf '%s' "$value"
 }
@@ -82,7 +96,8 @@ for key in mod_version minecraft_version enabled_platforms architectury_version 
   fi
 done
 
-if [[ ",${ENABLED_PLATFORMS}," == *,fabric,* && ",${ENABLED_PLATFORMS}," == *,neoforge,* ]]; then
+NORMALIZED_PLATFORMS="${ENABLED_PLATFORMS//[[:space:]]/}"
+if [[ ",${NORMALIZED_PLATFORMS}," == *,fabric,* && ",${NORMALIZED_PLATFORMS}," == *,neoforge,* ]]; then
   pass "enabled_platforms includes fabric and neoforge"
 else
   fail "enabled_platforms must include fabric and neoforge"

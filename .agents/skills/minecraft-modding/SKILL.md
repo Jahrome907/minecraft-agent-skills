@@ -118,6 +118,7 @@ src/
         models/
           block/               ← block model JSON
           item/                ← item model JSON
+        items/                 ← 1.21.x item-definition JSON
         textures/
           block/               ← 16×16 PNG textures
           item/
@@ -393,6 +394,7 @@ When adding a **new block**:
 - [ ] Blockstate JSON → `assets/<modid>/blockstates/<name>.json`
 - [ ] Block model JSON → `assets/<modid>/models/block/<name>.json`
 - [ ] Item model JSON → `assets/<modid>/models/item/<name>.json` (or inherits from block)
+- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`, pointing at the item or block model
 - [ ] Texture PNG → `assets/<modid>/textures/block/<name>.png`
 - [ ] Loot table JSON -> 1.21.x: `data/<modid>/loot_table/blocks/<name>.json`; Forge 1.20.1: `data/<modid>/loot_tables/blocks/<name>.json`
 - [ ] Tags -> 1.21.x: `data/<modid>/tags/block/` and `tags/item/`; Forge 1.20.1: `data/<modid>/tags/blocks/` and `tags/items/`
@@ -404,6 +406,7 @@ When adding a **new item**:
 - [ ] `Item` subclass (or use `new Item(properties)`)
 - [ ] Register in `ModItems` / `Registries.ITEM`
 - [ ] Item model JSON
+- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`
 - [ ] Texture PNG
 - [ ] Language entry
 - [ ] Creative tab registration (NeoForge/Forge: `BuildCreativeModeTabContentsEvent`; Fabric: `ItemGroupEvents`)

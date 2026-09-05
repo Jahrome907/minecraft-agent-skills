@@ -5,13 +5,19 @@ This plugin packages the same 13 Minecraft skills for Codex and Claude Code.
 
 ## Install
 
-- Codex: keep this directory beside `.agents/plugins/marketplace.json`, then
-  install `minecraft-codex-skills` from the plugins surface.
+- Codex: preserve the repository layout: `.agents/plugins/marketplace.json`
+  and `plugins/minecraft-codex-skills/` share the same project root. Install
+  `minecraft-codex-skills` from the plugins surface.
 - Claude Code:
 
   ```bash
   claude --plugin-dir ./plugins/minecraft-codex-skills
   ```
+
+Use either the plugin or raw skill folders for a host to avoid duplicate skills.
+Model selection and image-generation tools come from the host, not this bundle.
+See the [repository usage guidance](../../README.md#using-gpt-6-astra-and-claude-fable-51)
+for GPT-6 Astra and Claude Fable 5.1.
 
 ## Maintain
 

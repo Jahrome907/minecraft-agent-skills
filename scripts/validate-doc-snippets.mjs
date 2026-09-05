@@ -36,20 +36,10 @@ function addError(file, message) {
 }
 
 function validateJson(file, blockIndex, code) {
-  const parts = code
-    .split(/\n\s*\n(?=(?:\/\/[^\n]*\n\s*)*[\[{])/)
-    .map((part) => part.replace(/^\s*\/\/[^\n]*\n/gm, "").trim())
-    .filter(Boolean);
-
-  for (const [partIndex, part] of parts.entries()) {
-    if (!/^[\[{]/.test(part)) continue;
-
-    try {
-      JSON.parse(part);
-    } catch (error) {
-      const suffix = parts.length > 1 ? ` part #${partIndex + 1}` : "";
-      addError(file, `json block #${blockIndex}${suffix} is invalid: ${error.message}`);
-    }
+  try {
+    JSON.parse(code);
+  } catch (error) {
+    addError(file, `json block #${blockIndex} is invalid: ${error.message}`);
   }
 }
 
