@@ -153,8 +153,8 @@ function checkRoutingBoundaries(file, text) {
 function checkLocalLinks(file, text) {
   const fullPath = path.resolve(ROOT, file);
   const skillDir = path.join(CANONICAL, path.relative(CANONICAL, fullPath).split(path.sep)[0]);
-  for (const match of text.matchAll(/\[[^\]]*\]\(([^\s)]+)\)/g)) {
-    const href = match[1];
+  for (const match of text.matchAll(/\[[^\]]*\]\((?:<([^>]+)>|([^\s)]+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\)/g)) {
+    const href = match[1] ?? match[2];
     if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#")) continue;
     const target = path.resolve(path.dirname(fullPath), href.split("#")[0]);
     const relative = path.relative(skillDir, target);

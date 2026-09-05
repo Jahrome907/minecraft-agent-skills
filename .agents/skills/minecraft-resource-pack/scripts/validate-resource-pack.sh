@@ -148,6 +148,8 @@ resolve_model() {
   target="$ROOT/assets/$ns/models/$path.json"
   if [[ -f "$target" ]]; then
     pass "model exists: $ns:$path"
+  elif [[ "$ns" != "$current_ns" ]]; then
+    warn "external model not locally verifiable: $ns:$path"
   else
     fail "missing model: $ns:$path (expected ${target#$ROOT/})"
   fi
@@ -164,8 +166,8 @@ resolve_sound() {
     pass "sound event reference does not map to an .ogg file: $ref"
     return
   fi
-  if [[ "$sound_type" != "sound" && "$sound_type" != "file" ]]; then
-    fail "unsupported sounds.json entry type '$sound_type' for $ref (expected sound/file or event)"
+  if [[ "$sound_type" != "file" ]]; then
+    fail "unsupported sounds.json entry type '$sound_type' for $ref (expected file or event)"
     return
   fi
   if [[ "$ref" == *:* ]]; then
@@ -179,6 +181,8 @@ resolve_sound() {
   target="$ROOT/assets/$ns/sounds/$path.ogg"
   if [[ -f "$target" ]]; then
     pass "sound exists: $ns:$path"
+  elif [[ "$ns" != "$current_ns" ]]; then
+    warn "external sound not locally verifiable: $ns:$path"
   else
     fail "missing sound: $ns:$path (expected ${target#$ROOT/})"
   fi
@@ -254,7 +258,7 @@ while IFS= read -r -d '' sounds_file; do
     sound_type="$(strip_cr "$sound_type")"
     sound_ref="$(strip_cr "$sound_ref")"
     resolve_sound "$ns" "$sound_type" "$sound_ref"
-  done < <(jq -r '.. | objects | select(has("sounds")) | .sounds[]? | if type == "string" then ["sound", .] else [(.type // "sound"), (.name // empty)] end | @tsv' "$sounds_file")
+  done < <(jq -r '.. | objects | select(has("sounds")) | .sounds[]? | if type == "string" then ["file", .] else [(.type // "file"), (.name // empty)] end | @tsv' "$sounds_file")
 done < <(find "$ROOT/assets" -type f -name 'sounds.json' -print0 2>/dev/null)
 
 echo "Checking font provider file references..."

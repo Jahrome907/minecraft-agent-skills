@@ -381,6 +381,10 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 
 Use the bundled validator script before shipping a resource-pack update:
 
+Unbundled references to another namespace's models, textures, sounds, or fonts
+are warnings requiring runtime verification with the dependency present. Missing
+files in the current namespace fail; strict mode also fails unresolved warnings.
+
 ```bash
 # Run from the installed skill directory (for example `.claude/skills/minecraft-resource-pack`):
 ./scripts/validate-resource-pack.sh --root /path/to/resource-pack

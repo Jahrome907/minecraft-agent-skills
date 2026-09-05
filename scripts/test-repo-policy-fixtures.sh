@@ -42,6 +42,8 @@ expect_fail_contains() {
 
 echo "=== Running Repo Policy Fixtures ==="
 
+expect_pass "skill reference links" node ./scripts/test-skill-link-fixtures.mjs
+
 expect_pass "workflow pins valid" \
   node ./scripts/check-workflow-action-pins.mjs \
   --root tests/fixtures/workflow-pins/valid

@@ -78,11 +78,11 @@ function collectSoundEntries(input) {
     if (!isObject(entry) || !Array.isArray(entry.sounds)) return;
     for (const sound of entry.sounds) {
       if (typeof sound === "string") {
-        results.push(`sound\t${sound}`);
+        results.push(`file\t${sound}`);
         continue;
       }
       if (isObject(sound)) {
-        results.push(`${sound.type ?? "sound"}\t${sound.name ?? ""}`);
+        results.push(`${sound.type ?? "file"}\t${sound.name ?? ""}`);
       }
     }
   });
@@ -169,7 +169,7 @@ function evaluateFilter(input, filter) {
       return collectItemDefinitionModels(input);
     case "..|objects|select(has(\"sounds\"))|.sounds[]?|iftype==\"string\"then.else.name?//emptyend":
       return collectSounds(input);
-    case "..|objects|select(has(\"sounds\"))|.sounds[]?|iftype==\"string\"then[\"sound\",.]else[(.type//\"sound\"),(.name//empty)]end|@tsv":
+    case "..|objects|select(has(\"sounds\"))|.sounds[]?|iftype==\"string\"then[\"file\",.]else[(.type//\"file\"),(.name//empty)]end|@tsv":
       return collectSoundEntries(input);
     case ".providers[]?|.file?//empty":
       return Array.isArray(input?.providers) ? input.providers.map((entry) => entry?.file).filter(present) : [];

@@ -158,6 +158,12 @@ expect_pass "resource-pack valid" \
 expect_pass_contains "resource-pack external textures warn" "external texture not locally verifiable" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/external-textures
+expect_pass_contains "resource-pack external sounds warn" "external sound not locally verifiable" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/external-textures
+expect_fail_contains "resource-pack external assets strict" "strict mode failed" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/external-textures --strict
 expect_fail_contains "resource-pack invalid png mcmeta" "invalid JSON: assets/mypack/textures/block/animated.png.mcmeta" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/invalid-png-mcmeta
@@ -165,6 +171,9 @@ expect_pass "resource-pack legacy pack metadata" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/legacy-pack-metadata
 expect_fail_contains "resource-pack invalid" "missing texture" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/invalid
+expect_fail_contains "resource-pack invalid sound type" "unsupported sounds.json entry type 'sound'" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/invalid
 expect_fail_contains "resource-pack invalid pack version" "pack.mcmeta must define" \

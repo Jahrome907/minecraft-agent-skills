@@ -1,4 +1,12 @@
 {
+  "invalid_type": {
+    "sounds": [
+      {
+        "name": "mypack:ui/click",
+        "type": "sound"
+      }
+    ]
+  },
   "entity.test": {
     "sounds": [
       "mypack:entity/missing"
