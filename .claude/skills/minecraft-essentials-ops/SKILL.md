@@ -21,6 +21,15 @@ description: "Operate EssentialsX on Minecraft 26.x and 1.21.x servers, includin
 
 ## Module Overview and Install Notes
 
+### Platform gate
+
+Use EssentialsX only on a supported Paper or Spigot server build. EssentialsX
+2.22.0 warns that Folia and Folia forks are unsupported and can lose userdata;
+it also does not support Forge, NeoForge, or Fabric Bukkit-hybrid servers. If
+the current platform is in either category, stop before enabling or configuring
+EssentialsX and verify a supported operational path. This guide does not
+recommend a migration.
+
 Common EssentialsX modules in production:
 - `EssentialsX` (core commands and user tools)
 - `EssentialsXChat`
@@ -204,7 +213,7 @@ groups:
       - essentials.kick
       - essentials.mute
       - essentials.tempban
-      - essentials.jail
+      - essentials.togglejail
       - essentials.warp
       - essentials.msg
   player:
@@ -235,7 +244,10 @@ Practice:
 - include reason and duration
 - log escalation path for repeat behavior
 
-Troubleshooting: mute not applying → verify `essentials.mute` permission and that `EssentialsXChat` is installed for chat filtering.
+Troubleshooting: mute not applying → verify the EssentialsX core module loaded,
+the actor has `essentials.mute`, the target has no mute-exempt state, and no
+other moderation or chat plugin is overriding the result. EssentialsXChat
+formats chat; it is not a prerequisite for core mute enforcement.
 
 ## Workflow: Jail
 
@@ -248,6 +260,9 @@ Troubleshooting: mute not applying → verify `essentials.mute` permission and t
 Practice:
 - define clear jail reasons
 - pair with rollback/repair actions when relevant
+- grant `essentials.setjail` only to roles authorized to create or move jail
+  locations; staff who only need to jail or unjail players use
+  `essentials.togglejail`
 
 Troubleshooting: jail not working → confirm jail location exists with `/setjail intake` and player has no bypass permission.
 
@@ -307,7 +322,9 @@ Hardening checklist:
 - https://essentialsx.net/wiki/Home.html
 - https://essentialsx.net/commands
 - https://essentialsx.net/permissions
+- https://essentialsx.net/wiki/modules
 - https://essentialsx.net/wiki/Module-breakdown.html
 - https://essentialsx.net/wiki/Configuration-file.html
 - https://essentialsx.net/wiki/Sign-Tutorial.html
+- https://github.com/EssentialsX/Essentials/discussions/6552
 - https://www.spigotmc.org/resources/vault.34315/

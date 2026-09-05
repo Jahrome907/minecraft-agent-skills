@@ -112,7 +112,7 @@ fields do not model newer environment behavior. The 11 decoration steps still
 organize placed features; choose the semantically appropriate step and keep ore
 placement in `underground_ores`.
 
-The full 1.21.10-and-earlier biome and dimension examples are in
+The version-labeled 1.21.5 biome and dimension examples are in
 [legacy 1.21 JSON patterns](references/legacy-1.21-worldgen-json.md).
 
 ## 26.x feature pattern
@@ -218,16 +218,18 @@ The detailed 1.21 structure and dimension examples are in
    - Cross-reference integrity for `placed_feature -> configured_feature`
    - Cross-reference integrity for `structure_set -> structure` and biome/biome_modifier feature targets
    - Cross-reference integrity for `jigsaw structure -> start_pool` and `template_pool -> structure template / processor_list`
-4. For 1.21.11+ biome or dimension-type JSON, compare against the exact current
-   vanilla registry shape before in-game testing. Do not ship an older
-   `effects`/dimension-type shape just because the bundled structural validator
-   accepts the JSON and local references.
+4. Compare biome and dimension-type JSON against the exact target's vanilla
+   registry shape before in-game testing. The helper does not run Mojang codecs:
+   valid JSON and local references do not prove that fields such as `carvers`,
+   `effects`, or dimension settings match that release's schema.
 5. In-game biome and structure testing:
    ```mcfunction
    /locate structure <namespace>:my_structure
    /locate biome <namespace>:my_biome
-   /placefeature <namespace>:my_ore_placed
+   /place feature <namespace>:my_ore
    ```
+   `place feature` takes a configured-feature ID, not its placed-feature wrapper.
+   See Mojang's [place command reference in the 1.19 release notes](https://www.minecraft.net/en-us/article/the-wild-update-out-today-java).
 6. For dimension testing, use `/execute in` (dimension must exist at world load, not added via `/reload`):
    ```mcfunction
    execute in <namespace>:my_dimension run tp @s 0 100 0

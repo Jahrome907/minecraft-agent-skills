@@ -41,6 +41,15 @@ stack and version first and preserve them unless migration is requested.
 - Use Velocity when one process is not enough or you need separate backend roles.
 - Use Fabric/NeoForge when the requirement is mod-driven, not plugin-driven.
 
+### Java and version lanes
+
+- Paper and Purpur: Minecraft 26.1+ requires Java 25; Minecraft 1.21.x uses
+  Java 21. Verify the exact Paper/Purpur build and installed plugins before a
+  lane change.
+- Current Velocity 4.x requires Java 25. For a legacy proxy, retain the Java
+  version required by that exact proxy release rather than applying the current
+  lane by default.
+
 ---
 
 ## Playbook: Performance Tuning
@@ -81,8 +90,11 @@ Use Spark instead of guesswork:
 ```bash
 spark profiler --timeout 180
 spark tps
-spark tickmonitor --interval 10
+spark tickmonitor --threshold-tick 50
 ```
+
+The 50 ms threshold reports ticks that exceed one normal 20 TPS tick; adjust it
+only when the incident threshold is intentionally different.
 
 Then identify whether the issue is:
 - plugin task load
@@ -233,13 +245,23 @@ not enable BungeeCord forwarding and Velocity modern forwarding at the same time
 | Proxy config/secrets | Daily | 30 daily | Store encrypted off-host |
 | Container/orchestration files | On change + weekly | 8 weeks | Git-tracked where possible |
 
-### Example backup script
+### Example backup script (Paper/Purpur)
 
 For a production server, quiesce world writes before copying live world folders.
 The example below assumes a maintenance window and a cleanly stopped server. If
 you use RCON-based live backups instead, choose a client/secret mechanism that
-does not expose the password in command arguments, flush chunks first, and test
-the restore path before trusting the backup.
+does not expose the password in command arguments. A safe implementation must
+run `save-off`, then `save-all`, copy the data, and guarantee `save-on` cleanup
+even when the copy fails. Do not treat a flush or `save-all` alone as a live
+backup protocol. Folia disables `save-all`; use a clean stop or a verified
+platform snapshot there. Test the restore path before trusting any backup.
+
+For Fabric or NeoForge recovery, additionally inventory `mods/` and record the
+exact loader launch state: Minecraft and loader versions, Java version, launch
+command and arguments, launcher or installer artifacts, and any version or
+library manifests used by that deployment. Restore those matching components
+with the configured world folders; this Paper/Purpur example does not capture
+them for you.
 
 Supply the complete world-folder list as arguments, relative to `SERVER_ROOT`,
 after checking `level-name` and any multi-world plugin configuration. Back up
@@ -433,6 +455,7 @@ Minecraft or Java line.
 ### Paper (primary)
 
 - https://docs.papermc.io/paper/
+- https://docs.papermc.io/paper/getting-started/
 - https://docs.papermc.io/paper/admin
 - https://docs.papermc.io/paper/profiling/
 
@@ -445,6 +468,10 @@ Minecraft or Java line.
 ### Proxy and ecosystem docs
 
 - https://docs.papermc.io/velocity/
+- https://docs.papermc.io/velocity/getting-started/
+- https://docs.papermc.io/folia/faq/
 - https://spark.lucko.me/docs
+- https://spark.lucko.me/docs/Command-Usage
+- https://github.com/itzg/docker-mc-backup
 - https://geysermc.org/wiki/geyser/
 - https://pterodactyl.io/project/introduction.html

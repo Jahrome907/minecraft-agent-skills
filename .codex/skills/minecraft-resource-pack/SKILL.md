@@ -33,13 +33,15 @@ loader is required for those vanilla assets.
 | 26.1              | `min_format: [84, 0]`, `max_format: [84, 0]` |
 | 26.2              | `min_format: [88, 0]`, `max_format: [88, 0]` |
 
-Use `pack_format` through 1.21.8. Starting in 1.21.9, `pack.mcmeta` switches to
-`min_format` / `max_format` instead of the older single-number field.
-For exact patch targeting, use `[major, minor]` arrays for both `min_format` and
-`max_format`, including `.0` versions such as `[75, 0]`. A single integer is
-equivalent to `[major, 0]` for `min_format`, while a single integer in
-`max_format` allows any minor version on that major line. Do not write decimal
-JSON numbers.
+Use legacy `pack_format` only for resource formats below 65 (through 1.21.8).
+Resource format 65 and later require both `min_format` and `max_format`; use
+`[major, minor]` for exact patch targeting, including `.0` such as `[84, 0]`.
+An integer or `[major]` `min_format` means `[major, 0]`; an integer or
+`[major]` `max_format` permits every minor version on that major line. Do not
+write decimal JSON numbers. A legacy-only pack can use its integer
+`pack_format` alone. A range whose `min_format` includes a legacy format needs
+integer `pack_format` and `supported_formats`; do not include
+`supported_formats` for a modern-only range.
 
 ---
 
@@ -223,10 +225,11 @@ Cross model (flowers, plants):
 
 ## Item Models
 
-Use current item definitions in `assets/<namespace>/items/` when the target
-release supports them. Read [conditional assets](references/conditional-assets.md)
-for current custom-model-data lists and the legacy `overrides` format; the two
-formats have different selector shapes.
+For **1.21.4 and later**, use item definitions in
+`assets/<namespace>/items/`. For **1.21.3 and earlier**, use the legacy model
+`overrides` array. Read [conditional assets](references/conditional-assets.md)
+for the string-based current `custom_model_data` selector and the legacy numeric
+predicate; their values are not interchangeable.
 
 ---
 
@@ -304,6 +307,25 @@ If `frames` is omitted, all frames play sequentially. `frametime` is in game tic
 Place sprites at `assets/minecraft/textures/gui/sprites/<category>/<name>.png`.
 Reference them with `<category>/<name>` in code/JSON.
 
+### 26.1 block-model texture entries
+For 26.1, a block-model `textures` entry may remain a sprite string or use an
+object. The object must have a string `sprite`; `force_translucent`, when set,
+must be a boolean.
+
+```json
+{
+  "textures": {
+    "all": {
+      "sprite": "mypack:block/frosted_panel",
+      "force_translucent": true
+    }
+  }
+}
+```
+
+Both forms identify a sprite without `.png`. Use `force_translucent` only when
+the geometry must render in the translucent pass despite its sprite pixels.
+
 ---
 
 ## Sounds
@@ -312,7 +334,7 @@ An event's namespace comes from the namespace containing `sounds.json`; a
 sound entry's `name` identifies the sound-file namespace. Sound files are Vorbis
 `.ogg` under `assets/<namespace>/sounds/`. Read
 [conditional assets](references/conditional-assets.md) for a correct event
-example, categories, aliases, and replacement behavior.
+example, aliases, sound-source selection, and replacement behavior.
 
 ---
 
@@ -372,7 +394,7 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 |---------|-------|-----|
 | Model not showing | Wrong JSON path or syntax error | Check `assets/<namespace>/models/` path; validate JSON |
 | Black/pink checkerboard | Texture path wrong or missing | Check `textures/` path, file extension not in JSON |
-| Blockstate not applying | Wrong state property name | Match exact property names from `/blockdata` |
+| Blockstate not applying | Wrong state property name | Use F3 to inspect block state; use `/data get block <x> <y> <z>` for block-entity NBT |
 | Animation not working | Wrong MCMETA location | Must be same folder as texture, named `texture.png.mcmeta` |
 | Custom sound not playing | Not in `sounds.json` | Register sound event in `sounds.json`, match namespace |
 | Pack not loading | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
@@ -395,16 +417,23 @@ files in the current namespace fail; strict mode also fails unresolved warnings.
 
 What it checks:
 - JSON validity for `pack.mcmeta` and `assets/**/*.json`
+- Legacy versus modern `pack.mcmeta` field shape, including integer, `[major]`, and `[major, minor]` versions
 - Model/blockstate/font/sounds references resolve to real files
+- Current `custom_model_data` select cases use strings; 26.1 texture objects use a string `sprite` and optional boolean `force_translucent`
+- Same-namespace `type: "event"` sound aliases name an event in that `sounds.json`
 - Every `*.png.mcmeta` has a matching `*.png`
+
+The validator cannot resolve a sound event owned by another namespace, or prove
+that a command or mod code invokes an event with the intended sound source.
+Those cases warn and require an exact-client runtime check.
 
 ---
 
 ## References
 
-- Minecraft Wiki — Resource pack: https://minecraft.wiki/w/Resource_pack
-- Minecraft Wiki — Model: https://minecraft.wiki/w/Tutorials/Models
-- Minecraft Wiki — Blockstates: https://minecraft.wiki/w/Blockstate_(Java_Edition)
-- Pack format history: https://minecraft.wiki/w/Pack_format
+- [Mojang: Java Edition 1.21.4](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-4)
+- [Mojang: Java Edition 1.21.9](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-9)
+- [Mojang: Java Edition 26.1](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-1)
+- [NeoForge 1.21.8: Sounds](https://docs.neoforged.net/docs/1.21.8/resources/client/sounds/)
 - Misode's model viewer: https://misode.github.io/
 - OptiFine CIT guide: https://optifine.readthedocs.io/cit.html

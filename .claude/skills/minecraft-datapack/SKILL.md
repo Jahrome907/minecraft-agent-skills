@@ -34,8 +34,14 @@ changes, then use static checks and the available game environment proportionate
 | 26.1              | `min_format: [101, 1]`, `max_format: [101, 1]` |
 | 26.2              | `min_format: [107, 1]`, `max_format: [107, 1]` |
 
-Use `pack_format` through 1.21.8. Starting in 1.21.9, Mojang replaced that
-single field with explicit `min_format` / `max_format` values.
+Use `pack_format` for a legacy-only target through data pack format 81. Starting
+with data pack format 82 in 1.21.9, define both explicit `min_format` and
+`max_format` values. A range that includes a legacy format below 82 must also
+retain `pack_format` and `supported_formats`; do not include
+`supported_formats` for a modern-only range.
+For a legacy-compatible range, `supported_formats` may be one integer, a
+two-integer inclusive range, or an object with integer `min_inclusive` and
+`max_inclusive` fields.
 For exact patch targeting, use `[major, minor]` arrays for both `min_format` and
 `max_format`, including `.0` versions such as `[88, 0]`. A single integer is
 equivalent to `[major, 0]` for `min_format`, while a single integer in
@@ -53,28 +59,31 @@ multiple Minecraft releases with one metadata block.
 my-datapack/
 ├── pack.mcmeta
 └── data/
-    └── <namespace>/           ← use your pack's name (e.g., mypack)
-        ├── function/
-        │   ├── main.mcfunction
-        │   └── tick.mcfunction
-        ├── advancement/
-        │   └── custom_advancement.json
-        ├── recipe/
-        │   └── custom_recipe.json
-        ├── loot_table/
-        │   └── custom_loot.json
-        ├── predicate/
-        │   └── is_night.json
-        ├── item_modifier/
-        │   └── add_name.json
-        └── tags/
-            ├── block/
-            │   └── climbable.json
-            ├── entity_type/
-            │   └── bosses.json
-            └── function/
-                ├── load.json     ← runs on /reload
-                └── tick.json     ← runs every game tick
+    ├── <namespace>/           ← use your pack's name (e.g., mypack)
+    │   ├── function/
+    │   │   ├── main.mcfunction
+    │   │   └── tick.mcfunction
+    │   ├── advancement/
+    │   │   └── custom_advancement.json
+    │   ├── recipe/
+    │   │   └── custom_recipe.json
+    │   ├── loot_table/
+    │   │   └── custom_loot.json
+    │   ├── predicate/
+    │   │   └── is_night.json
+    │   ├── item_modifier/
+    │   │   └── add_name.json
+    │   └── tags/
+    │       ├── block/
+    │       │   └── climbable.json
+    │       ├── entity_type/
+    │       │   └── bosses.json
+    │       └── function/
+    │           └── custom_flow.json  ← manually invoked tag
+    └── minecraft/
+        └── tags/function/
+            ├── load.json             ← engine tag; runs on /reload
+            └── tick.json             ← engine tag; runs every game tick
 ```
 
 ---
@@ -88,6 +97,23 @@ my-datapack/
   "pack": {
     "pack_format": 81,
     "description": "My Custom Datapack v1.0"
+  }
+}
+```
+
+### Deliberate legacy-to-modern compatibility range
+
+Use this form only when the pack actually supports both sides of the format-82
+boundary. Mojang requires the retained legacy fields for this range.
+
+```json
+{
+  "pack": {
+    "pack_format": 81,
+    "supported_formats": [81, 88],
+    "min_format": [81],
+    "max_format": [88],
+    "description": "My compatible datapack"
   }
 }
 ```
@@ -132,7 +158,11 @@ my-datapack/
 
 ## Function Tags (load / tick)
 
-### `data/<namespace>/tags/function/load.json`
+The engine recognizes the `minecraft:load` and `minecraft:tick` tags, so these
+files must use the `minecraft` namespace. A `load.json` or `tick.json` in a
+custom namespace is a valid custom tag name, but it has no automatic behavior.
+
+### `data/minecraft/tags/function/load.json`
 ```json
 {
   "values": [
@@ -141,7 +171,7 @@ my-datapack/
 }
 ```
 
-### `data/<namespace>/tags/function/tick.json`
+### `data/minecraft/tags/function/tick.json`
 ```json
 {
   "values": [
@@ -281,7 +311,7 @@ Place the pack folder or ZIP under the world's `datapacks/` directory, with
 | `Unknown or invalid command` | Syntax error in function | Check whitespace, selector, trailing space |
 | `Datapack did not load` | Invalid JSON in any file | Validate with `jq . < file.json` |
 | `pack metadata mismatch` | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
-| Function not running on tick | Missing tick tag or wrong namespace | Check `tags/function/tick.json` path |
+| Function not running on tick | Missing engine tick tag or wrong namespace | Check `data/minecraft/tags/function/tick.json` |
 | Macro error | `$` line but no `with` | Provide `with storage/entity/block` |
 
 ## Validator Script
@@ -299,13 +329,15 @@ Use the bundled validator script before shipping a datapack update:
 What it checks:
 - JSON validity for `pack.mcmeta` and `data/**/*.json`
 - Legacy pluralized path mistakes for loot tables, functions, and block/item/function tags
-- `tags/function/load.json` and `tags/function/tick.json` references resolve to real `.mcfunction` files
+- `data/minecraft/tags/function/load.json` and `tick.json` references resolve to local `.mcfunction` files
+- custom-namespace `load.json` and `tick.json` names, which are valid but do not run automatically
 
 ---
 
 ## References
 
 - Minecraft Wiki — Data Pack: https://minecraft.wiki/w/Data_pack
+- Minecraft Java Edition 1.21.9 release notes: https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-9
 - Minecraft Wiki — Function: https://minecraft.wiki/w/Function_(Java_Edition)
 - Minecraft Wiki — Commands: https://minecraft.wiki/w/Commands
 - Pack format history: https://minecraft.wiki/w/Pack_format

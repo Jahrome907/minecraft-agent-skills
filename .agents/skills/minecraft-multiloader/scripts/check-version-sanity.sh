@@ -22,13 +22,16 @@ while [[ $# -gt 0 ]]; do
       cat <<'USAGE'
 Usage: check-version-sanity.sh [--root <path>] [--strict]
 
-Checks common Architectury multiloader version-alignment rules:
+Performs static Architectury multiloader version-alignment preflight:
 - gradle.properties exists with required keys
-- gradle.properties declares mod_version for `${mod_version}+${minecraft_version}` outputs
+- gradle.properties declares the local mod_version convention used by this helper
 - enabled_platforms includes fabric and neoforge
 - no snapshot-only toolchain pins unless you accept warnings
 - NeoForge version family matches the Minecraft release line
 - Fabric API suffix matches the Minecraft patch line
+
+This helper does not resolve dependencies, compile the project, or prove a
+specific Architectury / Fabric API / NeoForge / Loom combination is compatible.
 USAGE
       exit 0
       ;;

@@ -89,10 +89,6 @@ const usedSecrets = new Set();
 const documentedSecrets = new Set();
 
 const secretUseRe = /\$\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}/g;
-let sm;
-while ((sm = secretUseRe.exec(text)) !== null) {
-  usedSecrets.add(sm[1]);
-}
 
 const lines = text.split(/\r?\n/);
 let inSecretSection = false;
@@ -114,25 +110,8 @@ for (const line of lines) {
   }
 }
 
-if (usedSecrets.size === 0) {
-  warn('no `${{ secrets.* }}` references found');
-} else {
-  pass(`found ${usedSecrets.size} secret reference(s)`);
-}
-
-for (const secret of usedSecrets) {
-  if (!documentedSecrets.has(secret)) {
-    fail(`secret used but not documented in a Secrets section: ${secret}`);
-  }
-}
-for (const secret of documentedSecrets) {
-  if (!usedSecrets.has(secret)) {
-    warn(`secret documented but not referenced in snippets: ${secret}`);
-  }
-}
-
 const placeholderRe = /(REPLACE_ME|TODO|<[^>]+>|yourname|your-repo|path\/to\/|example\/repo)/i;
-const badGlobRe = /\*\*\*|\*\*\/\*\*\/|\.\*\*/;
+const badGlobRe = /\*\*\*|\*\*\/\*\*(?=\/|\s|$)|\.\*\*/;
 const mappingLineRe = /^(?:"[^"]+"|'[^']+'|[^:#][^:]*?):(?:\s+.*)?$/;
 const usesLineRe = /^\s*(?:-\s*)?uses:\s*['"]?([^'"#\s]+)['"]?(?:\s+#.*)?$/;
 
@@ -195,6 +174,10 @@ blocks.forEach((block, idx) => {
     if (!parsedTopLevelKeys.has('on')) fail(`${label} missing top-level \`on:\``);
     if (!parsedTopLevelKeys.has('jobs')) fail(`${label} missing top-level \`jobs:\``);
 
+    for (const secretMatch of block.matchAll(secretUseRe)) {
+      usedSecrets.add(secretMatch[1]);
+    }
+
     blockLines.forEach((line, lineIdx) => {
       const action = line.match(usesLineRe)?.[1];
       if (!action || action.startsWith('./') || action.startsWith('docker://')) return;
@@ -228,6 +211,16 @@ blocks.forEach((block, idx) => {
     }
   });
 });
+
+if (usedSecrets.size > 0) {
+  pass(`found ${usedSecrets.size} workflow secret reference(s)`);
+}
+
+for (const secret of usedSecrets) {
+  if (!documentedSecrets.has(secret)) {
+    fail(`secret used but not documented in a Secrets section: ${secret}`);
+  }
+}
 
 if (failures > 0) {
   console.log(`[FAIL] workflow snippet validation failed with ${failures} error(s) and ${warnings} warning(s)`);

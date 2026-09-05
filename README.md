@@ -80,6 +80,8 @@ The September 2026 review follows the official guidance for
 [Claude Code skills](https://code.claude.com/docs/en/skills).
 This is a content and packaging review, not a benchmark of both models or
 an in-game certification of every example.
+See the [September 2026 audit](docs/skill-audit-2026-09.md) for all 13 skills,
+primary sources, corrections, and verification limits.
 
 ## Maintaining the bundle
 

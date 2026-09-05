@@ -7,8 +7,8 @@ handoff recipe, naming convention, or review target.
 
 | Asset type | Bias | Review target | Notes |
 |---|---|---|---|
-| `pack.png` icon | Strong silhouette, simple square composition | Reads cleanly at `64x64` | Save a high-res source plus the final icon |
-| Release banner | Hero scene plus copy-safe negative space | Works on desktop and mobile crop | Prefer art-only version plus composed version |
+| `pack.png` icon | Strong silhouette, simple square composition | Reads cleanly at `64x64` | Use the project's requested dimensions and destination |
+| Release banner | Hero scene plus copy-safe negative space | Works on desktop and mobile crop | Save extra source/composed versions only when useful to the requested handoff |
 | Thumbnail/store card | Central focal point, high contrast | Still legible in feed or marketplace grids | Keep text minimal |
 | Texture concept | Flat material study | Easy to repaint into `16x16`, `32x32`, or `64x64` | Treat as concept, not final asset |
 | Server banner/header | Branding plus environmental cue | Still reads when cropped wide | Avoid dense scene clutter |
@@ -20,14 +20,14 @@ Recommended filenames:
 
 - `pack-icon-concept-a.png`
 - `pack-icon-concept-b.png`
-- `pack.png` for the approved final
+- `pack.png` for the final when that destination was requested
 
 Recipe:
 
 1. Generate one square asset with a strong subject, or multiple concepts when alternatives were requested.
 2. Down-select based on tiny-size readability, not only full-size detail.
 3. Keep decorative text out unless the brand absolutely requires it.
-4. Save the approved version into the pack root as `pack.png`.
+4. Save the result into the requested destination. A clear request to replace `pack.png` authorizes that edit without another approval round.
 
 ## Release Banner
 

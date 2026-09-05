@@ -100,7 +100,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.2:4.116.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -250,23 +250,36 @@ void playerTask_delegatesThroughFacade() {
 
 ### Testing PDC
 ```java
+import java.util.ArrayList;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
+import org.bukkit.entity.LivingEntity;
+
 @Test
 void pdcKillCount_incrementsOnKill() {
     PlayerMock player = server.addPlayer();
     NamespacedKey key = new NamespacedKey(plugin, "kills");
-    
-    // Simulate kill event
+
+    // EntityDeathEvent requires a living victim and an explicit damage source.
+    LivingEntity victim = (LivingEntity) server.addMockEntity(EntityType.ZOMBIE);
+    DamageSource damageSource = DamageSource.builder(DamageType.GENERIC)
+        .withCausingEntity(player)
+        .withDirectEntity(player)
+        .build();
     EntityDeathEvent deathEvent = new EntityDeathEvent(
-        server.addMockEntity(EntityType.ZOMBIE), new ArrayList<>(), 0
+        victim, damageSource, new ArrayList<>(), 0
     );
-    deathEvent.getEntity().setKiller(player);
     server.getPluginManager().callEvent(deathEvent);
-    
+
     int kills = player.getPersistentDataContainer()
         .getOrDefault(key, PersistentDataType.INTEGER, 0);
     assertEquals(1, kills);
 }
 ```
+
+This dispatches a synthetic death event. For player attribution, the listener
+under test should read `event.getDamageSource().getCausingEntity()`; test actual
+combat attribution separately on a real server.
 
 ### Testing item or chunk PDC writes
 ```java
@@ -307,17 +320,37 @@ registered function or a block-based test.
 }
 ```
 
-Register the `Consumer<GameTestHelper>` test function with the current
-`BuiltInRegistries.TEST_FUNCTION` registry. For programmatic rather than
-datapack registration, listen for `RegisterGameTestsEvent` on the mod event bus
-and call `registerEnvironment` and `registerTest`. Keep the referenced structure
-in `data/<namespace>/structure/<path>.nbt` and mark success explicitly.
+Register the `Consumer<GameTestHelper>` with a `DeferredRegister` for the
+current `BuiltInRegistries.TEST_FUNCTION` registry, then attach that register to
+the mod event bus. The function below makes the JSON reference above usable.
+Use `RegisterGameTestsEvent` only when registering environments and test
+instances in code instead of data files. Keep the referenced structure in
+`data/<namespace>/structure/<path>.nbt` and mark success explicitly.
 
 ```java
+import java.util.function.Consumer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-public final class ExampleGameTestFunctions {
+@Mod(ExampleGameTests.MOD_ID)
+public final class ExampleGameTests {
+    public static final String MOD_ID = "examplemod";
+    private static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS =
+        DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, MOD_ID);
+    public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>>
+        EXAMPLE_FUNCTION = TEST_FUNCTIONS.register(
+            "example_function", () -> ExampleGameTests::exampleTest
+        );
+
+    public ExampleGameTests(IEventBus modBus) {
+        TEST_FUNCTIONS.register(modBus);
+    }
+
     public static void exampleTest(GameTestHelper helper) {
         helper.assertBlockPresent(Blocks.AIR, 0, 0, 0);
         helper.succeed();
@@ -421,7 +454,11 @@ public final class ExampleGameTests {
 For `RegisterGameTestsEvent`, register the class on the mod event bus and set
 `templateNamespace = MOD_ID` on each `@GameTest`. Legacy templates are `.nbt`
 files under `data/<namespace>/structure/`; `@PrefixGameTestTemplate(false)`
-controls whether the class name is added to the template path.
+controls whether the class name is added to the template path. When `template`
+is omitted, the path uses the lowercase method name and, unless that prefix is
+disabled, the lowercase simple class name followed by a dot. `template` is the
+path name only; configure its namespace through `templateNamespace` or
+`@GameTestHolder`.
 
 ---
 
@@ -441,6 +478,6 @@ server bootstrap.
 - MockBukkit GitHub: https://github.com/MockBukkit/MockBukkit
 - MockBukkit docs: https://docs.mockbukkit.org/
 - Fabric automated testing: https://docs.fabricmc.net/develop/automatic-testing
-- NeoForge 26.x Game Tests: https://docs.neoforged.net/docs/1.21.8/misc/gametest/
+- NeoForge 26.x Game Tests: https://docs.neoforged.net/docs/misc/gametest/
 - NeoForge 1.21.3 Game Tests: https://docs.neoforged.net/docs/1.21.3/misc/gametest/
 - JUnit 5 user guide: https://junit.org/junit5/docs/current/user-guide/

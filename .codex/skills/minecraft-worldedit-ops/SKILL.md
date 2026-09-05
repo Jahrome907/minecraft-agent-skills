@@ -63,7 +63,10 @@ Fast alternatives:
 ```
 
 Selection safety checks:
-- always run `//size` before `//set`, `//replace`, or `//paste`
+- always run `//size` before `//set` or `//replace`
+- before `//paste`, preview its destination with `//paste -n` using the same
+  placement flags planned for the real paste (for example, `//paste -n -a` or
+  `//paste -n -o`), then run `//size` and inspect the selected destination
 - use `//distr` to preview block composition before replacement
 
 ---
@@ -126,12 +129,17 @@ Use `-a` when you want to skip air blocks during paste.
 //schem save spawn-hub-v3
 //schem list
 //schem load spawn-hub-v3
+//paste -n -a
+//size
 //paste -a
 ```
 
 Operational guidance:
 - use versioned names (`arena-mid-2026-03-27`)
 - keep read-only archive copies for rollback
+- `-n` changes the selection to the planned destination without placing blocks;
+  keep `-a`, `-o`, and any other placement flags aligned between preview and
+  actual paste
 - pair each major paste with an immediate backup checkpoint
 
 ---
@@ -217,12 +225,15 @@ checkpoint exists, and the rollback window is closed.
 
 ```text
 //schem load arena-pristine
+//paste -n -o
+//size
 //paste -o
 ```
 
-- Verify the world and original location before pasting. Include air to remove
-  player-added blocks; `-a` would leave those blocks behind. Entity and biome
-  restoration require intentional copy/paste flags and separate verification.
+- Inspect the selected destination after the preview, then paste with the same
+  `-o` origin flag. Include air to remove player-added blocks; `-a` would leave
+  those blocks behind. Entity and biome restoration require intentional
+  copy/paste flags and separate verification.
 - Validate command blocks/signals associated with arena logic.
 
 ## Runbook: Block Cleanup (Lag and Visual Noise)

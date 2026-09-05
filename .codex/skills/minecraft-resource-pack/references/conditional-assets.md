@@ -6,10 +6,11 @@ client's supported format.
 
 ## Current and legacy item models
 
-For current releases, place item definitions in
-`assets/<namespace>/items/<item>.json`. The current `minecraft:custom_model_data`
-property selects from the custom-model-data component's list values, so each
-case uses a list in `when`, not a scalar.
+For **1.21.4 and later**, place item definitions in
+`assets/<namespace>/items/<item>.json`. The `minecraft:custom_model_data`
+string property reads the component's `strings` list. A `when` value can be one
+string or a non-empty list of strings; numeric values such as `1001` are not
+valid for this selector.
 
 ```json
 {
@@ -22,7 +23,7 @@ case uses a list in `when`, not a scalar.
     },
     "cases": [
       {
-        "when": [1001],
+        "when": ["magic_wand"],
         "model": {
           "type": "minecraft:model",
           "model": "mypack:item/magic_wand"
@@ -33,7 +34,13 @@ case uses a list in `when`, not a scalar.
 }
 ```
 
-For 1.21.4 and earlier, use a model's legacy `overrides` array and scalar
+Give the matching item component with a string value:
+
+```mcfunction
+/give @s minecraft:stick[custom_model_data={strings:["magic_wand"]}]
+```
+
+For **1.21.3 and earlier**, use a model's legacy `overrides` array and numeric
 `predicate.custom_model_data` values. Do not mix the legacy override format into
 the current `items/` definition.
 
@@ -60,14 +67,13 @@ custom event in `assets/mypack/sounds.json` and its file at
 ```json
 {
   "ui.click": {
-    "category": "player",
     "sounds": [
       { "name": "mypack:ui/click", "volume": 1.0 }
     ]
   },
   "ui.click_alias": {
     "sounds": [
-      { "name": "mypack:ui/click", "type": "event" }
+      { "name": "mypack:ui.click", "type": "event" }
     ]
   }
 }
@@ -75,9 +81,11 @@ custom event in `assets/mypack/sounds.json` and its file at
 
 An omitted `type` is a sound-file entry and resolves to an `.ogg` file. An
 `event` entry references another sound event and must never be treated as a file
-path. Valid categories are `master`, `music`, `record`, `weather`, `block`,
-`hostile`, `neutral`, `player`, `ambient`, and `voice`. Use `replace: true` only
-when intentionally replacing an event inherited from a lower-priority pack.
+path. `sounds.json` maps events to sound objects; it does not choose the sound
+source. A command chooses its source, for example
+`/playsound mypack:ui.click ui @s` (the `ui` source is available from 1.21.6),
+and mod code supplies the relevant `SoundSource`. Use `replace: true` only when
+intentionally replacing an event inherited from a lower-priority pack.
 
 ## Fonts
 
@@ -114,7 +122,6 @@ deliverable, and test them with the exact Iris version named by the user.
 
 ## Sources
 
-- [Minecraft Wiki: Item model definition](https://minecraft.wiki/w/Items_model_definition)
-- [Minecraft Wiki: Sounds.json](https://minecraft.wiki/w/Sounds.json)
-- [Minecraft Wiki: Font](https://minecraft.wiki/w/Resource_pack#Fonts)
+- [Mojang: Java Edition 1.21.4 item models](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-4)
+- [NeoForge 1.21.8 sounds](https://docs.neoforged.net/docs/1.21.8/resources/client/sounds/)
 - [Iris documentation](https://irisshaders.dev/)

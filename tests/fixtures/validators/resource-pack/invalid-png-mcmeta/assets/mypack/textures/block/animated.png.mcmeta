@@ -1,7 +1,2 @@
 {
   "animation": [
-*** Add File: C:\GitHub\Misc\minecraft-codex-skills\tests\fixtures\validators\plugin-dev\valid-paper-plugin-only\src\main\resources\paper-plugin.yml
-name: PaperOnlyPlugin
-version: 1.0.0
-main: com.example.plugin.PaperOnlyPlugin
-api-version: '26.2'

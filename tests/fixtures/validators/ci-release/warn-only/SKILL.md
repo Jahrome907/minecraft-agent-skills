@@ -1,14 +1,9 @@
 ---
 name: minecraft-ci-release
-description: >
-  Fixture with valid workflow YAML but a warning-only secrets section.
+description: Fixture with valid workflow YAML and a warning-only glob pattern.
 ---
 
 # Warning Fixture
-
-## Secrets
-
-- `MODRINTH_TOKEN`
 
 ```yaml
 name: Warn Only
@@ -19,4 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "ok"
+        env:
+          OUTPUT_PATH: build/**/**
 ```

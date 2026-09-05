@@ -1,0 +1,11 @@
+{
+  "pack": {
+    "pack_format": 81,
+    "supported_formats": {
+      "min_inclusive": 81
+    },
+    "min_format": [81],
+    "max_format": [88],
+    "description": "Invalid legacy supported formats metadata"
+  }
+}

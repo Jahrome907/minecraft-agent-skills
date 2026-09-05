@@ -10,10 +10,7 @@
   },
   "spawn_costs": {},
   "spawners": {},
-  "carvers": {
-    "air": [],
-    "liquid": []
-  },
+  "carvers": [],
   "features": [
     [],
     [],
@@ -21,10 +18,10 @@
     [],
     [],
     [],
+    ["mypack:my_ore_placed"],
     [],
     [],
     [],
-    [],
-    ["mypack:my_ore_placed"]
+    []
   ]
 }

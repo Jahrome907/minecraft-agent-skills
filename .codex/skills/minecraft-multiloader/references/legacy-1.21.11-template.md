@@ -5,21 +5,26 @@ Minecraft 1.21.11 and Java 21 lane. It is not a 26.x migration recipe.
 
 ## Source of Truth
 
-Start from a released [Architectury template](https://github.com/architectury/architectury-templates)
-that explicitly supports the project Minecraft version. Keep its generated Gradle
-layout, plugin versions, and loader wiring together. The root `gradle.properties`
-must identify both platforms:
+Use the official [Architectury Template Generator](https://generate.architectury.dev/)
+when it offers Minecraft 1.21.11 with a Multiplatform project that includes
+Fabric and NeoForge. Keep its generated Gradle layout, plugin versions, and
+loader wiring together. If that target is unavailable, start from a known-working
+1.21.11 project and verify its resolved build before changing pins. Do not treat
+an older template download as an unverified current scaffold. The root
+`gradle.properties` must identify both platforms:
 
 ```properties
+# These are property names and family constraints, not a released pin matrix.
+# Copy values only from the generated or known-working 1.21.11 project.
 mod_version=1.0.0
 minecraft_version=1.21.11
 enabled_platforms=fabric,neoforge
 
-architectury_version=19.0.1
-fabric_loader_version=0.19.3
-fabric_api_version=0.141.4+1.21.11
-neoforge_version=21.11.42
-loom_version=1.17.11
+architectury_version=<project pin>
+fabric_loader_version=<project pin>
+fabric_api_version=<project pin ending in +1.21.11>
+neoforge_version=<project pin in the 21.11.x family>
+loom_version=<project pin>
 ```
 
 The generated layout should keep `common/`, `fabric/`, and `neoforge/` as
@@ -49,6 +54,7 @@ NeoForge dependency ranges must match the same 1.21.11 lane. Do not copy these
 ## Verification
 
 Run `./scripts/check-version-sanity.sh --root <project>` after changing version
-properties, then build both artifacts. For exact current template code, consult
-the generated template rather than trying to repair a copied, partial Gradle
-example.
+properties, then build both artifacts. The helper checks static properties only;
+it does not prove dependency compatibility. For exact project code, consult the
+generated or known-working project rather than trying to repair a copied,
+partial Gradle example.

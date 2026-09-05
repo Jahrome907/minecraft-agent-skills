@@ -1,0 +1,8 @@
+{
+  "pack": {
+    "min_format": 88,
+    "max_format": 88,
+    "supported_formats": [88],
+    "description": "Invalid modern supported formats field"
+  }
+}

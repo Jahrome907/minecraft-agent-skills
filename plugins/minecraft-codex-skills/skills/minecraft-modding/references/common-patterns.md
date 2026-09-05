@@ -3,9 +3,11 @@
 Cross-platform patterns for blocks, items, entities, data generation, commands, recipes,
 and more. Code examples use NeoForge syntax unless noted; adapt field/method names for Fabric.
 
-These code and build examples follow the retained Minecraft 1.21.11 lane. For
-26.x, start from the current loader template and use this reference for concepts
-only; Java, mappings, build plugins, and API names changed at the 26.1 boundary.
+This reference retains 1.21.11 examples alongside 26.x replacements. A heading
+that names Minecraft 26.x uses the 26.1 API and official Mojang mappings;
+verify any later 26.x API change before copying code into a pinned project.
+Treat all other examples as the retained 1.21.11 lane unless their exact API is
+verified for the project.
 
 ---
 
@@ -225,30 +227,50 @@ public static final DeferredItem<Item> MY_FOOD =
 }
 ```
 
-### Tool Item
+### Tool Item (NeoForge 26.x)
+
+`Tier` and `SwordItem.createAttributes` are obsolete here. Define a
+`ToolMaterial`, then use the `Item.Properties` tool delegate during item
+registration.
 
 ```java
-// Custom sword  (NeoForge)
-public static final DeferredItem<SwordItem> MY_SWORD =
-    ITEMS.register("my_sword", () -> new SwordItem(
-        Tiers.DIAMOND,
-        new Item.Properties()
-            .attributes(SwordItem.createAttributes(Tiers.DIAMOND, 3, -2.4f))
-    ));
+public static final ToolMaterial MY_TOOL_MATERIAL = new ToolMaterial(
+    ModBlockTags.INCORRECT_FOR_MY_TOOL,
+    455, 5.0f, 1.5f, 22,
+    ModItemTags.REPAIRS_MY_TOOL
+);
+
+public static final DeferredItem<Item> MY_SWORD =
+    ITEMS.registerItem("my_sword", props ->
+        new Item(props.sword(MY_TOOL_MATERIAL, 3, -2.4f)));
 ```
 
-### Armor Set
+### Armor Set (NeoForge 26.x)
+
+`ArmorMaterial` is not a registry entry. Its equipment asset key identifies
+the corresponding equipment definition, while `humanoidArmor` applies the
+material to a normal `Item`.
 
 ```java
-// Define armor material as a static constant (NeoForge 1.21):
-public static final ResourceKey<ArmorMaterial> MY_MATERIAL_KEY =
-    ResourceKey.create(Registries.ARMOR_MATERIAL,
-        ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, "my_material"));
+public static final ResourceKey<EquipmentAsset> MY_ARMOR_ASSET =
+    ResourceKey.create(EquipmentAssets.ROOT_ID,
+        Identifier.fromNamespaceAndPath(MyMod.MOD_ID, "my_material"));
 
-// Register items
-public static final DeferredItem<ArmorItem> MY_HELMET =
-    ITEMS.register("my_helmet", () -> new ArmorItem(
-        MY_MATERIAL_KEY, ArmorType.HELMET, new Item.Properties()));
+public static final ArmorMaterial MY_ARMOR_MATERIAL = new ArmorMaterial(
+    15,
+    Map.of(
+        ArmorType.HELMET, 3,
+        ArmorType.CHESTPLATE, 8,
+        ArmorType.LEGGINGS, 6,
+        ArmorType.BOOTS, 3
+    ),
+    5, SoundEvents.ARMOR_EQUIP_IRON, 0.0f, 0.0f,
+    ModItemTags.REPAIRS_MY_ARMOR, MY_ARMOR_ASSET
+);
+
+public static final DeferredItem<Item> MY_HELMET =
+    ITEMS.registerItem("my_helmet", props ->
+        new Item(props.humanoidArmor(MY_ARMOR_MATERIAL, ArmorType.HELMET)));
 ```
 
 ---
@@ -256,45 +278,25 @@ public static final DeferredItem<ArmorItem> MY_HELMET =
 ## Entity Types
 
 ```java
-// ModEntityTypes.java  (NeoForge)
+// ModEntityTypes.java (NeoForge 26.x)
 public class ModEntityTypes {
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
-        DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MyMod.MOD_ID);
+    public static final DeferredRegister.Entities ENTITY_TYPES =
+        DeferredRegister.createEntities(MyMod.MOD_ID);
 
-    public static final DeferredHolder<EntityType<?>, EntityType<MyEntity>> MY_ENTITY =
-        ENTITY_TYPES.register("my_entity",
-            () -> EntityType.Builder.<MyEntity>of(MyEntity::new, MobCategory.CREATURE)
-                .sized(0.9f, 1.3f)          // hitbox width, height
+    public static final Supplier<EntityType<MyEntity>> MY_ENTITY =
+        ENTITY_TYPES.registerEntityType(
+            "my_entity", MyEntity::new, MobCategory.CREATURE,
+            builder -> builder
+                .sized(0.9f, 1.3f)
                 .clientTrackingRange(8)
                 .updateInterval(3)
-                .build("my_entity"));
-}
-
-// MyEntity.java
-public class MyEntity extends Animal {
-    public MyEntity(EntityType<? extends MyEntity> type, Level level) {
-        super(type, level);
-    }
-
-    public static AttributeSupplier.Builder createAttributes() {
-        return Animal.createMobAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0)
-            .add(Attributes.MOVEMENT_SPEED, 0.25)
-            .add(Attributes.ATTACK_DAMAGE, 4.0);
-    }
-
-    @Override
-    public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mate) {
-        return ModEntityTypes.MY_ENTITY.get().create(level);
-    }
-}
-
-// Register attributes on MOD bus:
-@SubscribeEvent
-public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
-    event.put(ModEntityTypes.MY_ENTITY.get(), MyEntity.createAttributes().build());
+        );
 }
 ```
+
+For a concrete entity subclass, attributes, spawning, or renderer wiring, use
+the current NeoForge entity guide for the project's exact version. Do not copy
+the removed `EntityType.Builder#build(String)` overload into 26.x code.
 
 ---
 
@@ -338,11 +340,11 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
 
 ---
 
-## Recipes (JSON)
+## Recipes (Minecraft 26.x JSON)
 
 ### Shaped Crafting Recipe
 
-`data/mymod/recipes/my_item.json`:
+`data/mymod/recipe/my_item.json`:
 ```json
 {
   "type": "minecraft:crafting_shaped",
@@ -352,8 +354,8 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
     " I "
   ],
   "key": {
-    "S": { "item": "minecraft:stone" },
-    "I": { "item": "minecraft:iron_ingot" }
+    "S": "minecraft:stone",
+    "I": "minecraft:iron_ingot"
   },
   "result": {
     "id": "mymod:my_item",
@@ -368,8 +370,8 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    { "item": "minecraft:diamond" },
-    { "item": "minecraft:emerald" }
+    "minecraft:diamond",
+    "minecraft:emerald"
   ],
   "result": {
     "id": "mymod:my_item",

@@ -1,8 +1,9 @@
-# Legacy Minecraft 1.21.10-and-earlier Worldgen JSON
+# Legacy Minecraft 1.21.5 Worldgen JSON
 
-These examples are for the 1.21.10-and-earlier compatibility lane. Minecraft
-1.21.11 and 26.x change worldgen and environment data, so begin newer work from
-the target release's vanilla data or datagen output instead.
+These examples target Minecraft 1.21.5. For another 1.21.x release, compare each
+registry with that exact release's vanilla data or datagen output before adapting
+it. Minecraft 1.21.11 and 26.x change worldgen and environment data; the broad
+label "1.21.x" does not establish JSON schema compatibility.
 
 ## Biome and feature chain
 
@@ -24,7 +25,7 @@ At `data/<namespace>/worldgen/biome/my_biome.json`:
   },
   "spawners": {},
   "spawn_costs": {},
-  "carvers": { "air": [], "liquid": [] },
+  "carvers": [],
   "features": [
     [], [], [], [], [], [],
     ["<namespace>:my_ore_placed"],

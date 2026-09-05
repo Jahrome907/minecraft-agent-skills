@@ -31,6 +31,11 @@ full prose playbook.
 - Verify latest full backup and latest incremental backup exist.
 - Restore to a staging path first, not over production.
 - Confirm world folders, plugin configs, and player data load correctly.
+- For Fabric/NeoForge, confirm the restore includes `mods/` plus the recorded
+  loader, Java, launch arguments, and deployment manifests.
+- For a live RCON backup, confirm its tested sequence is `save-off`,
+  `save-all`, copy, then guaranteed `save-on` cleanup. Use a clean stop or
+  verified platform snapshot for Folia because it disables `save-all`.
 - Measure actual restore time and compare it to the target `RTO`.
 
 ## Security Hardening Quick Pass

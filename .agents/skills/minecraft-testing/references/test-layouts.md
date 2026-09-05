@@ -19,7 +19,7 @@ src/
 
 Checklist:
 
-- `build.gradle(.kts)` declares JUnit 5 and MockBukkit
+- `build.gradle(.kts)` declares compatible JUnit Jupiter and MockBukkit versions
 - `tasks.test { useJUnitPlatform() }` is enabled
 
 ## Current Fabric 26.x
@@ -72,7 +72,8 @@ Checklist:
 NeoForge 1.21.5+ models Game Tests as registered test environments, functions,
 and test instances. A `test_instance` must reference an existing structure. Add
 a `test_environment` resource when `minecraft:default` is not sufficient.
-Register custom test functions with `BuiltInRegistries.TEST_FUNCTION`, or use
+Register custom test functions with a `DeferredRegister` for
+`BuiltInRegistries.TEST_FUNCTION` and attach it to the mod event bus. Use
 `RegisterGameTestsEvent` to register environments and instances in code.
 
 ## Legacy NeoForge 1.21.3

@@ -121,7 +121,25 @@ function isInteger(value) {
 
 function isPackVersion(value) {
   return isInteger(value)
-    || (Array.isArray(value) && value.length === 2 && value.every(isInteger));
+    || (Array.isArray(value) && (value.length === 1 || value.length === 2) && value.every(isInteger));
+}
+
+function isSupportedFormats(value) {
+  return isInteger(value)
+    || (Array.isArray(value) && value.length === 2 && value.every(isInteger))
+    || (isObject(value) && isInteger(value.min_inclusive) && isInteger(value.max_inclusive));
+}
+
+function packHasField(input, field) {
+  return isObject(input?.pack) && Object.hasOwn(input.pack, field);
+}
+
+function packVersionParts(input, field, maxMinorForShortForm) {
+  const value = input?.pack?.[field];
+  if (typeof value === "number") return `${value}\t${maxMinorForShortForm ? 2147483647 : 0}`;
+  if (Array.isArray(value) && value.length === 1) return `${value[0]}\t${maxMinorForShortForm ? 2147483647 : 0}`;
+  if (Array.isArray(value) && value.length === 2) return `${value[0]}\t${value[1]}`;
+  return null;
 }
 
 function evaluateFilter(input, filter) {
@@ -134,12 +152,30 @@ function evaluateFilter(input, filter) {
       return isInteger(input?.pack?.pack_format) ? [true] : [false];
     case ".pack.min_format|numbers":
       return typeof input?.pack?.min_format === "number" ? [input.pack.min_format] : [];
-    case ".pack.min_format|((type==\"number\"and.==floor)or(type==\"array\"andlength==2andall(.[];type==\"number\"and.==floor)))":
+    case ".pack.min_format|((type==\"number\"and.==floor)or(type==\"array\"and(length==1orlength==2)andall(.[];type==\"number\"and.==floor)))":
       return [isPackVersion(input?.pack?.min_format)];
     case ".pack.max_format|numbers":
       return typeof input?.pack?.max_format === "number" ? [input.pack.max_format] : [];
-    case ".pack.max_format|((type==\"number\"and.==floor)or(type==\"array\"andlength==2andall(.[];type==\"number\"and.==floor)))":
+    case ".pack.max_format|((type==\"number\"and.==floor)or(type==\"array\"and(length==1orlength==2)andall(.[];type==\"number\"and.==floor)))":
       return [isPackVersion(input?.pack?.max_format)];
+    case ".pack|has(\"pack_format\")":
+      return [packHasField(input, "pack_format")];
+    case ".pack|has(\"min_format\")":
+      return [packHasField(input, "min_format")];
+    case ".pack|has(\"max_format\")":
+      return [packHasField(input, "max_format")];
+    case ".pack|has(\"supported_formats\")":
+      return [packHasField(input, "supported_formats")];
+    case ".pack.supported_formats|((type==\"number\"and.==floor)or(type==\"array\"andlength==2andall(.[];type==\"number\"and.==floor))or(type==\"object\"and(.min_inclusive|type==\"number\"and.==floor)and(.max_inclusive|type==\"number\"and.==floor)))":
+      return [isSupportedFormats(input?.pack?.supported_formats)];
+    case ".pack.min_format|iftype==\"number\"then\"\\(.)\\t0\"eliftype==\"array\"andlength==1then\"\\(.[0])\\t0\"else\"\\(.[0])\\t\\(.[1])\"end": {
+      const parts = packVersionParts(input, "min_format", false);
+      return parts === null ? [] : [parts];
+    }
+    case ".pack.max_format|iftype==\"number\"then\"\\(.)\\t2147483647\"eliftype==\"array\"andlength==1then\"\\(.[0])\\t2147483647\"else\"\\(.[0])\\t\\(.[1])\"end": {
+      const parts = packVersionParts(input, "max_format", true);
+      return parts === null ? [] : [parts];
+    }
     case ".values|type==\"array\"":
       return [Array.isArray(input?.values)];
     case ".values[]?|strings":

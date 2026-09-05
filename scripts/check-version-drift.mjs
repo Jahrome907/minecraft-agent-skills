@@ -42,12 +42,12 @@ const checks = [
     required: [
       /mod_version=1\.0\.0/,
       /minecraft_version=1\.21\.11/,
-      /architectury_version=19\.0\.1/,
-      /fabric_loader_version=0\.19\.3/,
-      /fabric_api_version=0\.141\.4\+1\.21\.11/,
-      /neoforge_version=21\.11\.42/,
-      /loom_version=1\.17\.11/,
-      /"fabric-api": ">=0\.141\.4\+1\.21\.11"/,
+      /architectury_version=<project pin>/,
+      /fabric_loader_version=<project pin>/,
+      /fabric_api_version=<project pin ending in \+1\.21\.11>/,
+      /neoforge_version=<project pin in the 21\.11\.x family>/,
+      /loom_version=<project pin>/,
+      /"fabric-api": ">=0\.139\.4\+1\.21\.11"/,
       /"minecraft": "~1\.21\.11"/,
       /loaderVersion = "\[1,\)"/
     ],

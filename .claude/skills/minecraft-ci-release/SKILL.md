@@ -182,26 +182,41 @@ jobs:
             -PreleaseModVersion="$MOD_VERSION"
 
       - name: Select release artifacts
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           mkdir -p release-artifacts
-          find fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name '*.jar' \
-            ! -name '*-sources.jar' ! -name '*-dev.jar' -exec cp {} release-artifacts/ \;
-          test -n "$(find release-artifacts -maxdepth 1 -type f -name '*.jar' -print -quit)" \
-            || { echo 'No release JAR was selected.' >&2; exit 1; }
+          shopt -s nullglob
+          select_primary() {
+            local loader="$1"; shift
+            local matches=( "$@" )
+            if (( ${#matches[@]} != 1 )); then
+              printf 'Expected one %s primary JAR, found %s: %s\n' \
+                "$loader" "${#matches[@]}" "${matches[*]:-none}" >&2
+              exit 1
+            fi
+            cp "${matches[0]}" "release-artifacts/${loader}-${RELEASE_TAG}.jar"
+          }
+          select_primary fabric fabric/build/libs/*-fabric.jar
+          select_primary neoforge neoforge/build/libs/*-neoforge.jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
         with:
-          files: release-artifacts/*.jar
+          files: |
+            release-artifacts/fabric-${{ github.ref_name }}.jar
+            release-artifacts/neoforge-${{ github.ref_name }}.jar
           fail_on_unmatched_files: true
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
 ```
 
-This workflow creates a GitHub Release only. Add a project-specific publisher after
-the version validation only when that destination is in scope. Update the selected
-artifact directories and exclusions to match the build, but keep both the non-empty
-check and `fail_on_unmatched_files: true` so an empty glob cannot create a release.
+This workflow creates a GitHub Release only. It expects one primary Fabric JAR and
+one primary NeoForge JAR with loader-distinct names. Configure those classifiers in
+the project build, then change both patterns together if its naming convention differs.
+The selection step fails for zero or multiple matches and copies to distinct release
+names, preventing accidental overwrite or a partial release. Add a project-specific
+publisher after version validation only when that destination is in scope.
 
 ---
 
@@ -346,11 +361,6 @@ updates:
   with:
     # Read-only cache on PRs, read-write on main
     cache-read-only: ${{ github.event_name == 'pull_request' }}
-    # Cache Minecraft assets (speeds up loom tasks by minutes)
-    gradle-home-cache-includes: |
-      caches
-      notifications
-      .gradle/loom-cache
 ```
 
 ---
@@ -372,15 +382,38 @@ Recommended GitHub branch protection for `main`:
 set -euo pipefail
 
 VERSION="${1:?Usage: release.sh <mod-version>}"
+REMOTE="${RELEASE_REMOTE:-origin}"
+BRANCH="${RELEASE_BRANCH:-main}"
+EXPECTED_REMOTE_URL="${RELEASE_REMOTE_URL:?Set RELEASE_REMOTE_URL to the expected push URL}"
 git diff --check
-git diff --exit-code
+[[ -z "$(git status --porcelain=v1 --untracked-files=all)" ]] \
+  || { echo "Working tree contains staged, unstaged, or untracked files." >&2; exit 1; }
+[[ "$(git branch --show-current)" == "$BRANCH" ]] \
+  || { echo "Release must start from branch $BRANCH." >&2; exit 1; }
+mapfile -t PUSH_URLS < <(git remote get-url --push --all "$REMOTE")
+[[ ${#PUSH_URLS[@]} -eq 1 && "${PUSH_URLS[0]}" == "$EXPECTED_REMOTE_URL" ]] \
+  || { echo "Remote $REMOTE must have one expected push URL." >&2; exit 1; }
+! git rev-parse --verify --quiet "refs/tags/v${VERSION}" >/dev/null \
+  || { echo "Local tag v${VERSION} already exists." >&2; exit 1; }
+set +e
+git ls-remote --exit-code --tags "$EXPECTED_REMOTE_URL" "refs/tags/v${VERSION}" >/dev/null
+REMOTE_TAG_STATUS=$?
+set -e
+case "$REMOTE_TAG_STATUS" in
+  0) echo "Remote tag v${VERSION} already exists." >&2; exit 1 ;;
+  2) ;;
+  *) echo "Could not verify remote tag v${VERSION}." >&2; exit "$REMOTE_TAG_STATUS" ;;
+esac
+./gradlew verifyReleaseVersion --no-daemon -PreleaseModVersion="$VERSION"
 git tag --annotate "v${VERSION}" --message "Release v${VERSION}"
-git push origin HEAD
-git push origin "refs/tags/v${VERSION}"
+git push "$REMOTE" "HEAD:refs/heads/${BRANCH}"
+git push "$REMOTE" "refs/tags/v${VERSION}"
 ```
 
 Update and verify version/changelog files before this script, then tag that release
-commit. Do not force-push or retag a published release without explicit authorization.
+commit. Set `RELEASE_BRANCH`, `RELEASE_REMOTE`, and `RELEASE_REMOTE_URL` for the
+intended release branch and exact push URL. Do not force-push or retag a published
+release without explicit authorization.
 
 ## Workflow Snippet Validator
 
@@ -398,9 +431,13 @@ The validator is bundled and self-contained. Run it from a copied `.agents/`,
 `.codex/`, or `.claude/` `minecraft-ci-release` skill directory without relying
 on repo-root `node_modules`.
 
-It validates workflow-shaped YAML, unresolved placeholders, documented secrets, and
-remote `uses:` references pinned to full commit SHAs. Local actions (`./...`) and
-Docker actions (`docker://...`) are intentionally excluded from the SHA requirement.
+It validates workflow-shaped YAML, unresolved placeholders, workflow secret
+documentation, and remote `uses:` references pinned to full commit SHAs. Local
+actions (`./...`) and Docker actions (`docker://...`) are intentionally excluded from
+the SHA requirement. It reads only this skill's `SKILL.md`: it does not validate a
+project's `.github/workflows` files or Gradle tasks. Before a real release, inspect
+the project's generated artifacts, run `verifyReleaseVersion`, and review the exact
+workflow diff and configured release destination.
 
 ---
 

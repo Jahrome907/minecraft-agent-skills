@@ -1,0 +1,10 @@
+{
+  "ui.alias": {
+    "sounds": [
+      {
+        "name": "ui.missing",
+        "type": "event"
+      }
+    ]
+  }
+}

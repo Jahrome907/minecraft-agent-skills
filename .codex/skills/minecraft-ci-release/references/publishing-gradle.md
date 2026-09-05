@@ -52,6 +52,8 @@ file.
 The current Gradle Plugin Portal release is `com.modrinth.minotaur` `2.9.0`. For a
 Minecraft 26.x Fabric project, upload the primary `jar` task. Current Minecraft is
 unobfuscated, so a new 26.x Fabric build should not assume `remapJar` exists.
+Give release artifacts loader-distinct classifiers when Fabric and NeoForge could
+otherwise produce the same basename.
 
 ```kotlin
 import org.gradle.api.tasks.bundling.Jar
@@ -70,6 +72,13 @@ modrinth {
     loaders.add("fabric")
     changelog.set(changelogFor(modVersion))
 }
+
+tasks.named<Jar>("jar") {
+    archiveClassifier.set("fabric")
+}
+tasks.named("modrinth") {
+    dependsOn(tasks.named("verifyReleaseVersion"))
+}
 ```
 
 For a retained legacy Fabric Loom project that produces the distributable
@@ -81,7 +90,9 @@ uploadFile.set(tasks.named("remapJar"))
 
 Confirm the task name and the produced file in that legacy project before changing
 the selection. NeoForge and multi-loader builds can have different platform tasks;
-configure each output independently.
+configure each output independently. For a named NeoForge output, use its actual
+archive task and set `archiveClassifier` to `neoforge`; do not assume either loader
+uses the other one's task.
 
 ## CurseForge with CurseForgeGradle
 
@@ -111,6 +122,13 @@ tasks.register<net.darkhax.curseforgegradle.TaskPublishCurseForge>("curseforge")
     mainFile.addJavaVersion("Java 25")
     mainFile.addEnvironment("Client", "Server")
 }
+
+tasks.named<Jar>("jar") {
+    archiveClassifier.set("fabric")
+}
+tasks.named("curseforge") {
+    dependsOn(tasks.named("verifyReleaseVersion"))
+}
 ```
 
 Set the actual loader and supported environments for the artifact. CurseForgeGradle
@@ -130,4 +148,7 @@ tasks.register("publishSelectedDestinations") {
 ```
 
 Do not add missing publisher plugins, task dependencies, project IDs, or secrets just
-to make this aggregation example apply.
+to make this aggregation example apply. Invoke any publisher task with
+`-PreleaseModVersion=<tag version>`: each configured publish task depends on
+`verifyReleaseVersion`, so a missing tag version or mismatched changelog blocks the
+upload before it reaches a publisher.

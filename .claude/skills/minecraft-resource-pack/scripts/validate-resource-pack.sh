@@ -73,34 +73,95 @@ check_json() {
 
 check_pack_metadata() {
   local file="$1"
+  local min_parts max_parts min_major min_minor max_major max_minor pack_format
   local has_pack_format=0
   local has_min_format=0
   local has_max_format=0
+  local has_supported_formats=0
+
+  if jq -e '.pack | has("pack_format")' "$file" >/dev/null 2>&1; then
+    has_pack_format=1
+  fi
+  if jq -e '.pack | has("min_format")' "$file" >/dev/null 2>&1; then
+    has_min_format=1
+  fi
+  if jq -e '.pack | has("max_format")' "$file" >/dev/null 2>&1; then
+    has_max_format=1
+  fi
+  if jq -e '.pack | has("supported_formats")' "$file" >/dev/null 2>&1; then
+    has_supported_formats=1
+  fi
 
   if jq -e '.pack.pack_format | type == "number" and . == floor' "$file" >/dev/null 2>&1; then
     pass "pack.mcmeta uses integer pack.pack_format"
-    has_pack_format=1
+  elif [[ "$has_pack_format" -eq 1 ]]; then
+    fail "pack.mcmeta pack.pack_format must be an integer when present"
   fi
 
-  if jq -e '.pack.min_format | ((type == "number" and . == floor) or (type == "array" and length == 2 and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
+  if jq -e '.pack.min_format | ((type == "number" and . == floor) or (type == "array" and (length == 1 or length == 2) and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
     pass "pack.mcmeta uses valid pack.min_format"
-    has_min_format=1
+  elif [[ "$has_min_format" -eq 1 ]]; then
+    fail "pack.mcmeta pack.min_format must be an integer or a one/two-integer array"
   fi
 
-  if jq -e '.pack.max_format | ((type == "number" and . == floor) or (type == "array" and length == 2 and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
+  if jq -e '.pack.max_format | ((type == "number" and . == floor) or (type == "array" and (length == 1 or length == 2) and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
     pass "pack.mcmeta uses valid pack.max_format"
-    has_max_format=1
+  elif [[ "$has_max_format" -eq 1 ]]; then
+    fail "pack.mcmeta pack.max_format must be an integer or a one/two-integer array"
   fi
 
-  if [[ "$has_pack_format" -eq 1 ]]; then
+  if [[ "$has_supported_formats" -eq 1 ]] && ! jq -e '.pack.supported_formats | ((type == "number" and . == floor) or (type == "array" and length == 2 and all(.[]; type == "number" and . == floor)) or (type == "object" and (.min_inclusive | type == "number" and . == floor) and (.max_inclusive | type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
+    fail "pack.mcmeta pack.supported_formats must be an integer, integer range, or min_inclusive/max_inclusive object"
+  fi
+
+  if [[ "$has_min_format" -ne "$has_max_format" ]]; then
+    fail "pack.mcmeta must define both .pack.min_format and .pack.max_format together"
     return
   fi
 
-  if [[ "$has_min_format" -eq 1 && "$has_max_format" -eq 1 ]]; then
+  if [[ "$has_min_format" -eq 1 ]]; then
+    if ! jq -e '.pack.min_format | ((type == "number" and . == floor) or (type == "array" and (length == 1 or length == 2) and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1 || ! jq -e '.pack.max_format | ((type == "number" and . == floor) or (type == "array" and (length == 1 or length == 2) and all(.[]; type == "number" and . == floor)))' "$file" >/dev/null 2>&1; then
+      return
+    fi
+
+    min_parts="$(jq -r '.pack.min_format | if type == "number" then "\(.)\t0" elif type == "array" and length == 1 then "\(.[0])\t0" else "\(.[0])\t\(.[1])" end' "$file")"
+    max_parts="$(jq -r '.pack.max_format | if type == "number" then "\(.)\t2147483647" elif type == "array" and length == 1 then "\(.[0])\t2147483647" else "\(.[0])\t\(.[1])" end' "$file")"
+    IFS=$'\t' read -r min_major min_minor <<<"$min_parts"
+    IFS=$'\t' read -r max_major max_minor <<<"$max_parts"
+
+    if (( min_major > max_major || (min_major == max_major && min_minor > max_minor) )); then
+      fail "pack.mcmeta pack.min_format must not be greater than pack.max_format"
+      return
+    fi
+
+    if (( min_major < 65 )) && ! jq -e '.pack.pack_format | type == "number" and . == floor' "$file" >/dev/null 2>&1; then
+      fail "pack.mcmeta ranges that include legacy resource pack formats below 65 require integer pack.pack_format"
+      return
+    fi
+
+    if (( min_major < 65 )) && [[ "$has_supported_formats" -ne 1 ]]; then
+      fail "pack.mcmeta ranges that include legacy resource pack formats below 65 require pack.supported_formats"
+      return
+    fi
+
+    if (( min_major >= 65 )) && [[ "$has_supported_formats" -eq 1 ]]; then
+      fail "pack.mcmeta must not define pack.supported_formats for modern-only resource pack formats"
+      return
+    fi
+
     return
   fi
 
-  fail "pack.mcmeta must define either integer .pack.pack_format or both .pack.min_format and .pack.max_format as integers or [major, minor] integer arrays"
+  if jq -e '.pack.pack_format | type == "number" and . == floor' "$file" >/dev/null 2>&1; then
+    pack_format="$(jq -r '.pack.pack_format | numbers' "$file")"
+    if (( pack_format < 65 )); then
+      return
+    fi
+    fail "modern resource pack formats 65 and newer require both .pack.min_format and .pack.max_format"
+    return
+  fi
+
+  fail "pack.mcmeta must define legacy integer .pack.pack_format or both .pack.min_format and .pack.max_format"
 }
 
 resolve_texture() {
@@ -159,11 +220,28 @@ resolve_sound() {
   local current_ns="$1"
   local sound_type="$2"
   local ref="$3"
-  local ns path target
+  local sounds_file="$4"
+  local ns path target event
 
-  [[ -z "$ref" ]] && return
+  if [[ -z "$ref" ]]; then
+    fail "sounds.json entry is missing a name"
+    return
+  fi
   if [[ "$sound_type" == "event" ]]; then
-    pass "sound event reference does not map to an .ogg file: $ref"
+    if [[ "$ref" == *:* ]]; then
+      ns="${ref%%:*}"
+      event="${ref#*:}"
+    else
+      ns="$current_ns"
+      event="$ref"
+    fi
+    if [[ "$ns" != "$current_ns" ]]; then
+      warn "external sound event not locally verifiable: $ns:$event"
+    elif jq -r 'keys[]' "$sounds_file" 2>/dev/null | grep -Fqx "$event"; then
+      pass "sound event alias exists: $ns:$event"
+    else
+      fail "missing sound event alias target: $ns:$event"
+    fi
     return
   fi
   if [[ "$sound_type" != "file" ]]; then
@@ -212,9 +290,13 @@ while IFS= read -r -d '' model_file; do
   ns="${rel%%/*}"
 
   while IFS= read -r tex; do
-    tex="$(strip_cr "$tex")"
-    resolve_texture "$ns" "$tex"
-  done < <(jq -r '(.textures // {} | to_entries[]?.value // empty)' "$model_file")
+    IFS=$'\t' read -r texture_status texture_key texture_ref <<< "$(strip_cr "$tex")"
+    if [[ "$texture_status" == 'valid' ]]; then
+      resolve_texture "$ns" "$texture_ref"
+    else
+      fail "invalid texture entry for $texture_key in ${model_file#$ROOT/} (use a string or {sprite: string, force_translucent?: boolean})"
+    fi
+  done < <(jq -r '(.textures // {} | to_entries[]? | [(if (.value | type) == "string" then "valid" elif (.value | type) == "object" then if ((.value.sprite? | type) == "string" and ((.value.force_translucent? | type) == "null" or (.value.force_translucent | type) == "boolean")) then "valid" else "invalid" end else "invalid" end), .key, (if (.value | type) == "string" then .value elif (.value | type) == "object" then (.value.sprite? // empty) else empty end)] | @tsv)' "$model_file")
 
   while IFS= read -r parent; do
     parent="$(strip_cr "$parent")"
@@ -235,6 +317,11 @@ while IFS= read -r -d '' item_file; do
     model_ref="$(strip_cr "$model_ref")"
     resolve_model "$ns" "$model_ref"
   done < <(jq -r '.. | objects | select(.type? == "minecraft:model" and (.model? | type) == "string") | .model' "$item_file")
+
+  while IFS= read -r custom_model_data_case; do
+    custom_model_data_case="$(strip_cr "$custom_model_data_case")"
+    [[ "$custom_model_data_case" == 'valid' ]] || fail "minecraft:custom_model_data select cases must use a string or a non-empty list of strings in ${item_file#$ROOT/}"
+  done < <(jq -r '.. | objects | select(.type? == "minecraft:select" and .property? == "minecraft:custom_model_data") | .cases[]? | if ((.when? | type) == "string") or ((.when? | type) == "array" and (.when | length > 0) and all(.when[]?; type == "string")) then "valid" else "invalid" end' "$item_file")
 done < <(find "$ROOT/assets" -type f -path '*/items/*.json' -print0 2>/dev/null)
 
 while IFS= read -r -d '' blockstate_file; do
@@ -257,7 +344,7 @@ while IFS= read -r -d '' sounds_file; do
   while IFS=$'\t' read -r sound_type sound_ref; do
     sound_type="$(strip_cr "$sound_type")"
     sound_ref="$(strip_cr "$sound_ref")"
-    resolve_sound "$ns" "$sound_type" "$sound_ref"
+    resolve_sound "$ns" "$sound_type" "$sound_ref" "$sounds_file"
   done < <(jq -r '.. | objects | select(has("sounds")) | .sounds[]? | if type == "string" then ["file", .] else [(.type // "file"), (.name // empty)] end | @tsv' "$sounds_file")
 done < <(find "$ROOT/assets" -type f -name 'sounds.json' -print0 2>/dev/null)
 

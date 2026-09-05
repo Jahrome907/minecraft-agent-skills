@@ -119,6 +119,30 @@ expect_path "tests/fixtures/validators/datapack/invalid-pack-version"
 expect_pass "datapack valid" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/valid
+expect_pass "datapack modern single-element format" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/modern-single-format --strict
+expect_pass "datapack legacy-compatible format range" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/legacy-compatible-format-range --strict
+expect_fail_contains "datapack legacy invalid supported formats" "pack.mcmeta pack.supported_formats must be an integer, two-integer array, or object with integer min_inclusive and max_inclusive" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/legacy-invalid-supported-formats
+expect_fail_contains "datapack reversed format range" "pack.min_format must not be greater" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/modern-reversed-format-range
+expect_fail_contains "datapack missing format bound" "must define both .pack.min_format and .pack.max_format together" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/modern-missing-format-bound
+expect_fail_contains "datapack modern pack format only" "modern data pack formats 82 and newer require both .pack.min_format and .pack.max_format" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/modern-pack-format-only
+expect_fail_contains "datapack modern supported_formats" "must not define pack.supported_formats for modern-only" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/modern-supported-formats
+expect_pass_contains "datapack custom load tag advisory" "custom namespace load/tick tag has no automatic engine behavior" \
+  ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
+  --root tests/fixtures/validators/datapack/custom-load-tick-tag
 expect_pass "datapack nested function tags strict" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/nested-function-tag-refs --strict
@@ -143,7 +167,7 @@ expect_fail_contains "datapack legacy function paths" "legacy path detected" \
 expect_fail_contains "datapack invalid" "legacy path detected" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/invalid
-expect_fail_contains "datapack invalid pack version" "pack.mcmeta must define" \
+expect_fail_contains "datapack invalid pack version" "pack.mcmeta pack.min_format must be an integer or a one/two-integer array" \
   ./.agents/skills/minecraft-datapack/scripts/validate-datapack.sh \
   --root tests/fixtures/validators/datapack/invalid-pack-version
 
@@ -155,6 +179,27 @@ expect_path "tests/fixtures/validators/resource-pack/invalid-item-model"
 expect_pass "resource-pack valid" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/valid
+expect_pass "resource-pack legacy-only metadata strict" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/legacy-only-pack-format --strict
+expect_pass "resource-pack modern format shapes strict" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/valid-modern-format-shapes --strict
+expect_fail_contains "resource-pack modern pack format only" "modern resource pack formats 65 and newer require" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/modern-pack-format-only
+expect_fail_contains "resource-pack reversed format range" "pack.min_format must not be greater" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/modern-reversed-format-range
+expect_fail_contains "resource-pack invalid custom model selector" "select cases must use a string" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/invalid-custom-model-data
+expect_fail_contains "resource-pack invalid texture object" "invalid texture entry" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/invalid-texture-object
+expect_fail_contains "resource-pack missing sound alias" "missing sound event alias target" \
+  ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
+  --root tests/fixtures/validators/resource-pack/invalid-sound-event-alias
 expect_pass_contains "resource-pack external textures warn" "external texture not locally verifiable" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/external-textures
@@ -176,7 +221,7 @@ expect_fail_contains "resource-pack invalid" "missing texture" \
 expect_fail_contains "resource-pack invalid sound type" "unsupported sounds.json entry type 'sound'" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/invalid
-expect_fail_contains "resource-pack invalid pack version" "pack.mcmeta must define" \
+expect_fail_contains "resource-pack invalid pack version" "pack.mcmeta pack.min_format must be an integer or a one/two-integer array" \
   ./.agents/skills/minecraft-resource-pack/scripts/validate-resource-pack.sh \
   --root tests/fixtures/validators/resource-pack/invalid-pack-version
 expect_fail_contains "resource-pack invalid item model" "missing model" \
@@ -193,6 +238,9 @@ expect_path "tests/fixtures/validators/ci-release/warn-only/SKILL.md"
 expect_pass "ci-release valid" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/valid
+expect_pass "ci-release secretless strict" \
+  ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
+  --root tests/fixtures/validators/ci-release/secretless-strict --strict
 expect_fail_contains "ci-release mutable action" "action must be pinned to a full commit SHA" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/mutable-action
@@ -363,6 +411,12 @@ for fixture in current-neoforge-gametest-only current-fabric-gametest-only legac
     ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
     --root "tests/fixtures/validators/testing/$fixture" --strict
 done
+expect_pass "testing legacy NeoForge implicit template strict" \
+  ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
+  --root tests/fixtures/validators/testing/legacy-neoforge-implicit-template-valid --strict
+expect_fail_contains "testing legacy NeoForge implicit template missing" "GameTest template fixture missing: mymod:missing_template" \
+  ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
+  --root tests/fixtures/validators/testing/legacy-neoforge-implicit-template-missing
 expect_fail_contains "testing invalid" "MockBukkit tests detected but build file is missing MockBukkit dependency" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/invalid

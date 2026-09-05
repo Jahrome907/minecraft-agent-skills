@@ -89,8 +89,8 @@ side="BOTH"
 ```java
 // ModBlocks.java
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-        DeferredRegister.create(BuiltInRegistries.BLOCK, MyMod.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS =
+        DeferredRegister.createBlocks(MyMod.MOD_ID);
 
     // Simple full-cube block
     public static final DeferredBlock<Block> MY_BLOCK =
@@ -112,8 +112,8 @@ public class ModBlocks {
 ```java
 // ModItems.java
 public class ModItems {
-    public static final DeferredRegister<Item> ITEMS =
-        DeferredRegister.create(BuiltInRegistries.ITEM, MyMod.MOD_ID);
+    public static final DeferredRegister.Items ITEMS =
+        DeferredRegister.createItems(MyMod.MOD_ID);
 
     // BlockItem for a block
     public static final DeferredItem<BlockItem> MY_BLOCK_ITEM =
@@ -124,12 +124,13 @@ public class ModItems {
         ITEMS.registerSimpleItem("my_item", new Item.Properties().stacksTo(16));
 
     // Custom item class
-    public static final DeferredItem<MySword> MY_SWORD =
-        ITEMS.registerItem("my_sword", props ->
-            new MySword(Tiers.IRON, new Item.Properties()
-                .attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4f))));
+    public static final DeferredItem<MyCustomItem> MY_CUSTOM_ITEM =
+        ITEMS.registerItem("my_custom_item", MyCustomItem::new);
 }
 ```
+
+For 26.x tool and armor APIs, use the explicitly versioned patterns in
+`common-patterns.md`; this reference otherwise retains the 1.21.x lane.
 
 ---
 

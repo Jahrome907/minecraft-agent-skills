@@ -25,6 +25,7 @@ description: "Create, modify, and debug server plugins for current Paper 26.x on
 ## Bundled References
 
 - Read `references/runtime-patterns.md` when the task touches scheduling, Folia support, PDC, Adventure/MiniMessage, YAML config, Vault, or Paper-specific APIs.
+- Read `references/paper-plugin-commands.md` for a Paper-only `paper-plugin.yml` project or Brigadier command registration.
 
 ---
 
@@ -144,31 +145,21 @@ permissions:
 > values remain valid for older servers. A server older than the declared value
 > refuses to load the plugin.
 
-### `paper-plugin.yml` (experimental Paper plugin format)
+### `paper-plugin.yml` (experimental Paper-only format)
 
-Prefer `plugin.yml` for ordinary plugins. Paper's newer plugin format is still
-experimental; use `paper-plugin.yml` only when you need its bootstrap, loader,
-or dependency model. `paper-plugin.yml` can be the only descriptor in a
-Paper-only JAR. Keep `plugin.yml` when the JAR must also load on other
-Bukkit-derived servers. When both descriptors are present, Paper uses
-`paper-plugin.yml`; keep their shared metadata and main class aligned. Either
-format can declare `folia-supported`.
+Prefer `plugin.yml` for Bukkit-compatible plugins. Use `paper-plugin.yml` only
+when the JAR is intentionally Paper-only and needs Paper-plugin behavior such
+as bootstrapping, loaders, or classloading isolation. It can be the only
+descriptor, but is not a drop-in replacement: Paper plugins do not use a
+`commands` field or `getCommand(...)` registration. Read
+[`references/paper-plugin-commands.md`](references/paper-plugin-commands.md)
+for the paired descriptor, main class, and Brigadier lifecycle registration.
 
-```yaml
-name: MyPlugin
-version: "${version}"
-main: com.example.myplugin.MyPlugin
-api-version: '26.2'
-folia-supported: true
+When one JAR ships both descriptors, keep their shared metadata and main class
+aligned. Do not combine the Paper-only sample with the Bukkit-compatible
+`MyPlugin` sample below.
 
-dependencies:
-    server:
-        Vault:
-            load: BEFORE
-            required: false
-```
-
-### Main Plugin Class
+### Bukkit-compatible main class
 ```java
 package com.example.myplugin;
 
@@ -268,6 +259,10 @@ public void onBlockBreak(BlockBreakEvent event) {
 ---
 
 ## Commands
+
+This section is for the `plugin.yml` path above. Its declared command enables
+`getCommand("myplugin")`. For a Paper-only descriptor, use the Brigadier
+lifecycle example in [`references/paper-plugin-commands.md`](references/paper-plugin-commands.md).
 
 ```java
 package com.example.myplugin.commands;
@@ -442,10 +437,8 @@ profile lookup, and protection-plugin integration examples.
 - [ ] On cancellable events, add `ignoreCancelled = true` unless you need cancelled events
 
 ### Adding a new command
-- [ ] Define command in `plugin.yml` under `commands:`
-- [ ] Create executor class implementing `CommandExecutor`
-- [ ] (Optional) implement `TabCompleter` for autocomplete
-- [ ] Register with `getCommand("name").setExecutor(new MyExecutor())`
+- [ ] For a Bukkit-compatible plugin, define the command in `plugin.yml`, create a `CommandExecutor`, and register it with `getCommand("name")`
+- [ ] For a Paper-only plugin, register the command through `LifecycleEvents.COMMANDS`; do not add a `commands` field
 
 ### Saving plugin data
 - [ ] For simple values: use `config.yml` via `getConfig()` / `saveConfig()`
@@ -491,6 +484,7 @@ The validator checks:
 - Paper API Javadoc: https://jd.papermc.io/paper/
 - Paper plugin descriptor: https://docs.papermc.io/paper/dev/plugin-yml/
 - Paper plugins: https://docs.papermc.io/paper/dev/getting-started/paper-plugins/
+- Paper Brigadier registration: https://docs.papermc.io/paper/dev/command-api/basics/registration/
 - Gradle Java compatibility: https://docs.gradle.org/current/userguide/compatibility.html
 - Adventure (text API): https://docs.advntr.dev/
 - MiniMessage format: https://docs.advntr.dev/minimessage/format.html
