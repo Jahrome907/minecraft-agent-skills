@@ -1,0 +1,10 @@
+{
+  "dependency_click": {
+    "sounds": [
+      {
+        "name": "dependency:ui/click",
+        "type": "file"
+      }
+    ]
+  }
+}

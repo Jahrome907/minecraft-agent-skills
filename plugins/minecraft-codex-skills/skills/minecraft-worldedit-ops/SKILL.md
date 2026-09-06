@@ -63,7 +63,10 @@ Fast alternatives:
 ```
 
 Selection safety checks:
-- always run `//size` before `//set`, `//replace`, or `//paste`
+- always run `//size` before `//set` or `//replace`
+- before `//paste`, preview its destination with `//paste -n` using the same
+  placement flags planned for the real paste (for example, `//paste -n -a` or
+  `//paste -n -o`), then run `//size` and inspect the selected destination
 - use `//distr` to preview block composition before replacement
 
 ---
@@ -126,12 +129,17 @@ Use `-a` when you want to skip air blocks during paste.
 //schem save spawn-hub-v3
 //schem list
 //schem load spawn-hub-v3
+//paste -n -a
+//size
 //paste -a
 ```
 
 Operational guidance:
 - use versioned names (`arena-mid-2026-03-27`)
 - keep read-only archive copies for rollback
+- `-n` changes the selection to the planned destination without placing blocks;
+  keep `-a`, `-o`, and any other placement flags aligned between preview and
+  actual paste
 - pair each major paste with an immediate backup checkpoint
 
 ---
@@ -143,8 +151,8 @@ Operational guidance:
 ```text
 //brush sphere stone 4
 //brush smooth 3
-//brush raise 2
-//brush lower 2
+//brush raise sphere 2
+//brush lower sphere 2
 //mask #existing
 ```
 
@@ -157,7 +165,7 @@ Reset brush:
 Terraforming safety:
 - start with small radius (3-5) and iterate
 - keep masks active to avoid damaging structures
-- run periodic `//undo` checkpoints during long sessions
+- save periodic schematic or backup checkpoints; `//undo` reverts an edit
 
 ---
 
@@ -203,23 +211,29 @@ checkpoint exists, and the rollback window is closed.
 ```
 
 - Validate spawn safety (voids, lighting, navigation).
-- Save final state:
+- Reselect the edited area if needed, then copy its final state before saving:
 
 ```text
+//copy
 //schem save spawn-after-refresh
 ```
 
 ## Runbook: Arena Reset Between Matches
 
-- Keep a pristine arena schematic.
+- Keep a pristine arena schematic with its original placement recorded.
 - After each match:
 
 ```text
 //schem load arena-pristine
-//paste -a
+//paste -n -o
+//size
+//paste -o
 ```
 
-- Rebuild only arena boundary if needed.
+- Inspect the selected destination after the preview, then paste with the same
+  `-o` origin flag. Include air to remove player-added blocks; `-a` would leave
+  those blocks behind. Entity and biome restoration require intentional
+  copy/paste flags and separate verification.
 - Validate command blocks/signals associated with arena logic.
 
 ## Runbook: Block Cleanup (Lag and Visual Noise)

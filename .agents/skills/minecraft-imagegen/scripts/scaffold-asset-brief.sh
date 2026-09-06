@@ -92,7 +92,7 @@ infer_workspace_dir() {
 
   if [[ -n "$candidate" && -n "$HOME_DIR" && "$candidate" == "$HOME_DIR" ]]; then
     case "$SKILL_DIR" in
-      "$HOME_DIR/.codex/skills/"*|"$HOME_DIR/.claude/skills/"*)
+      "$HOME_DIR/.agents/skills/"*|"$HOME_DIR/.codex/skills/"*|"$HOME_DIR/.claude/skills/"*)
         candidate=""
         ;;
     esac

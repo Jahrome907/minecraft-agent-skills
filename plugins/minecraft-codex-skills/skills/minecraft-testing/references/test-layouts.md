@@ -1,8 +1,9 @@
-# Minecraft Testing Layouts (26.x and 1.21.x)
+# Minecraft Testing Layouts
 
-Use these layouts as the default shape for testable projects.
+Choose one explicit platform and version lane. `src/test` is for JUnit or
+MockBukkit; it is optional for a Game Test-only project.
 
-## 1. Pure Unit + MockBukkit Plugin Layout
+## Unit + MockBukkit plugin
 
 ```text
 src/
@@ -14,65 +15,86 @@ src/
     java/com/example/myplugin/
       MyPluginTest.java
       CommandExecutorTest.java
-    resources/
-      data/testplugin/structure/
-        empty.nbt
 ```
 
 Checklist:
 
-- `build.gradle(.kts)` declares JUnit 5 and MockBukkit
+- `build.gradle(.kts)` declares compatible JUnit Jupiter and MockBukkit versions
 - `tasks.test { useJUnitPlatform() }` is enabled
-- Any committed GameTest structures live under `src/test/resources/data/<modid>/structure/`
 
-## 2. NeoForge GameTest Layout
+## Current Fabric 26.x
+
+Fabric Loom's recommended Game Test layout uses a separate source set.
 
 ```text
 src/
   main/
     java/com/example/mymod/
-      MyMod.java
-      MyGameTests.java
+    resources/
+      fabric.mod.json
+  gametest/
+    java/com/example/mymod/
+      ExampleGameTest.java
+    resources/
+      fabric.mod.json
+      data/mymod/structure/
+        example_structure.nbt
+  test/                         # only when JUnit tests exist
+    java/com/example/mymod/
+      SerializerTest.java
+```
+
+Configure `fabricApi.configureTests { createSourceSet = true }`. Register server
+tests in `src/gametest/resources/fabric.mod.json` under `fabric-gametest`, and
+client tests under `fabric-client-gametest`. The current Fabric API annotation
+is `net.fabricmc.fabric.api.gametest.v1.GameTest`.
+
+## Current NeoForge 26.x
+
+```text
+src/
+  main/
+    java/com/example/mymod/
+      GameTestFunctions.java
     resources/
       META-INF/neoforge.mods.toml
       data/mymod/structure/
         empty.nbt
-  test/
+      data/mymod/test_instance/
+        example_test.json
+  test/                         # only when JUnit tests exist
     java/com/example/mymod/
       CooldownManagerTest.java
 ```
 
 Checklist:
 
-- Keep pure unit tests in `src/test/java`
-- Keep GameTest structure fixtures under committed `data/<modid>/structure/`
-- Make the test namespace match the `@GameTest(template = "<namespace>:...")` usage
-- Register each GameTest class on the NeoForge mod event bus
-- Keep `src/main/resources/META-INF/neoforge.mods.toml` present in the mod layout
+NeoForge 1.21.5+ models Game Tests as registered test environments, functions,
+and test instances. A `test_instance` must reference an existing structure. Add
+a `test_environment` resource when `minecraft:default` is not sufficient.
+Register custom test functions with a `DeferredRegister` for
+`BuiltInRegistries.TEST_FUNCTION` and attach it to the mod event bus. Use
+`RegisterGameTestsEvent` to register environments and instances in code.
 
-## 3. Fabric GameTest Layout
+## Legacy NeoForge 1.21.3
+
+Only use the annotation route for a clearly labelled 1.21.3 project.
 
 ```text
 src/
   main/
     java/com/example/mymod/
-      MyMod.java
-      MyFabricGameTests.java
+      LegacyGameTests.java
     resources/
-      fabric.mod.json
+      META-INF/neoforge.mods.toml
       data/mymod/structure/
-        empty.nbt
-  test/
-    java/com/example/mymod/
-      SerializerTest.java
+        example_structure.nbt
 ```
 
-Checklist:
-
-- Keep `fabric-gametest` entrypoints in `fabric.mod.json`
-- Register the concrete GameTest class inside that `fabric-gametest` entrypoint block
-- Commit the `.nbt` templates used by your tests
-- Keep game-facing tests small; move parsing and business logic back into plain JUnit
+`@GameTestHolder(MOD_ID)` registers the methods in the annotated type. The
+alternative is an event-bus `RegisterGameTestsEvent` listener that calls
+`event.register(LegacyGameTests.class)`; then each test provides its
+`templateNamespace`. Do not require both mechanisms.
 
 ## Validator Usage
 
@@ -84,8 +106,7 @@ Checklist:
 What it checks:
 
 - build file exists
-- test source roots exist
-- JUnit Platform is enabled
+- JUnit Platform is enabled when unit or MockBukkit tests are present
 - MockBukkit tests have the dependency
 - GameTests have committed structure fixtures that match referenced templates
-- NeoForge/Fabric GameTests include the metadata and entrypoints they need to run
+- Fabric GameTests include their metadata and entrypoints

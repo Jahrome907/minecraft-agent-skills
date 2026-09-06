@@ -8,7 +8,7 @@
     },
     "cases": [
       {
-        "when": "magic_wand",
+        "when": ["magic_wand"],
         "model": {
           "type": "minecraft:model",
           "model": "mypack:item/test_item"

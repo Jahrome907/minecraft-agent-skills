@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # check-build.sh
-# Verifies the Minecraft mod build environment and runs a clean build.
+# Verifies the Minecraft mod build environment and runs the project's build task.
 # Run from the root of a Minecraft mod project.
 
 set -euo pipefail
@@ -170,8 +170,7 @@ echo "Running ./gradlew build..."
 JAR_COUNT=$(find . -type f -path "*/build/libs/*.jar" ! -name "*-sources.jar" ! -name "*-dev.jar" 2>/dev/null | wc -l)
 if [[ "$JAR_COUNT" -gt 0 ]]; then
     echo ""
-    echo "$PASS Build succeeded!"
-    echo "Output jar(s):"
+    echo "$PASS Gradle build completed. Candidate output jar(s):"
     find . -type f -path "*/build/libs/*.jar" ! -name "*-sources.jar" ! -name "*-dev.jar" | while read -r jar; do
         echo "  -> $jar"
     done
@@ -182,4 +181,5 @@ else
 fi
 
 echo ""
-echo "=== Build environment is ready ==="
+echo "$WARN Candidate jars may predate this incremental build. Identify the intended distributable from Gradle output and run project-specific release validation before publishing."
+echo "=== Build environment check complete ==="

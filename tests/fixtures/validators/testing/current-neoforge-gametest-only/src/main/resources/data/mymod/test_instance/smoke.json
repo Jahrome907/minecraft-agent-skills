@@ -1,0 +1,8 @@
+{
+  "environment": "minecraft:default",
+  "structure": "mymod:empty",
+  "max_ticks": 20,
+  "setup_ticks": 0,
+  "required": true,
+  "type": "minecraft:block_based"
+}

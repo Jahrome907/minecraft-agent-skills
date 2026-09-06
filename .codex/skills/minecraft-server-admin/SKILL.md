@@ -21,7 +21,8 @@ description: "Set up, operate, tune, and troubleshoot Minecraft Java 26.x and le
 
 ## Deployment Decision Matrix
 
-Use this table first. Pick a deployment type before changing configs.
+Use this table when choosing a deployment. For an existing server, inspect its
+stack and version first and preserve them unless migration is requested.
 
 | Deployment profile | Recommended stack | Pick this when | Watch-outs |
 |---|---|---|---|
@@ -39,6 +40,15 @@ Use this table first. Pick a deployment type before changing configs.
 - Use Folia only when plugin compatibility has been validated for region-threading.
 - Use Velocity when one process is not enough or you need separate backend roles.
 - Use Fabric/NeoForge when the requirement is mod-driven, not plugin-driven.
+
+### Java and version lanes
+
+- Paper and Purpur: Minecraft 26.1+ requires Java 25; Minecraft 1.21.x uses
+  Java 21. Verify the exact Paper/Purpur build and installed plugins before a
+  lane change.
+- Current Velocity 4.x requires Java 25. For a legacy proxy, retain the Java
+  version required by that exact proxy release rather than applying the current
+  lane by default.
 
 ---
 
@@ -80,8 +90,11 @@ Use Spark instead of guesswork:
 ```bash
 spark profiler --timeout 180
 spark tps
-spark tickmonitor --interval 10
+spark tickmonitor --threshold-tick 50
 ```
+
+The 50 ms threshold reports ticks that exceed one normal 20 TPS tick; adjust it
+only when the incident threshold is intentionally different.
 
 Then identify whether the issue is:
 - plugin task load
@@ -227,18 +240,32 @@ not enable BungeeCord forwarding and Velocity modern forwarding at the same time
 
 | Asset | Frequency | Retention | Notes |
 |---|---|---|---|
-| World folders (`world*`) | Hourly incremental + daily full | 7 daily, 4 weekly | Highest priority |
+| Every configured world folder | Hourly incremental + daily full | 7 daily, 4 weekly | Include custom and externally stored worlds |
 | `plugins/`, `config/`, and root server state | Daily | 14 daily | Required for operational restore |
 | Proxy config/secrets | Daily | 30 daily | Store encrypted off-host |
 | Container/orchestration files | On change + weekly | 8 weeks | Git-tracked where possible |
 
-### Example backup script
+### Example backup script (Paper/Purpur)
 
 For a production server, quiesce world writes before copying live world folders.
 The example below assumes a maintenance window and a cleanly stopped server. If
 you use RCON-based live backups instead, choose a client/secret mechanism that
-does not expose the password in command arguments, flush chunks first, and test
-the restore path before trusting the backup.
+does not expose the password in command arguments. A safe implementation must
+run `save-off`, then `save-all`, copy the data, and guarantee `save-on` cleanup
+even when the copy fails. Do not treat a flush or `save-all` alone as a live
+backup protocol. Folia disables `save-all`; use a clean stop or a verified
+platform snapshot there. Test the restore path before trusting any backup.
+
+For Fabric or NeoForge recovery, additionally inventory `mods/` and record the
+exact loader launch state: Minecraft and loader versions, Java version, launch
+command and arguments, launcher or installer artifacts, and any version or
+library manifests used by that deployment. Restore those matching components
+with the configured world folders; this Paper/Purpur example does not capture
+them for you.
+
+Supply the complete world-folder list as arguments, relative to `SERVER_ROOT`,
+after checking `level-name` and any multi-world plugin configuration. Back up
+worlds stored outside that root separately; do not infer coverage from `world*`.
 
 ```bash
 #!/usr/bin/env bash
@@ -254,9 +281,20 @@ BACKUP_ROOT="/backups/minecraft"
 SERVER_ROOT="/srv/minecraft"
 DEST="${BACKUP_ROOT}/${DATE}"
 
+if [[ "$#" -eq 0 ]]; then
+  echo "Usage: backup.sh <world-folder> [additional-world-folders...]" >&2
+  exit 1
+fi
+for world_dir in "$@"; do
+  if [[ ! -d "$SERVER_ROOT/$world_dir" ]]; then
+    echo "Missing configured world folder: $world_dir" >&2
+    exit 1
+  fi
+done
+
 mkdir -p "$DEST"
 
-tar -czf "${DEST}/worlds.tar.gz" -C "$SERVER_ROOT" world world_nether world_the_end
+tar -czf "${DEST}/worlds.tar.gz" -C "$SERVER_ROOT" -- "$@"
 
 state_items=()
 for item in \
@@ -417,6 +455,7 @@ Minecraft or Java line.
 ### Paper (primary)
 
 - https://docs.papermc.io/paper/
+- https://docs.papermc.io/paper/getting-started/
 - https://docs.papermc.io/paper/admin
 - https://docs.papermc.io/paper/profiling/
 
@@ -429,6 +468,10 @@ Minecraft or Java line.
 ### Proxy and ecosystem docs
 
 - https://docs.papermc.io/velocity/
+- https://docs.papermc.io/velocity/getting-started/
+- https://docs.papermc.io/folia/faq/
 - https://spark.lucko.me/docs
+- https://spark.lucko.me/docs/Command-Usage
+- https://github.com/itzg/docker-mc-backup
 - https://geysermc.org/wiki/geyser/
 - https://pterodactyl.io/project/introduction.html

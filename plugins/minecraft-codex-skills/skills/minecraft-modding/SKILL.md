@@ -78,15 +78,17 @@ Key files per platform:
 # Run data generation (generates JSON assets automatically)
 ./gradlew runData
 
-# Clean build cache
+# Remove this project's generated build outputs before a fresh rebuild
 ./gradlew clean
 
 # Check for dependency updates (optional)
 ./gradlew dependencyUpdates
 ```
 
-After `./gradlew build`, the mod jar is at:
-`build/libs/<mod_id>-<version>.jar`
+`./gradlew build` runs the project's configured build tasks. Candidate mod jars are
+usually under `build/libs/`, but task names and file names are project-specific.
+Treat the build output as compilation evidence, then identify the intended
+distributable before publishing it.
 
 ---
 
@@ -98,12 +100,12 @@ src/
     java/<groupId>/<modid>/
       MyMod.java               ← @Mod entry point
       block/
-        ModBlocks.java         ← DeferredRegister<Block>
+        ModBlocks.java         ← DeferredRegister.Blocks
         MyCustomBlock.java
       item/
-        ModItems.java          ← DeferredRegister<Item>
+        ModItems.java          ← DeferredRegister.Items
       entity/
-        ModEntities.java       ← DeferredRegister<EntityType<?>>
+        ModEntities.java       ← DeferredRegister.Entities
       menu/                    ← custom GUI containers
       recipe/
       worldgen/
@@ -118,13 +120,14 @@ src/
         models/
           block/               ← block model JSON
           item/                ← item model JSON
+        items/                 ← 1.21.x item-definition JSON
         textures/
           block/               ← 16×16 PNG textures
           item/
         lang/
           en_us.json           ← translation strings
       data/<modid>/
-        recipes/               ← crafting recipe JSON
+        recipe/                ← crafting recipe JSON (26.x)
         loot_table/
           blocks/              ← per-block loot table JSON
         tags/
@@ -144,9 +147,9 @@ src/
     java/<groupId>/<modid>/
       MyMod.java               <- @Mod entry point
       block/
-        ModBlocks.java         <- DeferredRegister<Block>
+        ModBlocks.java         <- DeferredRegister.Blocks
       item/
-        ModItems.java          <- DeferredRegister<Item>
+        ModItems.java          <- DeferredRegister.Items
       datagen/
         ModDataGen.java        <- GatherDataEvent handler
     resources/
@@ -219,9 +222,13 @@ Identifier id = Identifier.of("mymod", "my_block");
 
 ---
 
-## 7. NeoForge Quick Patterns
+## 7. NeoForge Quick Patterns (26.x)
 
-See full patterns in `references/neoforge-api.md`.
+For 26.x, use the explicitly labelled 26.x sections in
+`references/common-patterns.md` and select the project's exact version in the
+[NeoForge documentation](https://docs.neoforged.net/docs/gettingstarted/).
+`references/neoforge-api.md` contains legacy 1.21.x / Java 21 patterns only;
+do not copy its dependency pins into a 26.x project.
 
 ```java
 // Main mod class
@@ -244,8 +251,8 @@ public class MyMod {
 ```java
 // Block registration
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-        DeferredRegister.create(BuiltInRegistries.BLOCK, MyMod.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS =
+        DeferredRegister.createBlocks(MyMod.MOD_ID);
 
     public static final DeferredBlock<Block> MY_BLOCK =
         BLOCKS.registerSimpleBlock("my_block",
@@ -302,7 +309,12 @@ public class ModBlocks {
 ---
 ## 9. Fabric Quick Patterns
 
-See full patterns in `references/fabric-api.md`.
+Match the project's Minecraft version and mappings in the
+[Fabric documentation](https://docs.fabricmc.net/develop/).
+`references/fabric-api.md` contains legacy 1.21.x / Java 21 patterns only.
+The explicitly labelled 26.x sections in `references/common-patterns.md`
+use NeoForge syntax; adapt them against the exact Fabric API rather than
+copying loader-specific classes or legacy dependency pins.
 
 ```java
 // Main mod class
@@ -312,29 +324,45 @@ public class MyMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ModBlocks.register();
+        ModBlocks.initialize();
         ModItems.register();
     }
 }
 ```
 
 ```java
-// Block registration
-public class ModBlocks {
-    public static final Block MY_BLOCK = new Block(
-        AbstractBlock.Settings.create()
-            .mapColor(MapColor.STONE)
-            .strength(1.5f, 6.0f)
-            .sounds(BlockSoundGroup.STONE)
-            .requiresTool()
+// Fabric 26.x with official Mojang mappings. Create the key before the object
+// so its properties receive the required id during construction.
+public final class ModBlocks {
+    public static final ResourceKey<Block> MY_BLOCK_KEY = ResourceKey.create(
+        Registries.BLOCK,
+        Identifier.fromNamespaceAndPath(MyMod.MOD_ID, "my_block")
     );
 
-    public static void register() {
-        Registry.register(Registries.BLOCK,
-            Identifier.of(MyMod.MOD_ID, "my_block"), MY_BLOCK);
+    public static final Block MY_BLOCK = register(
+        MY_BLOCK_KEY,
+        Block::new,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(1.5f, 6.0f)
+            .sound(SoundType.STONE)
+            .requiresCorrectToolForDrops()
+    );
+
+    private static Block register(ResourceKey<Block> key,
+            Function<BlockBehaviour.Properties, Block> factory,
+            BlockBehaviour.Properties properties) {
+        Block block = factory.apply(properties.setId(key));
+        return Registry.register(BuiltInRegistries.BLOCK, key, block);
     }
+
+    public static void initialize() {}
 }
 ```
+
+Call `ModBlocks.initialize()` from the Fabric initializer. The Yarn-named
+1.21.11 examples remain in `references/fabric-api.md`; do not mix those names
+with this 26.x pattern.
 
 ---
 
@@ -393,6 +421,7 @@ When adding a **new block**:
 - [ ] Blockstate JSON → `assets/<modid>/blockstates/<name>.json`
 - [ ] Block model JSON → `assets/<modid>/models/block/<name>.json`
 - [ ] Item model JSON → `assets/<modid>/models/item/<name>.json` (or inherits from block)
+- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`, pointing at the item or block model
 - [ ] Texture PNG → `assets/<modid>/textures/block/<name>.png`
 - [ ] Loot table JSON -> 1.21.x: `data/<modid>/loot_table/blocks/<name>.json`; Forge 1.20.1: `data/<modid>/loot_tables/blocks/<name>.json`
 - [ ] Tags -> 1.21.x: `data/<modid>/tags/block/` and `tags/item/`; Forge 1.20.1: `data/<modid>/tags/blocks/` and `tags/items/`
@@ -404,10 +433,12 @@ When adding a **new item**:
 - [ ] `Item` subclass (or use `new Item(properties)`)
 - [ ] Register in `ModItems` / `Registries.ITEM`
 - [ ] Item model JSON
+- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`
 - [ ] Texture PNG
 - [ ] Language entry
 - [ ] Creative tab registration (NeoForge/Forge: `BuildCreativeModeTabContentsEvent`; Fabric: `ItemGroupEvents`)
-- [ ] Recipe JSON if craftable
+- [ ] Recipe JSON if craftable (`data/<modid>/recipe/` for 26.x; see the
+      version-specific recipe reference before using a 1.21.x project)
 
 When adding a **new entity**:
 - [ ] Entity class (extends appropriate base: `Mob`, `Animal`, `TamableAnimal`, etc.)

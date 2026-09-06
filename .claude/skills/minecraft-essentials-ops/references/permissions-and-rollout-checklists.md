@@ -21,6 +21,8 @@ moderation-policy change that needs a compact checklist.
 
 - Define mute, jail, tempban, and permanent-ban thresholds in writing.
 - Ensure staff can supply reasons and durations consistently.
+- Grant `essentials.setjail` only to authorized roles; use
+  `essentials.togglejail` for staff who jail and unjail players.
 - Verify logs or moderation records are retained as expected.
 - Keep rollback or appeal procedures documented for staff.
 

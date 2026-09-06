@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/stick"
+    },
+    "cases": [
+      {
+        "when": [1001],
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      }
+    ]
+  }
+}

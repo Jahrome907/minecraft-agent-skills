@@ -28,39 +28,49 @@ platform-specific behavior behind the `@ExpectPlatform` abstraction.
 
 ---
 
-## Versions (Legacy 1.21.x Example)
+## Versions (Retained 1.21.11 Lane)
 
 ```properties
-# gradle.properties (root)
+# gradle.properties property names used by this skill's static helper.
+# Get every tool version from the exact generated or known-working project.
 mod_version=1.0.0
 minecraft_version=1.21.11
 enabled_platforms=fabric,neoforge
 
-architectury_version=19.0.1
-fabric_loader_version=0.19.3
-fabric_api_version=0.141.4+1.21.11
-neoforge_version=21.11.42
-
-loom_version=1.17.11
+architectury_version=<project pin>
+fabric_loader_version=<project pin>
+fabric_api_version=<project pin ending in +1.21.11>
+neoforge_version=<project pin in the 21.11.x family>
+loom_version=<project pin>
 ```
 
 Pin `architectury_version`, the Architectury plugin version, and `loom_version`
-from the same released template line when scaffolding a new project. The values
-above are for the stable 1.21.x toolchain story in this repo and avoid snapshot-only examples.
+from the same generated or known-working project line. This skill deliberately
+does not publish a copyable dependency matrix: its static helper cannot resolve
+whether a particular set of versions is compatible.
 
-For Minecraft 26.x, generate or copy a released Architectury 26.x template and
-keep its Java 25, Loom, Fabric API, NeoForge, and Architectury versions together.
-Do not mechanically change only `minecraft_version` in the legacy example:
-26.x is unobfuscated and its Loom/remapping setup differs from 1.21.11.
+For the current Minecraft 26.2 / Java 25 lane, use the official
+[Architectury Template Generator](https://generate.architectury.dev/) only when
+its version selector offers the exact target. Generate a **Multiplatform**
+project with Fabric and NeoForge, then preserve the generated Gradle layout and
+pins as one set. If the generator does not offer the target, begin with an
+already working project on that exact line and inspect its resolved build; do
+not relabel a 1.21.11 template as 26.2. The published template downloads are
+not a substitute for an exact-current scaffold.
+
+Do not mechanically change only `minecraft_version` in the retained example:
+26.2 is unobfuscated and its Loom/remapping setup differs from 1.21.11.
 
 ## Bundled References And Helpers
 
 - Version alignment reference: `references/architectury-reference.md`
 - Sanity checker: `./scripts/check-version-sanity.sh --root <project>`
 
-Run the sanity checker after editing `gradle.properties`. It catches the most common
-multiloader drift mistakes: snapshot toolchain pins, missing `fabric` / `neoforge`
-platforms, and mismatched NeoForge vs Minecraft patch lines.
+Run the sanity checker after editing `gradle.properties`. It is a static
+syntax-and-version-family preflight: it catches missing keys, snapshot pins,
+missing `fabric` / `neoforge` platforms, and obvious version-family drift. It
+does not resolve dependencies, prove loader compatibility, or replace the
+project's Fabric and NeoForge build and smoke tests.
 
 ---
 
@@ -103,193 +113,15 @@ my-mod/
 
 ---
 
-## Root `settings.gradle`
+## Legacy Build Template
 
-```groovy
-pluginManagement {
-    repositories {
-        maven { url "https://maven.architectury.dev/" }
-        maven { url "https://maven.fabricmc.net/" }
-        maven { url "https://maven.neoforged.net/releases" }
-        gradlePluginPortal()
-    }
-}
-
-include "common"
-include "fabric"
-include "neoforge"
-```
-
----
-
-## Root `build.gradle`
-
-```groovy
-plugins {
-    id "architectury-plugin" version "3.4" apply false
-    id "dev.architectury.loom" version "${loom_version}" apply false
-    id "com.github.johnrengelman.shadow" version "8.1.1" apply false
-}
-
-architectury {
-    minecraft = rootProject.minecraft_version
-}
-
-subprojects {
-    apply plugin: "java"
-    apply plugin: "architectury-plugin"
-
-    group = "com.example.mymod"
-    version = "${mod_version}+${minecraft_version}"
-    archivesBaseName = "my-mod-${project.name}"
-
-    repositories {
-        maven { url "https://maven.architectury.dev/" }
-        maven { url "https://mod-buildtools.pkg.github.com/TerraformersMC/" }
-    }
-
-    java {
-        withSourcesJar()
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
-```
-
----
-
-## `common/build.gradle`
-
-```groovy
-plugins {
-    id "dev.architectury.loom" apply true
-}
-
-architectury {
-    common(rootProject.enabled_platforms.split(","))
-}
-
-loom {
-    // common project uses mappings only
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings loom.officialMojangMappings()
-
-    modImplementation "dev.architectury:architectury:${rootProject.architectury_version}"
-}
-```
-
----
-
-## `fabric/build.gradle`
-
-```groovy
-plugins {
-    id "com.github.johnrengelman.shadow"
-    id "dev.architectury.loom" apply true
-}
-
-architectury {
-    platformSetupLoomIde()
-    fabric()
-}
-
-loom {
-    accessWidenerPath = project(":common").loom.accessWidenerPath
-}
-
-configurations {
-    common
-    shadowCommon
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentFabric.extendsFrom common
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings loom.officialMojangMappings()
-
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-    modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
-}
-
-shadowJar {
-    exclude "architectury.common.json"
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier = "dev-shadow"
-}
-
-remapJar {
-    injectAccessWidener = true
-    input.fileValue shadowJar.archiveFile.get().asFile
-    dependsOn shadowJar
-    archiveClassifier = ""
-}
-
-jar { archiveClassifier = "dev" }
-sourcesJar { archiveClassifier = "dev-sources" }
-components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) { skip() }
-```
-
----
-
-## `neoforge/build.gradle`
-
-```groovy
-plugins {
-    id "com.github.johnrengelman.shadow"
-    id "dev.architectury.loom" apply true
-}
-
-architectury {
-    platformSetupLoomIde()
-    neoForge()
-}
-
-loom {
-    accessWidenerPath = project(":common").loom.accessWidenerPath
-}
-
-configurations {
-    common
-    shadowCommon
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentNeoForge.extendsFrom common
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings loom.officialMojangMappings()
-
-    neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
-    modApi "dev.architectury:architectury-neoforge:${rootProject.architectury_version}"
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive false }
-}
-
-shadowJar {
-    exclude "architectury.common.json"
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier = "dev-shadow"
-}
-
-remapJar {
-    input.fileValue shadowJar.archiveFile.get().asFile
-    dependsOn shadowJar
-    archiveClassifier = ""
-}
-
-jar { archiveClassifier = "dev" }
-```
+The old fixed Gradle scripts were a 1.21.11 snapshot and are intentionally not
+presented as a current scaffold. For either supported lane, read
+[`references/legacy-1.21.11-template.md`](references/legacy-1.21.11-template.md)
+or [`references/architectury-reference.md`](references/architectury-reference.md)
+before changing generated build files. They preserve version anchors and
+source-set boundaries without encouraging a partial build script to be copied
+into a different Minecraft line.
 
 ---
 
@@ -301,8 +133,9 @@ package com.example.mymod;
 
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 
 public class MyMod {
@@ -310,10 +143,13 @@ public class MyMod {
 
     // Architectury's DeferredRegister — works on both platforms
     public static final DeferredRegister<Item> ITEMS =
-        DeferredRegister.create(MOD_ID, BuiltInRegistries.ITEM);
+        DeferredRegister.create(MOD_ID, Registries.ITEM);
 
     public static final RegistrySupplier<Item> MY_ITEM =
-        ITEMS.register("my_item", () -> new Item(new Item.Properties()));
+        ITEMS.register("my_item", () -> new Item(new Item.Properties().setId(
+            ResourceKey.create(Registries.ITEM,
+                Identifier.fromNamespaceAndPath(MOD_ID, "my_item"))
+        )));
 
     public static void init() {
         ITEMS.register(); // registers with both platforms
@@ -408,6 +244,10 @@ public class MyModFabric implements ModInitializer {
 ```
 
 ### `fabric/.../resources/fabric.mod.json`
+This retained-1.21.11 metadata example follows the minimum dependencies in the
+[upstream Architectury 1.21.11 branch](https://github.com/architectury/architectury-api/tree/1.21.11).
+Keep the generated project's exact ranges when they are stricter.
+
 ```json
 {
   "schemaVersion": 1,
@@ -421,9 +261,9 @@ public class MyModFabric implements ModInitializer {
     "main": ["com.example.mymod.fabric.MyModFabric"]
   },
   "depends": {
-    "fabricloader": ">=0.19.3",
-    "fabric-api": ">=0.141.4+1.21.11",
-    "architectury": ">=19.0.1",
+    "fabricloader": ">=0.18.2",
+    "fabric-api": ">=0.139.4+1.21.11",
+    "architectury": ">=19.0",
     "minecraft": "~1.21.11"
   }
 }
@@ -484,9 +324,10 @@ side = "BOTH"
 # Build both JARs simultaneously
 ./gradlew build
 
-# Outputs:
-#   fabric/build/libs/my-mod-fabric-1.0.0+1.21.11.jar
-#   neoforge/build/libs/my-mod-neoforge-1.0.0+1.21.11.jar
+# Inspect the project's actual outputs. Generated templates choose their own
+# archive base name and version convention:
+find fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name '*.jar' \
+  ! -name '*-sources.jar' ! -name '*-dev.jar' ! -name '*-javadoc.jar'
 
 # Run in dev environment
 ./gradlew :fabric:runClient
@@ -505,9 +346,10 @@ side = "BOTH"
 |---------|----------|
 | Using `net.neoforged.*` / `net.fabricmc.*` in `common/` | Only use vanilla MC and Architectury APIs in common |
 | Direct field access on `DeferredRegister` (NeoForge style) in common | Use Architectury's `DeferredRegister` |
+| Constructing a 26.2 item without a registry key | Create its `ResourceKey<Item>` and call `Item.Properties#setId` before `new Item` |
 | Forgetting `@ExpectPlatform` throws `AssertionError` at runtime | Both `fabric/` and `neoforge/` must have matching same-package `*Impl` classes |
 | Assets duplicated in fabric/ and neoforge/ | Keep assets in `common/src/main/resources/assets/` |
-| Mixins in common — not supported on NeoForge | Put Mixins in the platform subprojects only |
+| A common Mixin imports a loader API or targets one loader's side | Put it in that platform subproject; loader-neutral Mixins may be common when both generated platform configurations include them |
 | Accessing world/registry on mod init thread | Use `mod bus` events for setup; never access world on init |
 
 ---
@@ -515,6 +357,9 @@ side = "BOTH"
 ## References
 
 - Architectury API GitHub: https://github.com/architectury/architectury-api
+- Architectury API 26.2 source branch: https://github.com/architectury/architectury-api/tree/26.2
+- Architectury API 1.21.11 source branch: https://github.com/architectury/architectury-api/tree/1.21.11
 - Architectury Loom: https://github.com/architectury/architectury-loom
 - Architectury templates: https://github.com/architectury/architectury-templates
+- Architectury Template Generator: https://generate.architectury.dev/
 - Architectury docs: https://docs.architectury.dev/

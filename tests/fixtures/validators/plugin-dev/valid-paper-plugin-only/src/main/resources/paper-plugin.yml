@@ -1,0 +1,4 @@
+name: PaperOnlyPlugin
+version: 1.0.0
+main: com.example.plugin.PaperOnlyPlugin
+api-version: '26.2'

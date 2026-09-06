@@ -6,14 +6,16 @@ a project or install the bundled Codex and Claude Code plugin.
 
 ## Install
 
-Copy the surface your agent host uses. Preserve unrelated local skills when a
-target already exists. Or send your agent the repo link & tell the agent to download the skill(s)/plugin.
+Install one copy of each skill for the host you use. Preserve unrelated local
+skills when a target already exists. Copy only the selected skill folders if
+you do not need the whole bundle; do not copy this repository's `AGENTS.md`
+into a Minecraft project.
 
 | Host | Copy or install |
 | --- | --- |
-| Codex | `.agents/` |
-| Codex compatibility | `.codex/` |
-| Claude Code | `.claude/` |
+| Codex | `.agents/skills/` into the project's `.agents/skills/` |
+| Older Codex hosts | `.codex/skills/` only if that host uses the legacy location |
+| Claude Code | `.claude/skills/` into the project's `.claude/skills/` |
 | Plugin | `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/` |
 
 For a Codex plugin install, keep the marketplace file and plugin directory under
@@ -24,8 +26,10 @@ the same project root, open the plugins surface, and install
 claude --plugin-dir ./plugins/minecraft-codex-skills
 ```
 
-`minecraft-imagegen` needs a host with image-generation support. Codex provides
-that support directly.
+The raw folders and plugin are alternative installation methods. Loading both
+can expose duplicate skills. `minecraft-imagegen` needs an image-generation
+tool supplied by the host or an already connected integration; installing this
+bundle or selecting a model does not add that tool.
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -51,9 +55,38 @@ that support directly.
 | `minecraft-worldedit-ops` | Safe WorldEdit selections, schematics, and brushes |
 | `minecraft-essentials-ops` | EssentialsX configuration, moderation, and economy |
 
+## Using GPT-6 Astra and Claude Fable 5.1
+
+These are host-loaded skills, not model-specific API integrations. Select the
+model in Codex or Claude Code. The bundle does not set model IDs, effort,
+permissions, or global configuration.
+
+Describe the outcome and target version, for example:
+
+- "Fix this Paper 1.21.11 command without upgrading the server."
+- "Add a 26.2 datapack recipe and verify its files."
+- "Audit this Velocity configuration; prepare any changes locally."
+
+The agent should inspect the existing project first, load only relevant
+references, and finish authorized work with focused edits and proportionate
+checks. Existing version pins and explicit user choices take precedence over
+example defaults. A layout validator checks selected static rules; it does
+not establish compilation, in-game behavior, or production readiness.
+
+The September 2026 review follows the official guidance for
+[GPT-6 Astra](https://developers.openai.com/api/docs/guides/latest-model#gpt-6-astra-behavior),
+[Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1),
+[Codex skills](https://developers.openai.com/codex/skills), and
+[Claude Code skills](https://code.claude.com/docs/en/skills).
+This is a content and packaging review, not a benchmark of both models or
+an in-game certification of every example.
+See the [September 2026 audit](docs/skill-audit-2026-09.md) for all 13 skills,
+primary sources, corrections, and verification limits.
+
 ## Maintaining the bundle
 
-Edit `.agents/skills/`, then run:
+Use Node 22 or newer and Bash (Git Bash works on Windows). Edit
+`.agents/skills/`, then run:
 
 ```bash
 npm run sync:skills

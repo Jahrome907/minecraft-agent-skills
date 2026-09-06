@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": {
+      "sprite": "mypack:item/test_item",
+      "force_translucent": false
+    }
+  }
+}

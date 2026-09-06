@@ -8,11 +8,11 @@ description: "Create and debug Minecraft 26.x and 1.21.x resource packs, includi
 ## What Is a Resource Pack?
 
 A resource pack is a folder (or `.zip`) that overrides or adds Minecraft's visual and
-audio assets: textures, models, sounds, language files, fonts, and shaders. No Java
-or mod loader required. Works on vanilla clients and servers.
+audio assets: textures, models, sounds, language files, and fonts. No Java or mod
+loader is required for those vanilla assets.
 
 ### Routing Boundaries
-- `Use when`: the deliverable is visual/audio assets (textures, models, sounds, fonts, shaders) in resource-pack format.
+- `Use when`: the deliverable is visual/audio assets (textures, models, sounds, fonts) in resource-pack format.
 - `Do not use when`: the task requires gameplay logic or runtime behavior changes (use `minecraft-datapack`, `minecraft-plugin-dev`, or `minecraft-modding`).
 - `Do not use when`: the task is server infrastructure/runtime administration (`minecraft-server-admin`).
 
@@ -33,13 +33,15 @@ or mod loader required. Works on vanilla clients and servers.
 | 26.1              | `min_format: [84, 0]`, `max_format: [84, 0]` |
 | 26.2              | `min_format: [88, 0]`, `max_format: [88, 0]` |
 
-Use `pack_format` through 1.21.8. Starting in 1.21.9, `pack.mcmeta` switches to
-`min_format` / `max_format` instead of the older single-number field.
-For exact patch targeting, use `[major, minor]` arrays for both `min_format` and
-`max_format`, including `.0` versions such as `[75, 0]`. A single integer is
-equivalent to `[major, 0]` for `min_format`, while a single integer in
-`max_format` allows any minor version on that major line. Do not write decimal
-JSON numbers.
+Use legacy `pack_format` only for resource formats below 65 (through 1.21.8).
+Resource format 65 and later require both `min_format` and `max_format`; use
+`[major, minor]` for exact patch targeting, including `.0` such as `[84, 0]`.
+An integer or `[major]` `min_format` means `[major, 0]`; an integer or
+`[major]` `max_format` permits every minor version on that major line. Do not
+write decimal JSON numbers. A legacy-only pack can use its integer
+`pack_format` alone. A range whose `min_format` includes a legacy format needs
+integer `pack_format` and `supported_formats`; do not include
+`supported_formats` for a modern-only range.
 
 ---
 
@@ -77,13 +79,13 @@ my-pack/
         ├── sounds.json
         ├── font/
         │   └── default.json
-        ├── lang/
-        │   └── en_us.json
-        ├── shaders/           ← core shader overrides (advanced)
-        └── optifine/          ← OptiFine CIT / CTM (OptiFine only)
-            └── cit/
-                └── my_item.properties
+        └── lang/
+            └── en_us.json
 ```
+
+Client-mod-specific files such as OptiFine CIT and Iris shader packs use their
+own formats. Read [conditional assets](references/conditional-assets.md) before
+adding them.
 
 ---
 
@@ -223,73 +225,11 @@ Cross model (flowers, plants):
 
 ## Item Models
 
-### Simple flat item
-```json
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "mypack:item/my_item"
-  }
-}
-```
-
-### Held item (in-hand model)
-```json
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "mypack:item/my_sword"
-  }
-}
-```
-
-### Two-layer item (colored like leather armor)
-```json
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "minecraft:item/leather_helmet",
-    "layer1": "minecraft:item/leather_helmet_overlay"
-  }
-}
-```
-
-### Custom model data overrides (1.21.4 and prior)
-Each `predicate` entry routes to a different model based on `custom_model_data`:
-```json
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "minecraft:item/stick"
-  },
-  "overrides": [
-    { "predicate": { "custom_model_data": 1001 }, "model": "mypack:item/magic_wand" },
-    { "predicate": { "custom_model_data": 1002 }, "model": "mypack:item/fire_staff" }
-  ]
-}
-```
-
-### 1.21.4+ Item Model (new format)
-In 1.21.4, Mojang introduced a new item model system. Place model definitions at
-`assets/<namespace>/items/<item_name>.json`:
-```json
-{
-  "model": {
-    "type": "minecraft:select",
-    "property": "minecraft:custom_model_data",
-    "fallback": {
-      "type": "minecraft:model",
-      "model": "minecraft:item/stick"
-    },
-    "cases": [
-      {
-        "when": 1001,
-        "model": { "type": "minecraft:model", "model": "mypack:item/magic_wand" }
-      }
-    ]
-  }
-}
-```
+For **1.21.4 and later**, use item definitions in
+`assets/<namespace>/items/`. For **1.21.3 and earlier**, use the legacy model
+`overrides` array. Read [conditional assets](references/conditional-assets.md)
+for the string-based current `custom_model_data` selector and the legacy numeric
+predicate; their values are not interchangeable.
 
 ---
 
@@ -367,32 +307,34 @@ If `frames` is omitted, all frames play sequentially. `frametime` is in game tic
 Place sprites at `assets/minecraft/textures/gui/sprites/<category>/<name>.png`.
 Reference them with `<category>/<name>` in code/JSON.
 
----
+### 26.1 block-model texture entries
+For 26.1, a block-model `textures` entry may remain a sprite string or use an
+object. The object must have a string `sprite`; `force_translucent`, when set,
+must be a boolean.
 
-## Sounds
-
-### `assets/minecraft/sounds.json`
 ```json
 {
-  "my_sound.play": {
-    "sounds": [
-      { "name": "mypack:custom/my_sound", "volume": 1.0, "pitch": 1.0, "weight": 1 },
-      { "name": "mypack:custom/my_sound_alt", "weight": 2 }
-    ],
-    "category": "players"
-  },
-  "entity.player.levelup": {
-    "replace": true,
-    "sounds": [
-      { "name": "mypack:custom/levelup_replaced", "volume": 0.75, "pitch": 1.0 }
-    ]
+  "textures": {
+    "all": {
+      "sprite": "mypack:block/frosted_panel",
+      "force_translucent": true
+    }
   }
 }
 ```
 
-- Sound files go in `assets/<namespace>/sounds/` as `.ogg` files (Vorbis encoded)
-- Use `"replace": true` to replace vanilla sounds instead of adding to them
-- Categories: `master`, `music`, `record`, `weather`, `block`, `hostile`, `neutral`, `player`, `ambient`, `voice`
+Both forms identify a sprite without `.png`. Use `force_translucent` only when
+the geometry must render in the translucent pass despite its sprite pixels.
+
+---
+
+## Sounds
+
+An event's namespace comes from the namespace containing `sounds.json`; a
+sound entry's `name` identifies the sound-file namespace. Sound files are Vorbis
+`.ogg` under `assets/<namespace>/sounds/`. Read
+[conditional assets](references/conditional-assets.md) for a correct event
+example, aliases, sound-source selection, and replacement behavior.
 
 ---
 
@@ -416,64 +358,16 @@ Reference them with `<category>/<name>` in code/JSON.
 
 ## Fonts
 
-### `assets/minecraft/font/default.json` — add glyph
-```json
-{
-  "providers": [
-    {
-      "type": "bitmap",
-      "file": "mypack:font/icons.png",
-      "ascent": 8,
-      "height": 9,
-      "chars": ["\uE000", "\uE001", "\uE002"]
-    }
-  ]
-}
-```
-
-Custom icons via private use area (U+E000–U+F8FF). Reference in text with `\uE000`.
-The `icons.png` must have each character cell `height` pixels tall.
+Read [conditional assets](references/conditional-assets.md) for bitmap provider
+layout and private-use icon guidance.
 
 ---
 
-## OptiFine CIT (Custom Item Textures)
+## OptiFine and shaders
 
-> OptiFine-only feature. Does not work in vanilla or Iris.
-
-### `assets/minecraft/optifine/cit/my_sword.properties`
-```properties
-type=item
-items=minecraft:diamond_sword
-texture=my_sword_texture.png
-model=my_sword_model
-nbt.display.Name=ipattern:*Excalibur*
-```
-
-Common CIT properties:
-- `type=item` — item texture override
-- `type=enchantment` — custom enchantment glint
-- `type=armor` — armor overlay
-- `items=` — comma-separated item IDs
-- `damage=` — damage range (e.g., `0-50%`)
-- `nbt.display.Name=ipattern:*text*` — NBT name filter
-- `texture=` — PNG file (relative to `.properties` file)
-- `model=` — JSON model file (relative)
-
----
-
-## Iris Shaders (Resource Pack Method)
-
-Iris shaders live inside a resource pack at:
-```
-assets/iris/
-    shaders/
-        core/
-            rendertype_terrain.vsh    ← vertex shader override
-            rendertype_terrain.fsh    ← fragment shader override
-```
-
-Full shader pack distribution uses the `.zip` format with a `shaders/` root folder
-(not inside `assets/`). Resource pack shader overrides target specific render types.
+OptiFine CIT and Iris shader packs have client-mod-specific formats. Read
+[conditional assets](references/conditional-assets.md) before adding either;
+they are not portable vanilla resource-pack features.
 
 ---
 
@@ -500,7 +394,7 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 |---------|-------|-----|
 | Model not showing | Wrong JSON path or syntax error | Check `assets/<namespace>/models/` path; validate JSON |
 | Black/pink checkerboard | Texture path wrong or missing | Check `textures/` path, file extension not in JSON |
-| Blockstate not applying | Wrong state property name | Match exact property names from `/blockdata` |
+| Blockstate not applying | Wrong state property name | Use F3 to inspect block state; use `/data get block <x> <y> <z>` for block-entity NBT |
 | Animation not working | Wrong MCMETA location | Must be same folder as texture, named `texture.png.mcmeta` |
 | Custom sound not playing | Not in `sounds.json` | Register sound event in `sounds.json`, match namespace |
 | Pack not loading | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
@@ -508,6 +402,10 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 ## Validator Script
 
 Use the bundled validator script before shipping a resource-pack update:
+
+Unbundled references to another namespace's models, textures, sounds, or fonts
+are warnings requiring runtime verification with the dependency present. Missing
+files in the current namespace fail; strict mode also fails unresolved warnings.
 
 ```bash
 # Run from the installed skill directory (for example `.claude/skills/minecraft-resource-pack`):
@@ -519,16 +417,23 @@ Use the bundled validator script before shipping a resource-pack update:
 
 What it checks:
 - JSON validity for `pack.mcmeta` and `assets/**/*.json`
+- Legacy versus modern `pack.mcmeta` field shape, including integer, `[major]`, and `[major, minor]` versions
 - Model/blockstate/font/sounds references resolve to real files
+- Current `custom_model_data` select cases use strings; 26.1 texture objects use a string `sprite` and optional boolean `force_translucent`
+- Same-namespace `type: "event"` sound aliases name an event in that `sounds.json`
 - Every `*.png.mcmeta` has a matching `*.png`
+
+The validator cannot resolve a sound event owned by another namespace, or prove
+that a command or mod code invokes an event with the intended sound source.
+Those cases warn and require an exact-client runtime check.
 
 ---
 
 ## References
 
-- Minecraft Wiki — Resource pack: https://minecraft.wiki/w/Resource_pack
-- Minecraft Wiki — Model: https://minecraft.wiki/w/Tutorials/Models
-- Minecraft Wiki — Blockstates: https://minecraft.wiki/w/Blockstate_(Java_Edition)
-- Pack format history: https://minecraft.wiki/w/Pack_format
+- [Mojang: Java Edition 1.21.4](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-4)
+- [Mojang: Java Edition 1.21.9](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-9)
+- [Mojang: Java Edition 26.1](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-1)
+- [NeoForge 1.21.8: Sounds](https://docs.neoforged.net/docs/1.21.8/resources/client/sounds/)
 - Misode's model viewer: https://misode.github.io/
 - OptiFine CIT guide: https://optifine.readthedocs.io/cit.html

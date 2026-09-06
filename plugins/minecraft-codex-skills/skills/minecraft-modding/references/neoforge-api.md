@@ -1,7 +1,7 @@
 # NeoForge API Patterns (1.21.x)
 
-Reference for NeoForge-specific code patterns. NeoForge is the primary Minecraft modding
-platform as of 2025-2026, targeting Minecraft 1.21.x with Java 21.
+Legacy NeoForge-specific code patterns for Minecraft 1.21.x with Java 21.
+Use the exact project's versioned documentation for current 26.x / Java 25 work.
 
 ---
 
@@ -89,8 +89,8 @@ side="BOTH"
 ```java
 // ModBlocks.java
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-        DeferredRegister.create(BuiltInRegistries.BLOCK, MyMod.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS =
+        DeferredRegister.createBlocks(MyMod.MOD_ID);
 
     // Simple full-cube block
     public static final DeferredBlock<Block> MY_BLOCK =
@@ -112,8 +112,8 @@ public class ModBlocks {
 ```java
 // ModItems.java
 public class ModItems {
-    public static final DeferredRegister<Item> ITEMS =
-        DeferredRegister.create(BuiltInRegistries.ITEM, MyMod.MOD_ID);
+    public static final DeferredRegister.Items ITEMS =
+        DeferredRegister.createItems(MyMod.MOD_ID);
 
     // BlockItem for a block
     public static final DeferredItem<BlockItem> MY_BLOCK_ITEM =
@@ -124,36 +124,37 @@ public class ModItems {
         ITEMS.registerSimpleItem("my_item", new Item.Properties().stacksTo(16));
 
     // Custom item class
-    public static final DeferredItem<MySword> MY_SWORD =
-        ITEMS.registerItem("my_sword", props ->
-            new MySword(Tiers.IRON, new Item.Properties()
-                .attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4f))));
+    public static final DeferredItem<MyCustomItem> MY_CUSTOM_ITEM =
+        ITEMS.registerItem("my_custom_item", MyCustomItem::new);
 }
 ```
 
+For 26.x tool and armor APIs, use the explicitly versioned patterns in
+`common-patterns.md`; this reference otherwise retains the 1.21.x lane.
+
 ---
 
-## Block Entity (Tile Entity)
+## Block Entity
 
 ```java
 // MyBlockEntity.java
 public class MyBlockEntity extends BlockEntity {
-    private final ItemStackHandler inventory = new ItemStackHandler(9);
+    private int processingTicks;
 
     public MyBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MY_BLOCK_ENTITY.get(), pos, state);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("inventory", inventory.serializeNBT(registries));
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("processing_ticks", processingTicks);
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        inventory.deserializeNBT(registries, tag.getCompound("inventory"));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        processingTicks = input.getIntOr("processing_ticks", 0);
     }
 }
 
@@ -282,28 +283,37 @@ public class ClientModEvents {
 
 ---
 
-## Capabilities (NeoForge Capability System)
+## Capabilities (NeoForge 1.21.11)
+
+NeoForge registers providers for concrete block entities, blocks, entity types, or
+items on the mod event bus. Its capability lookup returns the implementation or
+`null`. Do not use Forge's `AttachCapabilitiesEvent`, `ICapabilityProvider`, or
+`LazyOptional` patterns in a NeoForge 1.21.11 project.
 
 ```java
-// Attach a capability to a player entity
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.GAME)
-public class CapabilityEvents {
+@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.MOD)
+public final class ModCapabilities {
     @SubscribeEvent
-    public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player player) {
-            // Attach once; NeoForge will retain capability data on the provider.
-            event.addCapability(
-                ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, "my_cap"),
-                new MyCapProvider());
-        }
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+            Capabilities.Item.BLOCK,
+            ModBlockEntities.MY_BLOCK_ENTITY.get(),
+            (blockEntity, side) -> blockEntity.getItemHandler(side)
+        );
     }
 }
 
-// Access a capability
-entity.getCapability(MyCapProvider.MY_CAP).ifPresent(cap -> {
-    cap.doSomething();
-});
+// Query from a level. A null result means this side has no item handler.
+ResourceHandler<ItemResource> handler =
+    level.getCapability(Capabilities.Item.BLOCK, pos, Direction.NORTH);
+if (handler != null) {
+    // Use handler.
+}
 ```
+
+For a custom capability, create a static `BlockCapability`, `EntityCapability`,
+or `ItemCapability` and register its provider with the same event. See the
+[NeoForge 1.21.11 capability guide](https://docs.neoforged.net/docs/1.21.11/inventories/capabilities/).
 
 ---
 
@@ -346,8 +356,8 @@ PacketDistributor.sendToServer(new MyPayload(42));
 
 ## Biome Modifier (World Gen Integration)
 
+`data/mymod/neoforge/biome_modifier/add_spawn.json`:
 ```json
-// data/mymod/neoforge/biome_modifier/add_spawn.json
 {
   "type": "neoforge:add_spawns",
   "biomes": "#minecraft:is_overworld",

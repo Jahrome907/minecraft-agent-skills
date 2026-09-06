@@ -6,7 +6,9 @@ operation and you need a preflight checklist.
 ## Destructive Edit Preflight
 
 - Confirm you are in the correct world and region.
-- Run `//size` before any `//set`, `//replace`, `//cut`, or `//paste`.
+- Run `//size` before any `//set`, `//replace`, or `//cut`.
+- Before a paste, run `//paste -n` with the same placement flags as the real
+  paste (such as `-a` or `-o`), then run `//size` and inspect that destination.
 - Add masks or filtered selections before broad replacements.
 - Verify that a rollback path exists: backup, schematic, or fresh clipboard copy.
 - Coordinate with any other staff editing the same area.
@@ -15,6 +17,8 @@ operation and you need a preflight checklist.
 
 - Load the schematic and inspect rotation/flip before paste.
 - Dry-run mentally for terrain clearance, spawn safety, and protected regions.
+- Preview with `//paste -n` using the exact origin and air flags intended for
+  the paste, then inspect the selected destination with `//size`.
 - Use `//paste -a` when air should not overwrite existing work.
 - Take an immediate checkpoint after a successful paste.
 

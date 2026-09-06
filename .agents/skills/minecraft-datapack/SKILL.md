@@ -5,6 +5,11 @@ description: "Create, edit, and debug vanilla Minecraft 26.x and 1.21.x datapack
 
 # Minecraft Datapack Skill
 
+Inspect `pack.mcmeta` and the target Minecraft version before editing. Preserve
+an existing target unless migration is requested; metadata numbers alone do not
+make older command or registry schemas compatible. Complete the requested pack
+changes, then use static checks and the available game environment proportionately.
+
 ## Skill Scope
 
 ### Routing Boundaries
@@ -29,8 +34,14 @@ description: "Create, edit, and debug vanilla Minecraft 26.x and 1.21.x datapack
 | 26.1              | `min_format: [101, 1]`, `max_format: [101, 1]` |
 | 26.2              | `min_format: [107, 1]`, `max_format: [107, 1]` |
 
-Use `pack_format` through 1.21.8. Starting in 1.21.9, Mojang replaced that
-single field with explicit `min_format` / `max_format` values.
+Use `pack_format` for a legacy-only target through data pack format 81. Starting
+with data pack format 82 in 1.21.9, define both explicit `min_format` and
+`max_format` values. A range that includes a legacy format below 82 must also
+retain `pack_format` and `supported_formats`; do not include
+`supported_formats` for a modern-only range.
+For a legacy-compatible range, `supported_formats` may be one integer, a
+two-integer inclusive range, or an object with integer `min_inclusive` and
+`max_inclusive` fields.
 For exact patch targeting, use `[major, minor]` arrays for both `min_format` and
 `max_format`, including `.0` versions such as `[88, 0]`. A single integer is
 equivalent to `[major, 0]` for `min_format`, while a single integer in
@@ -48,28 +59,31 @@ multiple Minecraft releases with one metadata block.
 my-datapack/
 ├── pack.mcmeta
 └── data/
-    └── <namespace>/           ← use your pack's name (e.g., mypack)
-        ├── function/
-        │   ├── main.mcfunction
-        │   └── tick.mcfunction
-        ├── advancement/
-        │   └── custom_advancement.json
-        ├── recipe/
-        │   └── custom_recipe.json
-        ├── loot_table/
-        │   └── custom_loot.json
-        ├── predicate/
-        │   └── is_night.json
-        ├── item_modifier/
-        │   └── add_name.json
-        └── tags/
-            ├── block/
-            │   └── climbable.json
-            ├── entity_type/
-            │   └── bosses.json
-            └── function/
-                ├── load.json     ← runs on /reload
-                └── tick.json     ← runs every game tick
+    ├── <namespace>/           ← use your pack's name (e.g., mypack)
+    │   ├── function/
+    │   │   ├── main.mcfunction
+    │   │   └── tick.mcfunction
+    │   ├── advancement/
+    │   │   └── custom_advancement.json
+    │   ├── recipe/
+    │   │   └── custom_recipe.json
+    │   ├── loot_table/
+    │   │   └── custom_loot.json
+    │   ├── predicate/
+    │   │   └── is_night.json
+    │   ├── item_modifier/
+    │   │   └── add_name.json
+    │   └── tags/
+    │       ├── block/
+    │       │   └── climbable.json
+    │       ├── entity_type/
+    │       │   └── bosses.json
+    │       └── function/
+    │           └── custom_flow.json  ← manually invoked tag
+    └── minecraft/
+        └── tags/function/
+            ├── load.json             ← engine tag; runs on /reload
+            └── tick.json             ← engine tag; runs every game tick
 ```
 
 ---
@@ -83,6 +97,23 @@ my-datapack/
   "pack": {
     "pack_format": 81,
     "description": "My Custom Datapack v1.0"
+  }
+}
+```
+
+### Deliberate legacy-to-modern compatibility range
+
+Use this form only when the pack actually supports both sides of the format-82
+boundary. Mojang requires the retained legacy fields for this range.
+
+```json
+{
+  "pack": {
+    "pack_format": 81,
+    "supported_formats": [81, 88],
+    "min_format": [81],
+    "max_format": [88],
+    "description": "My compatible datapack"
   }
 }
 ```
@@ -127,7 +158,11 @@ my-datapack/
 
 ## Function Tags (load / tick)
 
-### `data/<namespace>/tags/function/load.json`
+The engine recognizes the `minecraft:load` and `minecraft:tick` tags, so these
+files must use the `minecraft` namespace. A `load.json` or `tick.json` in a
+custom namespace is a valid custom tag name, but it has no automatic behavior.
+
+### `data/minecraft/tags/function/load.json`
 ```json
 {
   "values": [
@@ -136,7 +171,7 @@ my-datapack/
 }
 ```
 
-### `data/<namespace>/tags/function/tick.json`
+### `data/minecraft/tags/function/tick.json`
 ```json
 {
   "values": [
@@ -218,232 +253,11 @@ function mypack:greet with block 0 64 0 {}
 
 ---
 
-## Advancements
+## Registry data examples
 
-### `data/<namespace>/advancement/my_advancement.json`
-```json
-{
-  "display": {
-    "icon": {
-      "id": "minecraft:diamond"
-    },
-    "title": {"text": "Diamond Hunter"},
-    "description": {"text": "Mine your first diamond"},
-    "frame": "task",
-    "show_toast": true,
-    "announce_to_chat": true,
-    "hidden": false
-  },
-  "criteria": {
-    "mined_diamond": {
-      "trigger": "minecraft:item_picked_up",
-      "conditions": {
-        "item": {
-          "items": ["minecraft:diamond"]
-        }
-      }
-    }
-  },
-  "rewards": {
-    "function": "mypack:on_diamond_obtained",
-    "experience": 10
-  }
-}
-```
-
-### Common advancement triggers
-| Trigger | When it fires |
-|---------|--------------|
-| `minecraft:impossible` | Never (use for manual grants) |
-| `minecraft:tick` | Every tick while player is online |
-| `minecraft:player_killed_entity` | Player kills an entity |
-| `minecraft:entity_killed_player` | Entity kills a player |
-| `minecraft:item_picked_up` | Player picks up an item |
-| `minecraft:placed_block` | Player places a block |
-| `minecraft:inventory_changed` | Player inventory changes |
-| `minecraft:changed_dimension` | Player changes dimension |
-| `minecraft:consume_item` | Player consumes an item |
-| `minecraft:location` | Player at a specific location |
-| `minecraft:recipe_unlocked` | Player unlocks a recipe |
-
----
-
-## Custom Recipes
-
-### Shaped crafting (`data/<namespace>/recipe/shaped.json`)
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "DDD",
-    "D D",
-    "DDD"
-  ],
-  "key": {
-    "D": { "item": "minecraft:diamond" }
-  },
-  "result": {
-    "id": "minecraft:diamond_block",
-    "count": 1
-  }
-}
-```
-
-### Shapeless crafting
-```json
-{
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    { "item": "minecraft:wheat" },
-    { "item": "minecraft:wheat" },
-    { "item": "minecraft:wheat" }
-  ],
-  "result": {
-    "id": "minecraft:bread",
-    "count": 2
-  }
-}
-```
-
-### Smelting / blasting / smoking / campfire
-```json
-{
-  "type": "minecraft:smelting",
-  "ingredient": { "item": "minecraft:beef" },
-  "result": { "id": "minecraft:cooked_beef" },
-  "experience": 0.35,
-  "cookingtime": 200
-}
-```
-
-### Disable a vanilla recipe (override with empty file)
-To remove a vanilla recipe, create a file at the **same path** under `data/minecraft/recipe/`
-in your datapack with just `{}` as the content:
-
-```json
-{}
-```
-
-For example, to disable the piston recipe, create:  
-`data/minecraft/recipe/piston.json` containing only `{}`.
-
-> Get the exact filename from the vanilla jar:  
-> `jar xf minecraft.jar data/minecraft/recipe/`
-
-### Smithing transform
-```json
-{
-  "type": "minecraft:smithing_transform",
-  "template": { "item": "minecraft:netherite_upgrade_smithing_template" },
-  "base": { "item": "minecraft:diamond_sword" },
-  "addition": { "item": "minecraft:netherite_ingot" },
-  "result": { "id": "minecraft:netherite_sword" }
-}
-```
-
----
-
-## Loot Tables
-
-### `data/<namespace>/loot_table/custom_chest.json`
-```json
-{
-  "type": "minecraft:chest",
-  "pools": [
-    {
-      "rolls": { "type": "minecraft:uniform", "min": 3, "max": 8 },
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:diamond",
-          "weight": 5,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": { "type": "minecraft:uniform", "min": 1, "max": 3 }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:gold_ingot",
-          "weight": 20
-        },
-        {
-          "type": "minecraft:empty",
-          "weight": 30
-        }
-      ]
-    }
-  ]
-}
-```
-
----
-
-## Predicates
-
-### `data/<namespace>/predicate/is_daytime.json`
-```json
-{
-  "condition": "minecraft:time_check",
-  "value": { "min": 0, "max": 12000 }
-}
-```
-
-### `data/<namespace>/predicate/player_has_diamond.json`
-```json
-{
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "inventory": {
-      "items": [
-        { "items": ["minecraft:diamond"] }
-      ]
-    }
-  }
-}
-```
-
-### Using predicates in functions
-```mcfunction
-execute if predicate mypack:is_daytime run say It is daytime!
-execute unless predicate mypack:player_has_diamond run tell @s You need a diamond!
-```
-
----
-
-## Tags
-
-### Block tag (`data/minecraft/tags/block/climbable.json` — override vanilla)
-```json
-{
-  "replace": false,
-  "values": [
-    "minecraft:ladder",
-    "minecraft:vine",
-    "#minecraft:wool"
-  ]
-}
-```
-
-### Item tag (`data/<namespace>/tags/item/my_fuel.json`)
-```json
-{
-  "replace": false,
-  "values": [
-    "minecraft:coal",
-    "minecraft:charcoal",
-    "minecraft:blaze_rod"
-  ]
-}
-```
-
-Use `"replace": false` to append to existing tags. Use `"replace": true` to completely
-override (use with care for vanilla tags).
-
----
+Read [references/data-examples.md](references/data-examples.md) when authoring
+advancements, recipes, loot tables, predicates, or tags. Load only the relevant
+section and keep existing namespaces and version targets.
 
 ## Worldgen Overrides
 
@@ -467,18 +281,14 @@ Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 
 ## Installation & Testing
 
-```bash
-# Place datapack in world folder
-/datapacks/my-datapack/
+Place the pack folder or ZIP under the world's `datapacks/` directory, with
+`pack.mcmeta` at its root. Then use these in-game commands:
 
-# Or as a zip
-/datapacks/my-datapack.zip
-
-# In-game commands
-/datapack list               # see all datapacks
+```text
+/datapack list
 /datapack enable "file/my-datapack"
 /datapack disable "file/my-datapack"
-/reload                      # hot-reload all datapacks without restart
+/reload
 ```
 
 ### Development workflow
@@ -501,7 +311,7 @@ Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 | `Unknown or invalid command` | Syntax error in function | Check whitespace, selector, trailing space |
 | `Datapack did not load` | Invalid JSON in any file | Validate with `jq . < file.json` |
 | `pack metadata mismatch` | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
-| Function not running on tick | Missing tick tag or wrong namespace | Check `tags/function/tick.json` path |
+| Function not running on tick | Missing engine tick tag or wrong namespace | Check `data/minecraft/tags/function/tick.json` |
 | Macro error | `$` line but no `with` | Provide `with storage/entity/block` |
 
 ## Validator Script
@@ -519,13 +329,15 @@ Use the bundled validator script before shipping a datapack update:
 What it checks:
 - JSON validity for `pack.mcmeta` and `data/**/*.json`
 - Legacy pluralized path mistakes for loot tables, functions, and block/item/function tags
-- `tags/function/load.json` and `tags/function/tick.json` references resolve to real `.mcfunction` files
+- `data/minecraft/tags/function/load.json` and `tick.json` references resolve to local `.mcfunction` files
+- custom-namespace `load.json` and `tick.json` names, which are valid but do not run automatically
 
 ---
 
 ## References
 
 - Minecraft Wiki — Data Pack: https://minecraft.wiki/w/Data_pack
+- Minecraft Java Edition 1.21.9 release notes: https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-9
 - Minecraft Wiki — Function: https://minecraft.wiki/w/Function_(Java_Edition)
 - Minecraft Wiki — Commands: https://minecraft.wiki/w/Commands
 - Pack format history: https://minecraft.wiki/w/Pack_format

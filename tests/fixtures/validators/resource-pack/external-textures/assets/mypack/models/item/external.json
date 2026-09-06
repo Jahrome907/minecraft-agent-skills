@@ -1,0 +1,6 @@
+{
+  "parent": "dependency:item/shared_parent",
+  "textures": {
+    "layer0": "dependency:item/shared"
+  }
+}

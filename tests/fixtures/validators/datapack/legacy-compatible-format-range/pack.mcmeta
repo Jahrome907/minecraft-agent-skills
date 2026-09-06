@@ -1,0 +1,9 @@
+{
+  "pack": {
+    "pack_format": 81,
+    "supported_formats": [81, 88],
+    "min_format": [81],
+    "max_format": [88],
+    "description": "Legacy-compatible pack format range"
+  }
+}

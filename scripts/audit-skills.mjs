@@ -138,9 +138,9 @@ function checkPathConventions(file, text) {
 }
 
 function checkRoutingBoundaries(file, text) {
-  const hasSection = /^### Routing Boundaries$/m.test(text);
+  const hasSection = /^#{2,3} Routing Boundaries$/m.test(text);
   if (!hasSection) {
-    addError(file, "missing `### Routing Boundaries` section");
+    addError(file, "missing `Routing Boundaries` section at heading level 2 or 3");
     return;
   }
 
@@ -148,6 +148,22 @@ function checkRoutingBoundaries(file, text) {
   const hasDoNotUseWhen = /- `Do not use when`:/m.test(text);
   if (!hasUseWhen) addError(file, "routing section missing `- `Use when`:` criterion");
   if (!hasDoNotUseWhen) addError(file, "routing section missing `- `Do not use when`:` criterion");
+}
+
+function checkLocalLinks(file, text) {
+  const fullPath = path.resolve(ROOT, file);
+  const skillDir = path.join(CANONICAL, path.relative(CANONICAL, fullPath).split(path.sep)[0]);
+  for (const match of text.matchAll(/\[[^\]]*\]\((?:<([^>]+)>|([^\s)]+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\)/g)) {
+    const href = match[1] ?? match[2];
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#")) continue;
+    const target = path.resolve(path.dirname(fullPath), href.split("#")[0]);
+    const relative = path.relative(skillDir, target);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
+      addError(file, `local link leaves the self-contained skill: ${href}`);
+    } else if (!fs.existsSync(target)) {
+      addError(file, `missing local link target: ${href}`);
+    }
+  }
 }
 
 function checkSpecialSkillRequirements(skillName, file, text) {
@@ -188,6 +204,9 @@ if (!fs.existsSync(CANONICAL)) {
     }
 
     const text = readText(skillFile);
+    if (text.trimEnd().split("\n").length > 500) {
+      addError(skillRel, "SKILL.md exceeds 500 lines; move conditional detail into local references");
+    }
     const fm = parseFrontmatter(text, skillRel);
     if (fm?.name && fm.name !== skillName) {
       addError(skillRel, `frontmatter name \`${fm.name}\` does not match directory \`${skillName}\``);
@@ -204,6 +223,7 @@ if (!fs.existsSync(CANONICAL)) {
     if (!file.endsWith(".md") && !file.endsWith(".sh")) continue;
     const txt = readText(file);
     if (file.endsWith(".md")) {
+      checkLocalLinks(rel(file), txt);
       checkRunnableBlocks(rel(file), txt);
       checkPathConventions(rel(file), txt);
     }
