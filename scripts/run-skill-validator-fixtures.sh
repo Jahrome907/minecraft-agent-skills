@@ -414,9 +414,9 @@ done
 expect_pass "testing legacy NeoForge implicit template strict" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/legacy-neoforge-implicit-template-valid --strict
-expect_fail_contains "testing legacy NeoForge implicit template missing" "GameTest template fixture missing: mymod:missing_template" \
+expect_fail_contains "testing legacy NeoForge implicit template missing" "GameTest template fixture missing: mymod:missingimplicit" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
-  --root tests/fixtures/validators/testing/legacy-neoforge-implicit-template-missing
+  --root tests/fixtures/validators/testing/legacy-neoforge-implicit-template-missing --strict
 expect_fail_contains "testing invalid" "MockBukkit tests detected but build file is missing MockBukkit dependency" \
   ./.agents/skills/minecraft-testing/scripts/validate-test-layout.sh \
   --root tests/fixtures/validators/testing/invalid

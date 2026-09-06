@@ -1,7 +1,7 @@
 # NeoForge API Patterns (1.21.x)
 
-Reference for NeoForge-specific code patterns. NeoForge is the primary Minecraft modding
-platform as of 2025-2026, targeting Minecraft 1.21.x with Java 21.
+Legacy NeoForge-specific code patterns for Minecraft 1.21.x with Java 21.
+Use the exact project's versioned documentation for current 26.x / Java 25 work.
 
 ---
 

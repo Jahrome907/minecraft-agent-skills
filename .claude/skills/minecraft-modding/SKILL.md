@@ -224,7 +224,11 @@ Identifier id = Identifier.of("mymod", "my_block");
 
 ## 7. NeoForge Quick Patterns (26.x)
 
-See full patterns in `references/neoforge-api.md`.
+For 26.x, use the explicitly labelled 26.x sections in
+`references/common-patterns.md` and select the project's exact version in the
+[NeoForge documentation](https://docs.neoforged.net/docs/gettingstarted/).
+`references/neoforge-api.md` contains legacy 1.21.x / Java 21 patterns only;
+do not copy its dependency pins into a 26.x project.
 
 ```java
 // Main mod class
@@ -305,7 +309,12 @@ public class ModBlocks {
 ---
 ## 9. Fabric Quick Patterns
 
-See full patterns in `references/fabric-api.md`.
+Match the project's Minecraft version and mappings in the
+[Fabric documentation](https://docs.fabricmc.net/develop/).
+`references/fabric-api.md` contains legacy 1.21.x / Java 21 patterns only.
+The explicitly labelled 26.x sections in `references/common-patterns.md`
+use NeoForge syntax; adapt them against the exact Fabric API rather than
+copying loader-specific classes or legacy dependency pins.
 
 ```java
 // Main mod class

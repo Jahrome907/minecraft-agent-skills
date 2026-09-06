@@ -85,6 +85,31 @@ exact-project check. No Minecraft, Paper, or Gradle runtime was launched in this
 skills repository. Rendering, gameplay, full dependency resolution, and live
 server operations remain validation steps in the target Minecraft project.
 
+## PR review follow-up: 2026-09-06
+
+Rechecked the three PR review findings against the updated branch. The malformed
+animation fixture contains only the intended incomplete JSON. Legacy NeoForge
+templates are derived from the annotation, namespace, class prefix, and method;
+event registration checks the specific test class.
+
+Strengthened the negative template fixture to fail on a bare `@GameTest` in
+strict mode, rather than on a second, explicitly named missing template.
+The registration fixture covers both an empty handler and one registering a
+different class. The valid event fixture now attaches its listener to the mod
+event bus. Corrected the unit-test example name to describe its actual
+per-player assertions instead of claiming untested expiry behavior.
+
+An independent content review also found current modding sections routing into
+legacy API references. Both links now identify the 1.21.x / Java 21 boundary
+and route current work to version-matched loader documentation and labelled
+26.x examples. The legacy NeoForge introduction no longer implies that its
+version lane is the current default.
+
+The follow-up rechecked official Astra and Fable 5.1 prompting guidance,
+Mojang's 26.2 pack versions (data 107.1 and resources 88.0), and NeoForge's
+legacy template and event-registration rules. It retains the runtime limits
+above; static fixture checks do not prove event delivery or in-game execution.
+
 ## Release version
 
 v2.5.3 is the approved patch release after v2.5.2. These corrections retain the

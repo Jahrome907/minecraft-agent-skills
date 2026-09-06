@@ -9,12 +9,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class ImplicitGameTests {
     @GameTest
-    public static void smoke(GameTestHelper helper) {
-        helper.succeed();
-    }
-
-    @GameTest(template = "missing_template")
-    public static void missingTemplate(GameTestHelper helper) {
+    public static void missingImplicit(GameTestHelper helper) {
         helper.succeed();
     }
 }

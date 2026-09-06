@@ -71,11 +71,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class CooldownManagerTest {
 
     @Test
-    void playerOnCooldown_returnsFalse_afterExpiry() {
+    void cooldown_tracksPlayersIndependently() {
         var manager = new CooldownManager(500L); // 500ms cooldown
         manager.startCooldown("steve");
         assertTrue(manager.isOnCooldown("steve"));
-        // fast-forward time by sleeping or injecting a Clock
         assertFalse(manager.isOnCooldown("notExisting"));
     }
 

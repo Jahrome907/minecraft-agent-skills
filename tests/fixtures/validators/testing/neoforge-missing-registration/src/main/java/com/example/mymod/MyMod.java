@@ -12,4 +12,8 @@ public final class MyMod {
 
     public static void unrelated(RegisterGameTestsEvent event) {
     }
+
+    public static void registersDifferentClass(RegisterGameTestsEvent event) {
+        event.register(MyMod.class);
+    }
 }
