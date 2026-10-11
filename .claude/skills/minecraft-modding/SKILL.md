@@ -119,7 +119,7 @@ src/
         models/
           block/               ← block model JSON
           item/                ← item model JSON
-        items/                 ← 1.21.x item-definition JSON
+        items/                 ← 1.21.4+ item-definition JSON
         textures/
           block/               ← 16×16 PNG textures
           item/
@@ -130,8 +130,8 @@ src/
         loot_table/
           blocks/              ← per-block loot table JSON
         tags/
-          blocks/
-          items/
+          block/
+          item/
 ```
 
 ## 4. Project Layout (Forge 1.20.1)
@@ -212,10 +212,11 @@ those names are stale for the examples in this skill.
 ### ResourceLocation / Identifier
 Every registry entry needs a namespaced ID:
 ```java
-// NeoForge / vanilla Java
-ResourceLocation id = ResourceLocation.fromNamespaceAndPath("mymod", "my_block");
+// 26.x official names (NeoForge and Fabric)
+Identifier id = Identifier.fromNamespaceAndPath("mymod", "my_block");
 
-// Fabric with Yarn mappings
+// Older Mojang mappings use ResourceLocation; keep the project's version.
+// Legacy Fabric with Yarn mappings
 Identifier id = Identifier.of("mymod", "my_block");
 ```
 
@@ -385,26 +386,12 @@ See `references/common-patterns.md` for full JSON templates for:
 
 ## 11. Data Generation
 
-Prefer data generation over hand-authored JSON for maintainability.
-
-```java
-// NeoForge – register data gen providers in GatherDataEvent
-@SubscribeEvent
-public static void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    PackOutput output = gen.getPackOutput();
-    ExistingFileHelper helper = event.getExistingFileHelper();
-    CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-
-    gen.addProvider(event.includeClient(), new ModBlockStateProvider(output, helper));
-    gen.addProvider(event.includeClient(), new ModItemModelProvider(output, helper));
-    gen.addProvider(event.includeServer(), new ModRecipeProvider(output, lookupProvider));
-    gen.addProvider(event.includeServer(), new ModLootTableProvider(output, lookupProvider));
-    gen.addProvider(event.includeServer(), new ModBlockTagsProvider(output, lookupProvider, helper));
-}
-```
-
-Run data generation with `./gradlew runData`, then commit the generated files.
+Use the project's configured data providers. Current NeoForge uses
+`GatherDataEvent.Client` / `.Server` and `event.createProvider(...)`; the MDK
+normally generates both asset and data providers with `runClientData`. See the
+[version-matched resource guide](https://docs.neoforged.net/docs/resources/)
+before wiring providers. Keep Fabric and older projects on their own datagen
+entrypoints and Gradle tasks, then inspect the generated files.
 For Forge 1.20.1, use the mod-event-bus registration, `GatherDataEvent`
 signature, provider classes, and legacy output paths from
 `references/forge-1.20.1-api.md`.
@@ -420,7 +407,7 @@ When adding a **new block**:
 - [ ] Blockstate JSON → `assets/<modid>/blockstates/<name>.json`
 - [ ] Block model JSON → `assets/<modid>/models/block/<name>.json`
 - [ ] Item model JSON → `assets/<modid>/models/item/<name>.json` (or inherits from block)
-- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`, pointing at the item or block model
+- [ ] 1.21.4+ item definition → `assets/<modid>/items/<name>.json`, pointing at the item or block model
 - [ ] Texture PNG → `assets/<modid>/textures/block/<name>.png`
 - [ ] Loot table JSON -> 1.21.x: `data/<modid>/loot_table/blocks/<name>.json`; Forge 1.20.1: `data/<modid>/loot_tables/blocks/<name>.json`
 - [ ] Tags -> 1.21.x: `data/<modid>/tags/block/` and `tags/item/`; Forge 1.20.1: `data/<modid>/tags/blocks/` and `tags/items/`
@@ -432,7 +419,7 @@ When adding a **new item**:
 - [ ] `Item` subclass (or use `new Item(properties)`)
 - [ ] Register in `ModItems` / `Registries.ITEM`
 - [ ] Item model JSON
-- [ ] 1.21.x item definition → `assets/<modid>/items/<name>.json`
+- [ ] 1.21.4+ item definition → `assets/<modid>/items/<name>.json`
 - [ ] Texture PNG
 - [ ] Language entry
 - [ ] Creative tab registration (NeoForge/Forge: `BuildCreativeModeTabContentsEvent`; Fabric: `ItemGroupEvents`)

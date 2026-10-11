@@ -40,9 +40,9 @@ softprops/action-gh-release@v3.0.3  efb35369e0ad2afab669f228072c1b0d510eae64
 Minecraft mod versions follow: `{mod_version}+{mc_version}`
 
 ```
-1.0.0+26.2  ← mod 1.0.0 for MC 26.2
-1.2.3+26.2
-2.0.0+26.2
+1.0.0+26.3  ← mod 1.0.0 for MC 26.3
+1.2.3+26.3
+2.0.0+26.3
 ```
 
 Use a release version without the game suffix for the Git tag, and retain the
@@ -50,7 +50,7 @@ Minecraft version in the artifact version when the project uses that convention:
 
 ```text
 mod_version: 1.2.3
-project/artifact version: 1.2.3+26.2
+project/artifact version: 1.2.3+26.3
 tag: v1.2.3
 ```
 
@@ -280,7 +280,7 @@ Never hardcode tokens. Read them from environment:
 # gradle.properties (committed)
 mod_id=mymod
 mod_version=1.0.0
-minecraft_version=26.2
+minecraft_version=26.3
 modrinth_project_id=AABBCCDD
 curseforge_project_id=123456
 
@@ -298,7 +298,7 @@ curseforge_project_id=123456
 | New features, no breaking changes | Minor: `1.1.0` |
 | Bug fixes only | Patch: `1.0.1` |
 | API/config breaking changes | Major: `2.0.0` |
-| Minecraft version update | Keep mod version, change the `+26.2` suffix |
+| Minecraft version update | Keep mod version, change the `+26.3` suffix |
 | Pre-release | `1.0.0-beta.1`, `1.0.0-rc.1` |
 
 ---
@@ -308,15 +308,15 @@ curseforge_project_id=123456
 ```markdown
 # Changelog
 
-## [1.1.0] — 2025-06-01
+## [1.1.0] — 2026-10-01
 ### Added
 - New `/kit` command
 - PDC-based kill tracker
 
 ### Fixed
-- Death message not appearing on Paper 26.2
+- Death message not appearing on Paper 26.3
 
-## [1.0.0] — 2025-05-01
+## [1.0.0] — 2026-09-01
 ### Added
 - Initial release
 ```

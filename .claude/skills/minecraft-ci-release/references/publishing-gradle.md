@@ -7,7 +7,7 @@ The examples target Minecraft 26.x on Java 25.
 ## Release Version and Changelog
 
 Keep the mod version distinct from the computed project/artifact version. This makes
-`v1.2.3` a reliable tag for an artifact such as `1.2.3+26.2`.
+`v1.2.3` a reliable tag for an artifact such as `1.2.3+26.3`.
 
 ```kotlin
 val modVersion = providers.gradleProperty("mod_version").orNull
@@ -43,13 +43,13 @@ tasks.register("verifyReleaseVersion") {
 ```
 
 Use a changelog heading such as `## [1.2.3] — 2026-09-04`. Do not look up a heading
-from `project.version`, because it includes `+26.2`; `substringAfter` also must not
+from `project.version`, because it includes `+26.3`; `substringAfter` also must not
 be used without an explicit missing-heading check because it can return the entire
 file.
 
 ## Modrinth with Minotaur
 
-The current Gradle Plugin Portal release is `com.modrinth.minotaur` `2.9.0`. For a
+The current Gradle Plugin Portal release is `com.modrinth.minotaur` `2.10.0`. For a
 Minecraft 26.x Fabric project, upload the primary `jar` task. Current Minecraft is
 unobfuscated, so a new 26.x Fabric build should not assume `remapJar` exists.
 Give release artifacts loader-distinct classifiers when Fabric and NeoForge could
@@ -59,7 +59,7 @@ otherwise produce the same basename.
 import org.gradle.api.tasks.bundling.Jar
 
 plugins {
-    id("com.modrinth.minotaur") version "2.9.0"
+    id("com.modrinth.minotaur") version "2.10.0"
 }
 
 modrinth {

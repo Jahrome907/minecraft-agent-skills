@@ -31,7 +31,7 @@ description: "Create, modify, and debug server plugins for current Paper 26.x on
 
 ## Project Setup
 
-The examples below target current Paper 26.2 and Java 25. For an existing
+The examples below target current Paper 26.3 and Java 25. For an existing
 1.21.x plugin, preserve its `1.21.x-R0.1-SNAPSHOT` dependency, Java 21
 toolchain, and matching `api-version` until the project is intentionally ported.
 
@@ -55,7 +55,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.3.build.+")
 }
 
 java {
@@ -122,7 +122,7 @@ main: com.example.myplugin.MyPlugin
 description: An example Paper plugin
 author: YourName
 website: https://github.com/example/my-plugin
-api-version: '26.2'
+api-version: '26.3'
 
 commands:
   myplugin:
@@ -141,7 +141,7 @@ permissions:
 ```
 
 > Match `api-version` to the oldest Paper API the plugin intentionally supports.
-> Current Paper examples use `26.2`; legacy `1.21` and positive `1.21.<patch>`
+> Current Paper examples use `26.3`; legacy `1.21` and positive `1.21.<patch>`
 > values remain valid for older servers. A server older than the declared value
 > refuses to load the plugin.
 

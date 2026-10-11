@@ -144,6 +144,9 @@ same pack. See [Mojang's pack-filter format](https://www.minecraft.net/en-us/art
 
 ## Loot Tables
 
+This example targets 26.3. Through 26.2, loot entries use `functions` instead
+of `modifier`, and each loot function uses `function` instead of `type`.
+
 ### `data/<namespace>/loot_table/custom_chest.json`
 ```json
 {
@@ -156,9 +159,9 @@ same pack. See [Mojang's pack-filter format](https://www.minecraft.net/en-us/art
           "type": "minecraft:item",
           "name": "minecraft:diamond",
           "weight": 5,
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:set_count",
+              "type": "minecraft:set_count",
               "count": { "type": "minecraft:uniform", "min": 1, "max": 3 }
             }
           ]
@@ -182,10 +185,12 @@ same pack. See [Mojang's pack-filter format](https://www.minecraft.net/en-us/art
 
 ## Predicates
 
+26.3 predicates use `type`; through 26.2 the discriminator is `condition`.
+
 ### `data/<namespace>/predicate/is_daytime.json`
 ```json
 {
-  "condition": "minecraft:time_check",
+  "type": "minecraft:time_check",
   "value": { "min": 0, "max": 12000 }
 }
 ```
@@ -193,7 +198,7 @@ same pack. See [Mojang's pack-filter format](https://www.minecraft.net/en-us/art
 ### `data/<namespace>/predicate/player_has_diamond.json`
 ```json
 {
-  "condition": "minecraft:entity_properties",
+  "type": "minecraft:entity_properties",
   "entity": "this",
   "predicate": {
     "inventory": {

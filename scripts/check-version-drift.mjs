@@ -66,11 +66,11 @@ const checks = [
     file: ".agents/skills/minecraft-ci-release/SKILL.md",
     references: [".agents/skills/minecraft-ci-release/references/publishing-gradle.md"],
     required: [
-      /1\.0\.0\+26\.2/,
+      /1\.0\.0\+26\.3/,
       /gameVersions\.add\(minecraftVersion\)/,
       /mainFile\.addGameVersion\(minecraftVersion\)/,
       /providers\.gradleProperty\("minecraft_version"\)/,
-      /minecraft_version=26\.2/,
+      /minecraft_version=26\.3/,
       /java-version: "25"/
     ],
     forbidden: [
@@ -84,11 +84,11 @@ const checks = [
     required: [
       /1\.21\.11\s+\| `min_format: \[94, 1\]`, `max_format: \[94, 1\]`/,
       /1\.21\.9 \/ 1\.21\.10\s+\| `min_format: \[88, 0\]`, `max_format: \[88, 0\]`/,
-      /26\.2\s+\| `min_format: \[107, 1\]`, `max_format: \[107, 1\]`/,
+      /26\.3\s+\| `min_format: \[121, 0\]`, `max_format: \[121, 0\]`/,
       /"min_format": \[94, 1\]/,
       /"max_format": \[94, 1\]/,
-      /"min_format": \[107, 1\]/,
-      /"max_format": \[107, 1\]/
+      /"min_format": \[121, 0\]/,
+      /"max_format": \[121, 0\]/
     ],
     forbidden: [
       /"min_format": 94\.1/,
@@ -100,11 +100,11 @@ const checks = [
     required: [
       /1\.21\.9 \/ 1\.21\.10\s+\| `min_format: \[69, 0\]`, `max_format: \[69, 0\]`/,
       /1\.21\.11\s+\| `min_format: \[75, 0\]`, `max_format: \[75, 0\]`/,
-      /26\.2\s+\| `min_format: \[88, 0\]`, `max_format: \[88, 0\]`/,
+      /26\.3\s+\| `min_format: \[97, 1\]`, `max_format: \[97, 1\]`/,
       /"min_format": \[75, 0\]/,
       /"max_format": \[75, 0\]/,
-      /"min_format": \[88, 0\]/,
-      /"max_format": \[88, 0\]/
+      /"min_format": \[97, 1\]/,
+      /"max_format": \[97, 1\]/
     ],
     forbidden: [
       /"min_format": 75\.0/,
@@ -125,15 +125,15 @@ const checks = [
   {
     file: ".agents/skills/minecraft-plugin-dev/SKILL.md",
     required: [
-      /paper-api:26\.2\.build\.\+/,
+      /paper-api:26\.3\.build\.\+/,
       /JavaLanguageVersion\.of\(25\)/,
-      /api-version: '26\.2'/
+      /api-version: '26\.3'/
     ]
   },
   {
     file: ".agents/skills/minecraft-plugin-dev/scripts/validate-plugin-layout.sh",
     required: [
-      /CURRENT_API_RELEASE=2/,
+      /CURRENT_API_RELEASE=3/,
       /\^26\\\.\(\[1-9\]\[0-9\]\*\)\$/,
       /26\.x \/ 1\.21\.x skill scope/
     ]
@@ -163,7 +163,7 @@ const checks = [
     file: ".agents/skills/minecraft-server-admin/SKILL.md",
     required: [
       /minecraft-server:java25/,
-      /VERSION: "26\.2"/,
+      /VERSION: "26\.3"/,
       /java -Xms4G -Xmx4G -jar server\.jar --nogui/
     ]
   },

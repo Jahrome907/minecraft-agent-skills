@@ -52,12 +52,17 @@ release artifacts for 26.x.
 
 ## Data layout and reference graph
 
+26.3 uses `worldgen/feature/`; through 26.2 this was `worldgen/configured_feature/`.
+In 26.3, feature fields are at the root, block states use `id` / `properties`,
+and biome spawn settings belong in environment attributes. See the
+[26.3 migration primer](https://docs.neoforged.net/primer/docs/26.3/).
+
 ```
 data/<namespace>/
 ├── worldgen/
 │   ├── biome/
 │   │   └── my_biome.json
-│   ├── configured_feature/
+│   ├── feature/
 │   │   └── my_ore.json
 │   ├── placed_feature/
 │   │   └── my_ore_placed.json
@@ -88,7 +93,7 @@ data/<namespace>/
 
 Build and review the graph from its leaves upward:
 
-1. Define a configured feature, then its placed feature.
+1. Define a feature, then its placed feature.
 2. Reference placed features from a biome or biome modifier at the intended
    decoration step.
 3. Define a structure, then its structure set; a jigsaw structure also needs a
@@ -115,23 +120,19 @@ placement in `underground_ores`.
 The version-labeled 1.21.5 biome and dimension examples are in
 [legacy 1.21 JSON patterns](references/legacy-1.21-worldgen-json.md).
 
-## 26.x feature pattern
+## 26.3 feature pattern
 
-For the 26.1 replacement for a simple random patch, the migration primer shows
-a `simple_block` configured feature and a placed feature with count, random
-offset, and a block-predicate filter. Adapt the exact values and block state to
-the target release's generated data.
+This berry-bush example follows the 26.3 vanilla data. Keep older packs on
+their original schema; do not port them by changing metadata alone.
 
-At `data/<namespace>/worldgen/configured_feature/my_plant.json`:
+At `data/<namespace>/worldgen/feature/my_plant.json`:
 
 ```json
 {
   "type": "minecraft:simple_block",
-  "config": {
-    "to_place": {
-      "type": "minecraft:simple_state_provider",
-      "state": { "Name": "minecraft:sweet_berry_bush", "Properties": { "age": "3" } }
-    }
+  "to_place": {
+    "id": "minecraft:sweet_berry_bush",
+    "properties": { "age": "3" }
   }
 }
 ```
@@ -144,9 +145,10 @@ At `data/<namespace>/worldgen/placed_feature/my_plant.json`:
   "placement": [
     { "type": "minecraft:count", "count": 96 },
     {
-      "type": "minecraft:random_offset",
-      "xz_spread": { "type": "minecraft:trapezoid", "min": -7, "max": 7, "plateau": 0 },
-      "y_spread": { "type": "minecraft:trapezoid", "min": -3, "max": 3, "plateau": 0 }
+      "type": "minecraft:offset",
+      "x": { "type": "minecraft:trapezoid", "min": -7, "max": 7, "plateau": 0 },
+      "y": { "type": "minecraft:trapezoid", "min": -3, "max": 3, "plateau": 0 },
+      "z": { "type": "minecraft:trapezoid", "min": -7, "max": 7, "plateau": 0 }
     },
     {
       "type": "minecraft:block_predicate_filter",
@@ -209,13 +211,14 @@ The detailed 1.21 structure and dimension examples are in
 1. Create or edit worldgen JSON files in `data/<namespace>/worldgen/` (or equivalent mod resources path).
 2. Run the bundled validator to catch JSON and cross-reference errors before loading:
    ```bash
-   ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources
+   ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources --feature-registry feature
    # Strict mode treats warnings as failures:
-   ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources --strict
+   ./scripts/validate-worldgen-json.sh --root /path/to/datapack-or-mod-resources --feature-registry feature --strict
    ```
+   Omit `--feature-registry feature` for packs through 26.2.
 3. Fix any reported errors and re-validate until clean. The validator checks:
    - JSON validity for `worldgen/**` and `neoforge/biome_modifier/**`
-   - Cross-reference integrity for `placed_feature -> configured_feature`
+   - Cross-reference integrity for `placed_feature -> feature` (or legacy `configured_feature`)
    - Cross-reference integrity for `structure_set -> structure` and biome/biome_modifier feature targets
    - Cross-reference integrity for `jigsaw structure -> start_pool` and `template_pool -> structure template / processor_list`
 4. Compare biome and dimension-type JSON against the exact target's vanilla
@@ -228,8 +231,8 @@ The detailed 1.21 structure and dimension examples are in
    /locate biome <namespace>:my_biome
    /place feature <namespace>:my_ore
    ```
-   `place feature` takes a configured-feature ID, not its placed-feature wrapper.
-   See Mojang's [place command reference in the 1.19 release notes](https://www.minecraft.net/en-us/article/the-wild-update-out-today-java).
+   `place feature` takes a feature ID (`configured_feature` through 26.2),
+   not its placed-feature wrapper.
 6. For dimension testing, use `/execute in` (dimension must exist at world load, not added via `/reload`):
    ```mcfunction
    execute in <namespace>:my_dimension run tp @s 0 100 0

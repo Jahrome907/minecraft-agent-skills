@@ -417,7 +417,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.2"
+      VERSION: "26.3"
       MEMORY: "10G"
     ports:
       - "25565:25565"
@@ -426,7 +426,7 @@ services:
     restart: unless-stopped
 ```
 
-This Docker example targets current Paper 26.2 and Java 25. Re-check plugin
+This Docker example targets current Paper 26.3 and Java 25. Re-check plugin
 compatibility and take a restorable backup before changing an existing server's
 Minecraft or Java line.
 

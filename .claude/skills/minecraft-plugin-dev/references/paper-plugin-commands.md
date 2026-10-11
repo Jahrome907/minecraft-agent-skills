@@ -20,7 +20,7 @@ name: PaperOnlyPlugin
 version: "${version}"
 main: com.example.myplugin.PaperOnlyPlugin
 description: An example Paper-only plugin
-api-version: '26.2'
+api-version: '26.3'
 ```
 
 ### `src/main/java/com/example/myplugin/PaperOnlyPlugin.java`
