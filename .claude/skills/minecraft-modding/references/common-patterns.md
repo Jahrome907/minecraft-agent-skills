@@ -7,7 +7,9 @@ This reference retains 1.21.11 examples alongside 26.x replacements. A heading
 that names Minecraft 26.x uses the 26.1 API and official Mojang mappings;
 verify any later 26.x API change before copying code into a pinned project.
 Treat all other examples as 1.21.11 examples unless their exact API is
-verified for the project.
+verified for the project. For 26.3 loot data, use entry `condition` / `modifier`
+and predicate/function `type`; the older loot JSON below needs migration.
+See the [26.3 migration primer](https://docs.neoforged.net/primer/docs/26.3/).
 
 ---
 

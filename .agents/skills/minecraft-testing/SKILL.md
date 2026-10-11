@@ -9,7 +9,7 @@ description: "Design and implement automated tests for current Minecraft 26.x or
 
 | Approach | Best For | Requires Game? |
 |----------|---------|----------------|
-| **JUnit 5** (pure unit tests) | Logic, data structures, NBT serialization | No |
+| **JUnit Jupiter** (pure unit tests) | Logic, data structures, NBT serialization | No |
 | **MockBukkit** | Bukkit/Paper plugin events, commands, inventory | No (mocked server) |
 | **NeoForge GameTests** | In-game block/entity/world interaction | Yes (test environment) |
 | **Fabric GameTests** | In-game block/entity/world interaction | Yes (test environment) |
@@ -34,7 +34,7 @@ not compile the project or prove a Game Test can run.
 
 ---
 
-## Unit Testing (JUnit 5 — No Minecraft)
+## Unit Testing (JUnit Jupiter — No Minecraft)
 
 ### JUnit Platform task
 ```kotlin
@@ -89,6 +89,10 @@ class CooldownManagerTest {
 ---
 
 ## MockBukkit (Paper/Bukkit Plugin Tests)
+
+The paired dependencies below are a retained 26.2 example. For 26.3, verify
+a published MockBukkit artifact for that exact Paper line before changing either
+dependency; a 26.2 mock does not establish 26.3 server behavior.
 
 ### `build.gradle.kts`
 ```kotlin
@@ -479,4 +483,4 @@ server bootstrap.
 - Fabric automated testing: https://docs.fabricmc.net/develop/automatic-testing
 - NeoForge 26.x Game Tests: https://docs.neoforged.net/docs/misc/gametest/
 - NeoForge 1.21.3 Game Tests: https://docs.neoforged.net/docs/1.21.3/misc/gametest/
-- JUnit 5 user guide: https://junit.org/junit5/docs/current/user-guide/
+- JUnit Jupiter user guide: https://junit.org/junit5/docs/current/user-guide/

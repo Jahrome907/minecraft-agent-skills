@@ -8,6 +8,9 @@ description: "Write and debug Minecraft Java 26.x and 1.21.x commands, selectors
 Before editing, inspect the exact Minecraft version and execution context
 (chat, function, command block, or RCON). Keep the requested scope and use only
 the relevant examples. Check current release notes for version-sensitive syntax.
+In [26.3](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3),
+`/item replace` maps source slots to destinations once; use `/item fill` to
+repeat items or `/item override` to clear unmatched slots.
 
 ## Command Syntax Conventions
 

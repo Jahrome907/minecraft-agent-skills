@@ -471,6 +471,15 @@ expect_path "tests/fixtures/validators/worldgen/nested-paths"
 expect_path "tests/fixtures/validators/worldgen/invalid-tags"
 expect_path "tests/fixtures/validators/worldgen/tags-only"
 expect_path "tests/fixtures/validators/worldgen/invalid-jigsaw-refs"
+expect_pass "worldgen 26.3 references and inline features" \
+  ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
+  --root tests/fixtures/validators/worldgen/valid-26.3 --feature-registry feature --strict
+expect_pass "worldgen 26.3 inline-only pack" \
+  ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
+  --root tests/fixtures/validators/worldgen/inline-26.3 --feature-registry feature --strict
+expect_fail_contains "worldgen 26.3 missing feature" "placed_feature references missing feature: mypack:missing" \
+  ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
+  --root tests/fixtures/validators/worldgen/invalid-26.3 --feature-registry feature
 expect_pass "worldgen valid" \
   ./.agents/skills/minecraft-world-generation/scripts/validate-worldgen-json.sh \
   --root tests/fixtures/validators/worldgen/valid

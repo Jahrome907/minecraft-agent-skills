@@ -32,6 +32,7 @@ loader is required for those vanilla assets.
 | 1.21.11           | `min_format: [75, 0]`, `max_format: [75, 0]` |
 | 26.1              | `min_format: [84, 0]`, `max_format: [84, 0]` |
 | 26.2              | `min_format: [88, 0]`, `max_format: [88, 0]` |
+| 26.3              | `min_format: [97, 1]`, `max_format: [97, 1]` |
 
 Use legacy `pack_format` only for resource formats below 65 (through 1.21.8).
 Resource format 65 and later require both `min_format` and `max_format`; use
@@ -126,13 +127,13 @@ adding them.
 }
 ```
 
-### 26.2
+### 26.3
 
 ```json
 {
   "pack": {
-    "min_format": [88, 0],
-    "max_format": [88, 0],
+    "min_format": [97, 1],
+    "max_format": [97, 1],
     "description": "My Custom Resource Pack v1.0"
   }
 }
@@ -256,7 +257,7 @@ predicate; their values are not interchangeable.
 }
 ```
 
-### Random texture (multipart)
+### Random texture (weighted variants)
 ```json
 {
   "variants": {
@@ -437,3 +438,5 @@ Those cases warn and require an exact-client runtime check.
 - [NeoForge 1.21.8: Sounds](https://docs.neoforged.net/docs/1.21.8/resources/client/sounds/)
 - Misode's model viewer: https://misode.github.io/
 - OptiFine CIT guide: https://optifine.readthedocs.io/cit.html
+
+- [Mojang: Java Edition 26.3](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3)

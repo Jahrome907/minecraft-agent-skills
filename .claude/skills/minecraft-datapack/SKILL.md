@@ -33,6 +33,7 @@ the bundled validator and test in-game when available.
 | 1.21.11           | `min_format: [94, 1]`, `max_format: [94, 1]` |
 | 26.1              | `min_format: [101, 1]`, `max_format: [101, 1]` |
 | 26.2              | `min_format: [107, 1]`, `max_format: [107, 1]` |
+| 26.3              | `min_format: [121, 0]`, `max_format: [121, 0]` |
 
 Use `pack_format` for a legacy-only target through data pack format 81. Starting
 with data pack format 82 in 1.21.9, define both explicit `min_format` and
@@ -142,13 +143,13 @@ boundary. Mojang requires the retained legacy fields for this range.
 }
 ```
 
-### 26.2
+### 26.3
 
 ```json
 {
   "pack": {
-    "min_format": [107, 1],
-    "max_format": [107, 1],
+    "min_format": [121, 0],
+    "max_format": [121, 0],
     "description": "My Custom Datapack v1.0"
   }
 }
@@ -244,11 +245,6 @@ $scoreboard players set $(name) points 0
 data modify storage mypack:tmp input set value {name:"Steve"}
 function mypack:greet with storage mypack:tmp input
 
-# Pass values from entity NBT
-function mypack:greet with entity @p {}
-
-# Pass value from block NBT
-function mypack:greet with block 0 64 0 {}
 ```
 
 ---
@@ -265,7 +261,10 @@ section and keep existing namespaces and version targets.
 Edit inside an existing copy — do NOT create from scratch without the full JSON.
 Get the vanilla version from the Minecraft jar: `jar xf minecraft.jar data/`.
 
-### Override a biome's spawn costs
+### Override a biome's spawn costs (through 26.2)
+
+For 26.3, use the biome's `minecraft:gameplay/natural_mob_spawns` environment
+attribute instead; the old top-level `spawn_costs` field was removed.
 ```json
 {
   "spawn_costs": {
@@ -310,7 +309,7 @@ Place the pack folder or ZIP under the world's `datapacks/` directory, with
 |-------|-------|-----|
 | `Unknown or invalid command` | Syntax error in function | Check whitespace, selector, trailing space |
 | `Datapack did not load` | Invalid JSON in any file | Validate with `jq . < file.json` |
-| `pack metadata mismatch` | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
+| `pack metadata mismatch` | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact Minecraft release |
 | Function not running on tick | Missing engine tick tag or wrong namespace | Check `data/minecraft/tags/function/tick.json` |
 | Macro error | `$` line but no `with` | Provide `with storage/entity/block` |
 
@@ -344,3 +343,5 @@ What it checks:
 - NBT format: https://minecraft.wiki/w/NBT_format
 - Predicate conditions: https://minecraft.wiki/w/Predicate
 - Loot table format: https://minecraft.wiki/w/Loot_table
+
+- [Mojang: Java Edition 26.3](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3)

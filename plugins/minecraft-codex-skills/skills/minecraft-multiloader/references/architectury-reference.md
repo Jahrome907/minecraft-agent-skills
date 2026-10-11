@@ -19,10 +19,10 @@ Use this file together with `SKILL.md` when you need the quick alignment rules.
 - Keep `neoforge_version` on the matching `21.<patch>.x` family for that same patch
 - Keep Fabric API on the exact Minecraft patch suffix you target, for example `+1.21.11` for `minecraft_version=1.21.11`
 
-### Minecraft 26.2
+### Minecraft 26.x
 
 - Use the official [Architectury Template Generator](https://generate.architectury.dev/)
-  only when it offers the exact 26.2 target with Fabric and NeoForge. Preserve
+  only when it offers the exact target release with Fabric and NeoForge. Preserve
   its Minecraft, Java 25, Loom, Fabric API, NeoForge, and Architectury pins as
   one set.
 - If the generator lacks that target, use a known-working project on the exact

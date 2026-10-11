@@ -7,11 +7,20 @@ FAIL='[FAIL]'
 
 ROOT='.'
 STRICT=0
+FEATURE_REGISTRY='configured_feature'
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --root)
       ROOT="${2:-}"
+      shift 2
+      ;;
+    --feature-registry)
+      FEATURE_REGISTRY="${2:-}"
+      if [[ "$FEATURE_REGISTRY" != "feature" && "$FEATURE_REGISTRY" != "configured_feature" ]]; then
+        echo "$FAIL --feature-registry must be feature (26.3) or configured_feature (through 26.2)" >&2
+        exit 1
+      fi
       shift 2
       ;;
     --strict)
@@ -20,14 +29,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --help|-h)
       cat <<'USAGE'
-Usage: validate-worldgen-json.sh [--root <path>] [--strict]
+Usage: validate-worldgen-json.sh [--root <path>] [--feature-registry feature|configured_feature] [--strict]
+
+Use --feature-registry feature for Minecraft 26.3; the default preserves older packs.
 
 Checks worldgen JSON integrity:
 - validates JSON under data/**/worldgen, data/**/dimension, data/**/dimension_type, data/**/tags/worldgen, and data/**/neoforge/biome_modifier
 - validates key directory conventions
 - validates local cross-references:
   dimension -> dimension_type + noise_settings
-  placed_feature -> configured_feature
+  placed_feature -> selected feature registry
   structure_set -> structure
   jigsaw structure -> template_pool
   template_pool single_pool_element -> structure template + processor_list
@@ -328,7 +339,7 @@ done < <(
 while IFS= read -r -d '' f; do
   id="$(to_id "$f")"
   CONFIGURED_FEATURES["$id"]=1
-done < <(find_worldgen_jsons 'configured_feature')
+done < <(find_worldgen_jsons "$FEATURE_REGISTRY")
 
 while IFS= read -r -d '' f; do
   id="$(to_id "$f")"
@@ -381,10 +392,6 @@ if (( ${#PLACED_FEATURES[@]} == 0 && (BIOME_FILES > 0 || BIOME_MODIFIER_FILES > 
   warn "no placed_feature JSON files found"
 fi
 
-if (( ${#CONFIGURED_FEATURES[@]} == 0 && ${#PLACED_FEATURES[@]} > 0 )); then
-  warn "no configured_feature JSON files found"
-fi
-
 echo "Checking dimension references..."
 while IFS= read -r -d '' dimension_file; do
   if [[ -n "${INVALID_JSON_FILES["$dimension_file"]:-}" ]]; then
@@ -427,7 +434,7 @@ while IFS= read -r -d '' dimension_file; do
   fi
 done < <(find_namespace_jsons 'dimension')
 
-echo "Checking placed_feature -> configured_feature references..."
+echo "Checking placed_feature -> $FEATURE_REGISTRY references..."
 while IFS= read -r -d '' pf_file; do
   rel="${pf_file#"$ROOT/data/"}"
   ns="${rel%%/*}"
@@ -444,15 +451,20 @@ while IFS= read -r -d '' pf_file; do
     continue
   fi
 
+  # Inline feature objects have no standalone target to resolve.
+  if [[ "$feature_ref" == \{* ]]; then
+    continue
+  fi
+
   feature_id="$(split_ref "$ns" "$feature_ref")"
-  if ! should_validate_worldgen_ref "$ns" "$feature_id" 'configured_feature'; then
+  if ! should_validate_worldgen_ref "$ns" "$feature_id" "$FEATURE_REGISTRY"; then
     continue
   fi
 
   if [[ -n "${CONFIGURED_FEATURES[$feature_id]:-}" ]]; then
     pass "placed_feature target exists: $feature_id"
   else
-    fail "placed_feature references missing configured_feature: $feature_id"
+    fail "placed_feature references missing $FEATURE_REGISTRY: $feature_id"
   fi
 done < <(find_worldgen_jsons 'placed_feature')
 

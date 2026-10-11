@@ -60,15 +60,17 @@ bundle or selecting a model does not add that tool.
 Describe the task and Minecraft version. For example:
 
 - "Fix this Paper 1.21.11 command without upgrading the server."
-- "Add a 26.2 datapack recipe and verify its files."
+- "Add a 26.3 datapack recipe and verify its files."
 - "Review this Velocity configuration and suggest changes."
 
 The agent reads the relevant skill and uses your project's version settings.
-Choose your model and tools in Codex or Claude Code.
+Choose your model and tools in Codex or Claude Code. The skills do not pin model
+IDs or reasoning settings.
 
 Bundled validators check file structure and common mistakes. Test builds and
 in-game behavior in your Minecraft project.
-See the [September review notes](docs/skill-audit-2026-09.md) for fixes and sources.
+Reviewed against Minecraft 26.3 / Java 25 on October 11, 2026. See the
+[review notes](docs/skill-audit-2026-10.md) for sources and validation limits.
 
 ## Maintaining the bundle
 

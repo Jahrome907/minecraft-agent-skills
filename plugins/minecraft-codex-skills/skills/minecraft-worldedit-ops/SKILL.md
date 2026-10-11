@@ -29,9 +29,10 @@ Operational best practice:
 2. Keep automatic backups before major region operations.
 3. Use conservative selection + mask constraints before destructive commands.
 
-Compatibility note: WorldEdit 7.4.x has builds for 1.21.x, 26.1, and 26.2.
-Select the build listed for the exact server version and stage-test it before
-using it on production worlds.
+Select the build listed for the exact server version and loader on the
+[official downloads page](https://enginehub.org/worldedit#downloads). Verify
+Folia support separately; do not infer it from Paper compatibility. Stage-test
+the selected build before using it on production worlds.
 
 ## References
 

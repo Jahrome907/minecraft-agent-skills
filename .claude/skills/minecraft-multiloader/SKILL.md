@@ -49,17 +49,17 @@ from the same generated or known-working project line. This skill deliberately
 does not publish a copyable dependency matrix: its static helper cannot resolve
 whether a particular set of versions is compatible.
 
-For Minecraft 26.2 / Java 25, use the official
+For Minecraft 26.x / Java 25, use the official
 [Architectury Template Generator](https://generate.architectury.dev/) only when
 its version selector offers the exact target. Generate a **Multiplatform**
 project with Fabric and NeoForge, then preserve the generated Gradle layout and
 pins as one set. If the generator does not offer the target, begin with an
 already working project on that exact line and inspect its resolved build; do
-not relabel a 1.21.11 template as 26.2. The published template downloads are
+not relabel a 1.21.11 template as 26.x. The published template downloads are
 not a substitute for an exact-current scaffold.
 
 Do not mechanically change only `minecraft_version` in the retained example:
-26.2 is unobfuscated and its Loom/remapping setup differs from 1.21.11.
+26.x is unobfuscated and its Loom/remapping setup differs from 1.21.11.
 
 ## Bundled References And Helpers
 
@@ -346,7 +346,7 @@ find fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name '*.jar' \
 |---------|----------|
 | Using `net.neoforged.*` / `net.fabricmc.*` in `common/` | Only use vanilla MC and Architectury APIs in common |
 | Direct field access on `DeferredRegister` (NeoForge style) in common | Use Architectury's `DeferredRegister` |
-| Constructing a 26.2 item without a registry key | Create its `ResourceKey<Item>` and call `Item.Properties#setId` before `new Item` |
+| Constructing a 26.x item without a registry key | Create its `ResourceKey<Item>` and call `Item.Properties#setId` before `new Item` |
 | Forgetting `@ExpectPlatform` throws `AssertionError` at runtime | Both `fabric/` and `neoforge/` must have matching same-package `*Impl` classes |
 | Assets duplicated in fabric/ and neoforge/ | Keep assets in `common/src/main/resources/assets/` |
 | A common Mixin imports a loader API or targets one loader's side | Put it in that platform subproject; loader-neutral Mixins may be common when both generated platform configurations include them |
