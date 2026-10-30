@@ -309,6 +309,10 @@ public class MyCommand implements CommandExecutor, TabCompleter {
 
         return switch (args[0].toLowerCase(Locale.ROOT)) {
             case "reload" -> {
+                if (!player.hasPermission("myplugin.admin")) {
+                    player.sendMessage(Component.text("No permission.", NamedTextColor.RED));
+                    yield true;
+                }
                 plugin.reloadConfig();
                 player.sendMessage(Component.text("Config reloaded.", NamedTextColor.GREEN));
                 yield true;
@@ -327,8 +331,11 @@ public class MyCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                                 @NotNull String label, @NotNull String[] args) {
+        if (!sender.hasPermission("myplugin.use")) return List.of();
         if (args.length == 1) {
-            return List.of("reload", "info").stream()
+            var subcommands = sender.hasPermission("myplugin.admin")
+                ? List.of("reload", "info") : List.of("info");
+            return subcommands.stream()
                 .filter(s -> s.startsWith(args[0].toLowerCase(Locale.ROOT)))
                 .toList();
         }

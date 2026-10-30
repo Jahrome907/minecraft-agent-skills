@@ -93,8 +93,8 @@ my-mod/
 │   ├── build.gradle
 │   └── src/main/
 │       ├── java/com/example/mymod/fabric/
-│       │   ├── MyModFabric.java          ← Fabric entrypoint
-│       ├── java/com/example/mymod/platform/
+│       │   └── MyModFabric.java          ← Fabric entrypoint
+│       ├── java/com/example/mymod/platform/fabric/
 │       │   └── PlatformHelperImpl.java   ← Fabric @ExpectPlatform implementation
 │       └── resources/
 │           ├── fabric.mod.json
@@ -103,8 +103,8 @@ my-mod/
     ├── build.gradle
     └── src/main/
         ├── java/com/example/mymod/neoforge/
-        │   ├── MyModNeoForge.java        ← NeoForge @Mod entry
-        ├── java/com/example/mymod/platform/
+        │   └── MyModNeoForge.java        ← NeoForge @Mod entry
+        ├── java/com/example/mymod/platform/neoforge/
         │   └── PlatformHelperImpl.java   ← NeoForge @ExpectPlatform implementation
         └── resources/
             ├── META-INF/neoforge.mods.toml
@@ -164,7 +164,6 @@ Define the contract in `common/`:
 package com.example.mymod.platform;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.world.level.material.Fluid;
 
 public class PlatformHelper {
 
@@ -181,13 +180,16 @@ public class PlatformHelper {
 }
 ```
 
-Keep each platform implementation in the same Java package as the common
-`@ExpectPlatform` class. Only the source set changes between `common/`,
-`fabric/`, and `neoforge/`.
+Append the platform name to the common class's package and `Impl` to its name.
+For `com.example.mymod.platform.PlatformHelper`, the defaults are
+`com.example.mymod.platform.fabric.PlatformHelperImpl` and
+`com.example.mymod.platform.neoforge.PlatformHelperImpl`. Preserve any explicit
+[`platformPackage` override](https://docs.architectury.dev/plugin/custom_platform_exp/)
+in the generated build.
 
-Implement in `fabric/.../platform/PlatformHelperImpl.java`:
+Implement in `fabric/.../platform/fabric/PlatformHelperImpl.java`:
 ```java
-package com.example.mymod.platform;
+package com.example.mymod.platform.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -205,9 +207,9 @@ public class PlatformHelperImpl {
 }
 ```
 
-Implement in `neoforge/.../platform/PlatformHelperImpl.java`:
+Implement in `neoforge/.../platform/neoforge/PlatformHelperImpl.java`:
 ```java
-package com.example.mymod.platform;
+package com.example.mymod.platform.neoforge;
 
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -219,7 +221,7 @@ public class PlatformHelperImpl {
     }
 
     public static boolean isClient() {
-        return FMLEnvironment.dist.isClient();
+        return FMLEnvironment.getDist().isClient();
     }
 }
 ```
@@ -347,7 +349,7 @@ find fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name '*.jar' \
 | Using `net.neoforged.*` / `net.fabricmc.*` in `common/` | Only use vanilla MC and Architectury APIs in common |
 | Direct field access on `DeferredRegister` (NeoForge style) in common | Use Architectury's `DeferredRegister` |
 | Constructing a 26.x item without a registry key | Create its `ResourceKey<Item>` and call `Item.Properties#setId` before `new Item` |
-| Forgetting `@ExpectPlatform` throws `AssertionError` at runtime | Both `fabric/` and `neoforge/` must have matching same-package `*Impl` classes |
+| `@ExpectPlatform` throws `AssertionError` at runtime | Check the `*Impl` class name, platform package suffix, and transformer wiring in both builds |
 | Assets duplicated in fabric/ and neoforge/ | Keep assets in `common/src/main/resources/assets/` |
 | A common Mixin imports a loader API or targets one loader's side | Put it in that platform subproject; loader-neutral Mixins may be common when both generated platform configurations include them |
 | Accessing world/registry on mod init thread | Use `mod bus` events for setup; never access world on init |

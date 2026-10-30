@@ -86,26 +86,11 @@ a model distinct from the block model. For that case:
 
 ### Directional Block (faces a direction when placed)
 
-```java
-public class MyDirectionalBlock extends DirectionalBlock {
-    public static final DirectionProperty FACING = DirectionalBlock.FACING;
-
-    public MyDirectionalBlock(Properties props) {
-        super(props);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        return defaultBlockState().setValue(FACING, ctx.getNearestLookingDirection().getOpposite());
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-    }
-}
-```
+Extend `DirectionalBlock`, define its codec, initialize the default `FACING`,
+and set facing in `getStateForPlacement`. Register it through `registerBlock`
+so its properties receive the block key. Use the
+[1.21.11 block guide](https://docs.neoforged.net/docs/1.21.11/blocks/) for the
+codec and registration signatures.
 
 `assets/mymod/blockstates/my_directional_block.json`:
 ```json
@@ -127,8 +112,8 @@ public class MyDirectionalBlock extends DirectionalBlock {
 
 ```java
 public static final DeferredBlock<SlabBlock> MY_SLAB =
-    BLOCKS.register("my_slab", () -> new SlabBlock(
-        BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB)));
+    BLOCKS.registerBlock("my_slab", SlabBlock::new,
+        () -> BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB));
 ```
 
 `assets/mymod/models/block/my_slab.json`:
@@ -172,9 +157,9 @@ public static final DeferredBlock<SlabBlock> MY_SLAB =
 
 ```java
 public static final DeferredBlock<StairBlock> MY_STAIRS =
-    BLOCKS.register("my_stairs", () -> new StairBlock(
-        ModBlocks.MY_BLOCK.get().defaultBlockState(),
-        BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_STAIRS)));
+    BLOCKS.registerBlock("my_stairs",
+        props -> new StairBlock(ModBlocks.MY_BLOCK.get().defaultBlockState(), props),
+        () -> BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_STAIRS));
 ```
 
 `assets/mymod/models/block/my_stairs.json`:
@@ -201,13 +186,19 @@ Also create `my_stairs_inner.json` and `my_stairs_outer.json`, inheriting from
 ```java
 // NeoForge
 public static final DeferredItem<Item> MY_FOOD =
-    ITEMS.registerSimpleItem("my_food", new Item.Properties()
+    ITEMS.registerSimpleItem("my_food", props -> props
         .food(new FoodProperties.Builder()
             .nutrition(4)
             .saturationModifier(0.3f)
-            .effect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1), 0.8f)
-            .build()));
+            .build(),
+            Consumable.builder()
+                .onConsume(new ApplyStatusEffectsConsumeEffect(
+                    new MobEffectInstance(MobEffects.REGENERATION, 200, 1), 0.8f))
+                .build()));
 ```
+
+Food effects belong to the consumable component, not `FoodProperties.Builder`.
+See the [1.21.11 consumable API](https://docs.neoforged.net/docs/1.21.11/items/consumables/).
 
 `assets/mymod/items/my_food.json`:
 ```json
@@ -302,43 +293,46 @@ the removed `EntityType.Builder#build(String)` overload into 26.x code.
 
 ---
 
-## Commands (Brigadier — works the same in NeoForge and Fabric)
+## Commands (NeoForge 1.21.11, Mojang mappings)
 
 ```java
 // NeoForge — register on GAME bus
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.GAME)
+@EventBusSubscriber(modid = MyMod.MOD_ID)
 public class ModCommands {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         registerCommands(event.getDispatcher());
     }
-}
 
-// Shared implementation
-private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-    dispatcher.register(
-        Commands.literal("mymod")
-            .then(Commands.literal("give")
-                .requires(src -> src.hasPermission(2))  // op level 2
-                .then(Commands.argument("player", EntityArgument.player())
-                    .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
-                        .executes(ctx -> executeGive(ctx,
-                            EntityArgument.getPlayer(ctx, "player"),
-                            IntegerArgumentType.getInteger(ctx, "count"))))))
-    );
-}
+    private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(
+            Commands.literal("mymod")
+                .then(Commands.literal("give")
+                    .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                    .then(Commands.argument("player", EntityArgument.player())
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                            .executes(ctx -> executeGive(ctx,
+                                EntityArgument.getPlayer(ctx, "player"),
+                                IntegerArgumentType.getInteger(ctx, "count"))))))
+        );
+    }
 
-private static int executeGive(CommandContext<CommandSourceStack> ctx,
-        ServerPlayer player, int count) throws CommandSyntaxException {
-    ItemStack stack = new ItemStack(ModItems.MY_ITEM.get(), count);
-    player.getInventory().add(stack);
-    ctx.getSource().sendSuccess(
-        () -> Component.translatable("commands.mymod.give.success",
-            count, player.getDisplayName()),
-        true);
-    return count;
+    private static int executeGive(CommandContext<CommandSourceStack> ctx,
+            ServerPlayer player, int count) throws CommandSyntaxException {
+        ItemStack stack = new ItemStack(ModItems.MY_ITEM.get(), count);
+        player.getInventory().add(stack);
+        ctx.getSource().sendSuccess(
+            () -> Component.translatable("commands.mymod.give.success",
+                count, player.getDisplayName()),
+            true);
+        return count;
+    }
 }
 ```
+
+Minecraft 1.21.11 replaced numeric permission calls with permission checks.
+Keep Fabric's registration callback and mapping names separate. See the
+[1.21.11 migration primer](https://docs.neoforged.net/primer/docs/1.21.11/).
 
 ---
 
@@ -387,7 +381,7 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
 ```json
 {
   "type": "minecraft:smelting",
-  "ingredient": { "item": "mymod:my_ore" },
+  "ingredient": "mymod:my_ore",
   "result": { "id": "mymod:my_ingot" },
   "experience": 0.7,
   "cookingtime": 200
@@ -396,20 +390,20 @@ private static int executeGive(CommandContext<CommandSourceStack> ctx,
 
 ### Custom Recipe Type (NeoForge / Fabric)
 
-```java
-// Implement Recipe<RecipeInput> and register RecipeSerializer + RecipeType
-public class MyRecipe implements Recipe<SingleRecipeInput> {
-    // ...
-}
-```
+Implement the target version's `Recipe<SingleRecipeInput>` contract, its
+serializer, and recipe-type registration together. Follow the
+[versioned recipe guide](https://docs.neoforged.net/docs/1.21.11/resources/server/recipes/)
+for codecs, recipe input, and recipe-book display requirements.
 
 ---
 
 ## Tags
 
 Tags group blocks/items for use in recipes and game logic.
+Extend the `minecraft` namespace's mining tags for vanilla tool behavior;
+`mymod:mineable/pickaxe` would be a separate tag that vanilla does not consult.
 
-`data/mymod/tags/block/mineable/pickaxe.json`:
+`data/minecraft/tags/block/mineable/pickaxe.json`:
 ```json
 {
   "replace": false,
@@ -417,7 +411,7 @@ Tags group blocks/items for use in recipes and game logic.
 }
 ```
 
-`data/mymod/tags/block/needs_iron_tool.json`:
+`data/minecraft/tags/block/needs_iron_tool.json`:
 ```json
 {
   "replace": false,
@@ -435,112 +429,20 @@ Tags group blocks/items for use in recipes and game logic.
 
 ---
 
-## Data Generation (NeoForge)
+## Data Generation (NeoForge 1.21.11 and 26.x)
 
-### BlockState Provider
+Use the target version of the [resource guide](https://docs.neoforged.net/docs/1.21.11/resources/)
+and the project's generated provider classes. `GatherDataEvent.Client` can
+register both client and server providers; the current MDK uses `runClientData`.
+A split setup uses `.Client` and `.Server` with their matching tasks.
 
-```java
-public class ModBlockStateProvider extends BlockStateProvider {
-    public ModBlockStateProvider(PackOutput output, ExistingFileHelper helper) {
-        super(output, MyMod.MOD_ID, helper);
-    }
-
-    @Override
-    protected void registerStatesAndModels() {
-        simpleBlock(ModBlocks.MY_BLOCK.get());
-        simpleBlock(ModBlocks.SPECIAL_BLOCK.get(),
-            models().cubeAll("special_block", modLoc("block/special_block")));
-        // Slab:
-        slabBlock((SlabBlock) ModBlocks.MY_SLAB.get(),
-            modLoc("block/my_block"), modLoc("block/my_block"));
-        // Stairs:
-        stairsBlock((StairBlock) ModBlocks.MY_STAIRS.get(), modLoc("block/my_block"));
-    }
-}
-```
-
-### Item Model Provider
-
-```java
-public class ModItemModelProvider extends ItemModelProvider {
-    public ModItemModelProvider(PackOutput output, ExistingFileHelper helper) {
-        super(output, MyMod.MOD_ID, helper);
-    }
-
-    @Override
-    protected void registerModels() {
-        // BlockItem models derived from block models:
-        withExistingParent(ModItems.MY_BLOCK_ITEM.getId().getPath(),
-            modLoc("block/my_block"));
-
-        // Flat item (generated):
-        basicItem(ModItems.MY_ITEM.get());
-    }
-}
-```
-
-### Recipe Provider
-
-```java
-public class ModRecipeProvider extends RecipeProvider {
-    public ModRecipeProvider(PackOutput output,
-            CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, lookupProvider);
-    }
-
-    @Override
-    protected void buildRecipes(RecipeOutput output) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModItems.MY_BLOCK_ITEM.get(), 4)
-            .pattern("SS")
-            .pattern("SS")
-            .define('S', Items.STONE)
-            .unlockedBy("has_stone", has(Items.STONE))
-            .save(output);
-
-        SimpleCookingRecipeBuilder.smelting(
-                Ingredient.of(Tags.Items.ORES_IRON),
-                RecipeCategory.MISC,
-                ModItems.MY_INGOT.get(),
-                0.7f, 200)
-            .unlockedBy("has_ore", has(Tags.Items.ORES_IRON))
-            .save(output, ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, "my_ingot_smelting"));
-    }
-}
-```
-
-### Loot Table Provider
-
-```java
-public class ModLootTableProvider extends LootTableProvider {
-    public ModLootTableProvider(PackOutput output,
-            CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, Set.of(), List.of(
-            new SubProviderEntry(ModBlockLootTables::new, LootContextParamSets.BLOCK)
-        ), lookupProvider);
-    }
-
-    public static class ModBlockLootTables extends BlockLootSubProvider {
-        protected ModBlockLootTables(HolderLookup.Provider registries) {
-            super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
-        }
-
-        @Override
-        protected void generate() {
-            dropSelf(ModBlocks.MY_BLOCK.get());
-
-            // Drop ore with fortune/silk-touch handling:
-            add(ModBlocks.MY_ORE.get(),
-                createOreDrop(ModBlocks.MY_ORE.get(), ModItems.MY_GEM.get()));
-        }
-
-        @Override
-        protected Iterable<Block> getKnownBlocks() {
-            return ModBlocks.BLOCKS.getEntries().stream()
-                .map(DeferredHolder::get)::iterator;
-        }
-    }
-}
-```
+- Use `ModelProvider` for blockstates, block models, and client item definitions.
+- Register recipe generation through `RecipeProvider.Runner` and keep its
+  registry lookup and `RecipeOutput` wiring together.
+- Use `event.createProvider(...)` and the project's registry provider setup.
+  Do not copy old `ExistingFileHelper` or `GatherDataEvent#includeClient` code.
+- Inspect generated resource paths and schemas before packaging. Older provider
+  constructors and a successful static JSON check do not prove compatibility.
 
 ---
 
@@ -560,73 +462,10 @@ public class ModLootTableProvider extends LootTableProvider {
 
 ---
 
-## GitHub Actions CI Workflow
+## Build and publishing
 
-```yaml
-# .github/workflows/build.yml
-name: Build
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'microsoft'
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - name: Build with Gradle
-        run: ./gradlew build
-      - name: Run Game Tests
-        run: ./gradlew runGameTestServer
-        # For Fabric: ./gradlew runGametest
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: mod-jar
-          path: build/libs/*.jar
-          if-no-files-found: error
-```
-
----
-
-## Modrinth / CurseForge Publishing
-
-```groovy
-// build.gradle — Modrinth via Minotaur plugin
-modrinth {
-    token = System.getenv("MODRINTH_TOKEN")
-    projectId = "your-project-id"
-    versionNumber = project.mod_version
-    versionType = "release"
-    uploadFile = jar
-    gameVersions = ["1.21.11"]
-    loaders = ["neoforge"]
-    changelog = rootProject.file("CHANGELOG.md").text
-    syncBodyFrom = rootProject.file("README.md").text
-}
-```
-
-```groovy
-// Alternatively, use the official CurseForge Gradle plugin
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN")
-    project {
-        id = "000000"
-        changelogType = "markdown"
-        changelog = file("CHANGELOG.md")
-        releaseType = "release"
-        addGameVersion "1.21.11"
-        addGameVersion "NeoForge"
-        mainArtifact jar
-    }
-}
-```
+Keep the project's configured build tasks and publication destinations.
+Fabric server Game Tests use the configured `build` integration; NeoForge uses
+`runGameTestServer`. Run only tasks present in that project. Inspect each
+loader's actual distributable before publishing; older Fabric projects may
+require `remapJar`, while 26.x uses the non-remapping build.

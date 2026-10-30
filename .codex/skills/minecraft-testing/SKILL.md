@@ -122,18 +122,18 @@ import org.junit.jupiter.api.*;
 
 class MyPluginTest {
 
-    private static ServerMock server;
-    private static MyPlugin plugin;
+    private ServerMock server;
+    private MyPlugin plugin;
 
-    @BeforeAll
-    static void setUp() {
+    @BeforeEach
+    void setUp() {
         // Start mock Bukkit server and load your plugin
         server = MockBukkit.mock();
         plugin = MockBukkit.load(MyPlugin.class);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         MockBukkit.unmock();
     }
 }
@@ -143,13 +143,10 @@ class MyPluginTest {
 ```java
 @Test
 void playerJoin_getsWelcomeMessage() {
-    PlayerMock player = server.addPlayer("Steve");
-    player.simulateJoin(); // fires PlayerJoinEvent
+    PlayerMock player = server.addPlayer("Steve"); // fires PlayerJoinEvent
 
-    // Assert the player received the expected message component
+    // Assert the message sent by the plugin's join listener.
     player.assertSaid("Welcome, Steve!");
-    // Or for Adventure components:
-    assertTrue(player.nextMessage().contains("Welcome"));
 }
 
 @Test
@@ -180,7 +177,7 @@ void mypluginInfo_returnsVersion() {
 }
 
 @Test
-void mypluginReload_requiresOp() {
+void mypluginReload_requiresAdminPermission() {
     PlayerMock player = server.addPlayer("NonOp");
     player.setOp(false);
 

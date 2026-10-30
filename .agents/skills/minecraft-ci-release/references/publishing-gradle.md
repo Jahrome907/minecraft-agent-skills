@@ -18,13 +18,14 @@ val minecraftVersion = providers.gradleProperty("minecraft_version").orNull
 version = "${modVersion}+${minecraftVersion}"
 
 fun changelogFor(releaseVersion: String): String {
-    val changelog = rootProject.file("CHANGELOG.md").readText()
+    val lines = rootProject.file("CHANGELOG.md").readLines()
     val heading = "## [$releaseVersion]"
-    val start = changelog.indexOf(heading)
+    val start = lines.indexOfFirst { it == heading || it.startsWith("$heading ") }
     check(start >= 0) { "CHANGELOG.md is missing heading: $heading" }
 
-    return changelog.substring(start + heading.length)
-        .substringBefore("\n## [")
+    return lines.drop(start + 1)
+        .takeWhile { !it.startsWith("## [") }
+        .joinToString("\n")
         .trim()
         .also { check(it.isNotBlank()) { "CHANGELOG.md section is empty: $heading" } }
 }
@@ -45,7 +46,7 @@ tasks.register("verifyReleaseVersion") {
 Use a changelog heading such as `## [1.2.3] — 2026-09-04`. Do not look up a heading
 from `project.version`, because it includes `+26.3`; `substringAfter` also must not
 be used without an explicit missing-heading check because it can return the entire
-file.
+file. Skip the heading line so a date alone cannot pass the empty-section check.
 
 ## Modrinth with Minotaur
 

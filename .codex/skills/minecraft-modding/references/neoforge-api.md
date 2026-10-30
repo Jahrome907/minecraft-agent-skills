@@ -1,6 +1,6 @@
-# NeoForge API Patterns (1.21.x)
+# NeoForge API Patterns (1.21.11)
 
-Legacy NeoForge-specific code patterns for Minecraft 1.21.x with Java 21.
+Legacy NeoForge-specific code patterns for Minecraft 1.21.11 with Java 21.
 Use the exact project's versioned documentation for current 26.x / Java 25 work.
 
 ---
@@ -26,15 +26,11 @@ public class MyMod {
         // Register mod event listeners
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreativeTabItems);
-
-        // Register for in-game events on the GAME event bus (NeoForge 1.20.5+)
-        NeoForge.EVENT_BUS.register(this);
-        // Prefer @EventBusSubscriber on a separate class over registering `this`
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // thread-safe registration calls go here, e.g. CompostingChanceRegistry
+            // Main-thread setup that cannot run in parallel goes here.
         });
     }
 
@@ -94,7 +90,7 @@ public class ModBlocks {
 
     // Simple full-cube block
     public static final DeferredBlock<Block> MY_BLOCK =
-        BLOCKS.registerSimpleBlock("my_block",
+        BLOCKS.registerSimpleBlock("my_block", () ->
             BlockBehaviour.Properties.of()
                 .mapColor(MapColor.STONE)
                 .instrument(NoteBlockInstrument.BASEDRUM)
@@ -105,7 +101,7 @@ public class ModBlocks {
     // Custom block class
     public static final DeferredBlock<MySpecialBlock> SPECIAL_BLOCK =
         BLOCKS.registerBlock("special_block", MySpecialBlock::new,
-            BlockBehaviour.Properties.of().strength(2.0f));
+            () -> BlockBehaviour.Properties.of().strength(2.0f));
 }
 ```
 
@@ -121,7 +117,7 @@ public class ModItems {
 
     // Simple item
     public static final DeferredItem<Item> MY_ITEM =
-        ITEMS.registerSimpleItem("my_item", new Item.Properties().stacksTo(16));
+        ITEMS.registerSimpleItem("my_item", props -> props.stacksTo(16));
 
     // Custom item class
     public static final DeferredItem<MyCustomItem> MY_CUSTOM_ITEM =
@@ -165,121 +161,39 @@ public class ModBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MyBlockEntity>>
         MY_BLOCK_ENTITY = BLOCK_ENTITIES.register("my_block_entity",
-            () -> BlockEntityType.Builder
-                .of(MyBlockEntity::new, ModBlocks.MY_BLOCK.get())
-                .build(null));
+            () -> new BlockEntityType<>(
+                MyBlockEntity::new, false, ModBlocks.MY_BLOCK.get()));
 }
 ```
 
 ---
 
-## Event Bus System
+## Event buses and data generation (1.21.11)
 
-NeoForge has two event buses:
+The injected mod bus handles registration and lifecycle events; the game bus
+is `NeoForge.EVENT_BUS`. Use `addListener` on the appropriate bus or
+`@EventBusSubscriber`, which selects the bus from the event type in 1.21.11.
+The old `bus = Bus.MOD` / `Bus.GAME` annotation argument is obsolete here.
+Client renderer handlers need `value = Dist.CLIENT` and a separate client
+class so dedicated servers do not load rendering classes. See the
+[versioned event guide](https://docs.neoforged.net/docs/1.21.11/concepts/events/).
 
-- **MOD bus** (`IEventBus` injected into constructor): lifecycle events, registration events
-- **GAME bus** (`NeoForge.EVENT_BUS`): in-game events  
-  Import: `net.neoforged.neoforge.common.NeoForge`  
-  (`MinecraftForge.EVENT_BUS` was removed in NeoForge 1.20.5)
+For datagen, use `GatherDataEvent.Client` or `.Server` and
+`event.createProvider(...)`. The current MDK registers both kinds of providers
+from `.Client` and runs `runClientData`. Keep the registry lookup, model
+provider, and recipe runner wiring from the
+[1.21.11 resource guide](https://docs.neoforged.net/docs/1.21.11/resources/);
+older `ExistingFileHelper` constructors and `includeClient()` flags do not
+belong in this version.
 
-```java
-// Recommended: separate class with @EventBusSubscriber
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.MOD)
-public class ModEvents {
-    @SubscribeEvent
-    public static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntityTypes.MY_ENTITY.get(), MyEntityRenderer::new);
-    }
+## Menus and screens
 
-    @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
-        DataGenerator gen = event.getGenerator();
-        PackOutput output = gen.getPackOutput();
-        ExistingFileHelper helper = event.getExistingFileHelper();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-
-        gen.addProvider(event.includeClient(),
-            new ModBlockStateProvider(output, helper));
-        gen.addProvider(event.includeClient(),
-            new ModItemModelProvider(output, helper));
-        gen.addProvider(event.includeServer(),
-            new ModRecipeProvider(output, lookupProvider));
-        gen.addProvider(event.includeServer(),
-            new ModLootTableProvider(output, lookupProvider));
-        gen.addProvider(event.includeServer(),
-            new ModBlockTagsProvider(output, lookupProvider, helper));
-    }
-}
-
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.GAME)
-public class GameEvents {
-    @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event) {
-        // runs every tick for every player
-    }
-
-    @SubscribeEvent
-    public static void onLivingHurt(LivingIncomingDamageEvent event) {
-        // fires when an entity is about to take damage; cancellable
-    }
-}
-```
-
----
-
-## Menu / GUI (Container)
-
-```java
-// MyMenu.java (server + client)
-public class MyMenu extends AbstractContainerMenu {
-    private final ContainerLevelAccess access;
-
-    public MyMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, ContainerLevelAccess.NULL);
-    }
-
-    public MyMenu(int containerId, Inventory playerInventory, ContainerLevelAccess access) {
-        super(ModMenuTypes.MY_MENU.get(), containerId);
-        this.access = access;
-        addPlayerInventory(playerInventory);
-        addPlayerHotbar(playerInventory);
-    }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return access.evaluate(
-            (level, pos) -> player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5,
-                pos.getZ() + 0.5) < 64, true);
-    }
-}
-
-// MyScreen.java (@OnlyIn(Dist.CLIENT))
-@OnlyIn(Dist.CLIENT)
-public class MyScreen extends AbstractContainerScreen<MyMenu> {
-    private static final ResourceLocation TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, "textures/gui/my_gui.png");
-
-    public MyScreen(MyMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 166;
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-    }
-}
-
-// Register on MOD bus (client-only):
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
-public class ClientModEvents {
-    @SubscribeEvent
-    public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ModMenuTypes.MY_MENU.get(), MyScreen::new);
-    }
-}
-```
+Build from the target version's
+[menu guide](https://docs.neoforged.net/docs/1.21.11/inventories/menus/). Keep server
+slots, client slots, synchronized data, and `quickMoveStack` index ranges
+consistent. A block menu's `stillValid` must check the block and player range.
+Register its client screen separately; preserve the current rendering API
+instead of copying an older `GuiGraphics.blit` overload.
 
 ---
 
@@ -291,7 +205,7 @@ items on the mod event bus. Its capability lookup returns the implementation or
 `LazyOptional` patterns in a NeoForge 1.21.11 project.
 
 ```java
-@EventBusSubscriber(modid = MyMod.MOD_ID, bus = Bus.MOD)
+@EventBusSubscriber(modid = MyMod.MOD_ID)
 public final class ModCapabilities {
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -317,13 +231,13 @@ or `ItemCapability` and register its provider with the same event. See the
 
 ---
 
-## Network Packets (1.21 SimpleChannel)
+## Network payloads (1.21.11)
 
 ```java
 // Register a payload (packet) type
 public record MyPayload(int value) implements CustomPacketPayload {
     public static final Type<MyPayload> TYPE =
-        new Type<>(ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, "my_payload"));
+        new Type<>(Identifier.fromNamespaceAndPath(MyMod.MOD_ID, "my_payload"));
 
     public static final StreamCodec<ByteBuf, MyPayload> STREAM_CODEC =
         StreamCodec.composite(ByteBufCodecs.INT, MyPayload::value, MyPayload::new);
@@ -408,7 +322,7 @@ mod_description=A cool Minecraft mod.
 |Item properties|`Item.Properties`|
 |Map colours|`MapColor.*`|
 |Block sounds|`SoundType.*`|
-|Tool tiers|`Tiers.*` (WOOD, STONE, IRON, DIAMOND, NETHERITE)|
+|Tool materials|`ToolMaterial.*`|
 |Rarity|`Rarity.*` (COMMON, UNCOMMON, RARE, EPIC)|
 |Block tags|`BlockTags.*`|
 |Item tags|`ItemTags.*`|

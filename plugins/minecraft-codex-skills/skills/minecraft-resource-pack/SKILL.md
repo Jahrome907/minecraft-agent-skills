@@ -51,7 +51,7 @@ integer `pack_format` and `supported_formats`; do not include
 ```
 my-pack/
 ├── pack.mcmeta
-├── pack.png                   ← 64×64 icon (optional)
+├── pack.png                   ← square PNG icon (optional)
 └── assets/
     └── minecraft/             ← override vanilla (or <namespace>/ for new packs)
         ├── models/
@@ -262,8 +262,8 @@ predicate; their values are not interchangeable.
 {
   "variants": {
     "": [
-      { "model": "minecraft:block/grass_block",  "weight": 3 },
-      { "model": "minecraft:block/grass_block_2" }
+      { "model": "minecraft:block/stone", "weight": 3 },
+      { "model": "minecraft:block/andesite" }
     ]
   }
 }
@@ -287,7 +287,7 @@ predicate; their values are not interchangeable.
 - Format: **PNG**, RGBA (32-bit)
 - Standard block/item size: **16×16 px**
 - Textures can be larger (32×32, 64×64) — Minecraft scales them, but stick to powers of 2
-- Animation requires height = N × width (e.g., 16×64 for 4 frames)
+- By default, animation uses square frames stacked vertically (e.g., 16×64 for 4 frames); explicit `width` / `height` supports other frame layouts
 - Place block textures in `assets/<namespace>/textures/block/`
 - Place item textures in `assets/<namespace>/textures/item/`
 - All textures are referenced without the `.png` extension in JSON
@@ -374,17 +374,21 @@ they are not portable vanilla resource-pack features.
 
 ## Installation
 
-```bash
-# Singleplayer: place in
-~/.minecraft/resourcepacks/my-pack/
-# or
-~/.minecraft/resourcepacks/my-pack.zip
+Singleplayer: place the folder or ZIP under the client's resource-pack directory:
 
-# Server-side (forces on clients):
-# Set in server.properties:
+```text
+~/.minecraft/resourcepacks/my-pack/
+~/.minecraft/resourcepacks/my-pack.zip
+```
+
+To require the pack on a server, set these `server.properties` values. Use the
+ZIP's actual SHA-1 and a direct download URL:
+
+```properties
 resource-pack=https://example.com/my-pack.zip
 resource-pack-sha1=<sha1 hash>
 resource-pack-prompt={"text":"Required pack","color":"gold"}
+require-resource-pack=true
 ```
 
 ---
@@ -398,7 +402,7 @@ resource-pack-prompt={"text":"Required pack","color":"gold"}
 | Blockstate not applying | Wrong state property name | Use F3 to inspect block state; use `/data get block <x> <y> <z>` for block-entity NBT |
 | Animation not working | Wrong MCMETA location | Must be same folder as texture, named `texture.png.mcmeta` |
 | Custom sound not playing | Not in `sounds.json` | Register sound event in `sounds.json`, match namespace |
-| Pack not loading | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact 1.21.x patch |
+| Pack not loading | Wrong `pack_format` or `min_format` / `max_format` values | Update `pack.mcmeta` for the exact Minecraft release |
 
 ## Validator Script
 

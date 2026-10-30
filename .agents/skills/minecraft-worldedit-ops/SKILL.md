@@ -21,7 +21,7 @@ It is not for writing plugin code that integrates with WorldEdit APIs.
 ## Platform and Setup Notes
 
 WorldEdit is commonly used on:
-- Paper/Purpur/Folia servers via WorldEdit plugin
+- Paper/Purpur servers via WorldEdit plugin
 - Fabric/NeoForge via mod variants
 
 Operational best practice:
@@ -150,17 +150,17 @@ Operational guidance:
 ### Practical brush setup
 
 ```text
-//brush sphere stone 4
-//brush smooth 3
-//brush raise sphere 2
-//brush lower sphere 2
-//mask #existing
+/brush sphere stone 4
+/brush smooth 3
+/brush raise sphere 2
+/brush lower sphere 2
+/mask #existing
 ```
 
 Reset brush:
 
 ```text
-//none
+/brush none
 ```
 
 Terraforming safety:
@@ -280,6 +280,7 @@ Always scope with selection/mask first to avoid map-wide accidental edits.
 
 ## References
 
+- https://worldedit.enginehub.org/en/latest/commands/
 - https://worldedit.enginehub.org/en/latest/
 - https://worldedit.enginehub.org/en/latest/usage/
 - https://worldedit.enginehub.org/en/latest/usage/regions/selections/

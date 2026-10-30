@@ -21,7 +21,7 @@ const checks = [
     file: ".agents/skills/minecraft-modding/references/forge-1.20.1-api.md",
     required: [
       /minecraft_version=1\.20\.1/,
-      /forge_version=47\.4\.20/,
+      /forge_version=47\.4\.28/,
       /java\.toolchain\.languageVersion = JavaLanguageVersion\.of\(17\)/,
       /src\/main\/resources\/META-INF\/mods\.toml/,
       /FMLJavaModLoadingContext context/,

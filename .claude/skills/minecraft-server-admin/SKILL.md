@@ -462,7 +462,7 @@ Minecraft or Java line.
 ### Spigot/Bukkit (primary config reference)
 
 - https://www.spigotmc.org/wiki/spigot-configuration/
-- https://www.spigotmc.org/wiki/bukkit-configuration/
+- https://docs.papermc.io/paper/reference/bukkit-configuration/
 - https://www.spigotmc.org/wiki/start-up-parameters/
 
 ### Proxy and ecosystem docs
@@ -474,4 +474,4 @@ Minecraft or Java line.
 - https://spark.lucko.me/docs/Command-Usage
 - https://github.com/itzg/docker-mc-backup
 - https://geysermc.org/wiki/geyser/
-- https://pterodactyl.io/project/introduction.html
+- https://docs.pterodactyl.io/v1/panel/getting-started

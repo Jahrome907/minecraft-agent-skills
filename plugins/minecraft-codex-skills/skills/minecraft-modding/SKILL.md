@@ -71,16 +71,16 @@ Key files per platform:
 # Run a dedicated server to test
 ./gradlew runServer
 
-# Run game tests (NeoForge JUnit-style game tests)
+# NeoForge Game Tests (when the project configures this run)
 ./gradlew runGameTestServer
 
-# Run data generation (generates JSON assets automatically)
-./gradlew runData
+# Current NeoForge MDK data generation; Fabric/Forge use their configured task
+./gradlew runClientData
 
 # Remove this project's generated build outputs before a fresh rebuild
 ./gradlew clean
 
-# Check for dependency updates (optional)
+# Only if the project applies a dependency-updates plugin
 ./gradlew dependencyUpdates
 ```
 
@@ -146,9 +146,9 @@ src/
     java/<groupId>/<modid>/
       MyMod.java               <- @Mod entry point
       block/
-        ModBlocks.java         <- DeferredRegister.Blocks
+        ModBlocks.java         <- DeferredRegister<Block>
       item/
-        ModItems.java          <- DeferredRegister.Items
+        ModItems.java          <- DeferredRegister<Item>
       datagen/
         ModDataGen.java        <- GatherDataEvent handler
     resources/
@@ -188,8 +188,9 @@ src/
 - **Physical server** – the dedicated server JAR (no rendering)
 - **Logical client** – the client thread (handles rendering, input)
 - **Logical server** – the server thread (handles world simulation)
-- Code decorated with `@OnlyIn(Dist.CLIENT)` (NeoForge) or `@Environment(EnvType.CLIENT)` (Fabric)
-  must NEVER run on the server.
+- Keep rendering classes in a client-only initializer or listener. A logical-side
+  check alone does not prevent dedicated servers from loading client classes.
+  Follow the loader's [physical-side guidance](https://docs.neoforged.net/docs/1.21.11/concepts/sides/).
 
 ### Registries
 Everything in Minecraft lives in a registry. Always register objects; never
@@ -255,7 +256,7 @@ public class ModBlocks {
         DeferredRegister.createBlocks(MyMod.MOD_ID);
 
     public static final DeferredBlock<Block> MY_BLOCK =
-        BLOCKS.registerSimpleBlock("my_block",
+        BLOCKS.registerSimpleBlock("my_block", () ->
             BlockBehaviour.Properties.of()
                 .mapColor(MapColor.STONE)
                 .strength(1.5f, 6.0f)
@@ -412,7 +413,7 @@ When adding a **new block**:
 - [ ] Loot table JSON -> 1.21.x: `data/<modid>/loot_table/blocks/<name>.json`; Forge 1.20.1: `data/<modid>/loot_tables/blocks/<name>.json`
 - [ ] Tags -> 1.21.x: `data/<modid>/tags/block/` and `tags/item/`; Forge 1.20.1: `data/<modid>/tags/blocks/` and `tags/items/`
 - [ ] Language entry in `en_us.json`
-- [ ] Mine-with-correct-tool tag if hardness > 0
+- [ ] Vanilla mining and tool-tier tags when `requiresCorrectToolForDrops` is set
 - [ ] Do not mix Forge 1.20.1 plural server-data paths with 1.21.x singular server-data paths
 
 When adding a **new item**:
@@ -429,32 +430,20 @@ When adding a **new item**:
 When adding a **new entity**:
 - [ ] Entity class (extends appropriate base: `Mob`, `Animal`, `TamableAnimal`, etc.)
 - [ ] `EntityType` registration
-- [ ] Renderer class (`@OnlyIn(Dist.CLIENT)`)
-- [ ] Model class (`@OnlyIn(Dist.CLIENT)`)
-- [ ] Register renderer in `EntityRenderersEvent.RegisterRenderers` (NeoForge) or
-      `EntityModelLayerRegistry` (Fabric)
+- [ ] Renderer and model classes loaded only on the physical client
+- [ ] Register the renderer with `EntityRenderersEvent.RegisterRenderers` (NeoForge)
+      or `EntityRendererRegistry` (Fabric); register model layers separately
 - [ ] Spawn egg item (optional)
 - [ ] Spawn rules / biome modifier
 
 ---
 
-## 13. Open-Source Conventions
-
-- **License**: MIT or LGPL-3.0 — include `LICENSE` file and `SPDX-License-Identifier` header
-- **Versioning**: `{mod_version}+{mc_version}` (e.g., `2.0.0+1.21.11`)
-- **Changelog**: Keep `CHANGELOG.md` up to date with semver notes
-- **Publishing**: Use `gradle-modrinth` or `curseforgegradle` plugins for CurseForge / Modrinth
-- **CI**: GitHub Actions with `./gradlew build` and `./gradlew runGameTestServer`
-- **PR conventions**: Keep PRs scoped to a single feature; include asset files with Java changes
-
----
-
-## 14. References
+## 13. References
 
 - NeoForge API patterns and event system: `./references/neoforge-api.md`
 - Forge 1.20.1 API patterns and MDK workflow: `./references/forge-1.20.1-api.md`
 - Fabric API patterns and mixin guide: `./references/fabric-api.md`
-- Blocks, items, recipes, commands, GUIs, datagen: `./references/common-patterns.md`
+- Blocks, items, recipes, commands, datagen: `./references/common-patterns.md`
 - NeoForge official docs: https://docs.neoforged.net/
 - Fabric developer docs: https://docs.fabricmc.net/develop/
 - Architectury (multiloader): https://docs.architectury.dev/
