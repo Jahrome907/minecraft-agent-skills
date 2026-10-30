@@ -122,6 +122,10 @@ tellraw @s {"text":"Welcome! Here's a starter kit.","color":"green"}
 
 ### Death counter + respawn
 ```mcfunction
+# load.mcfunction
+scoreboard objectives add deaths deathCount
+scoreboard objectives add total_deaths dummy
+
 # tick.mcfunction — check deaths
 execute as @a[scores={deaths=1..}] run function mypack:on_death
 
@@ -138,13 +142,18 @@ execute if entity @a[x=10,y=64,z=10,distance=..5] run function mypack:player_nea
 
 ### Math tricks (no fractions in scoreboards)
 ```mcfunction
+# load.mcfunction: create objectives and constants
+scoreboard objectives add value dummy
+scoreboard objectives add result dummy
+scoreboard objectives add constants dummy
+scoreboard players set #two constants 2
+scoreboard players set #three constants 3
+
+# Run as a player whose value score is already set
 # Multiply @s.value by 1.5 using integer math (×3 then /2)
 scoreboard players operation @s result = @s value
 scoreboard players operation @s result *= #three constants
 scoreboard players operation @s result /= #two constants
-# Set #two and #three on load:
-# scoreboard players set #two constants 2
-# scoreboard players set #three constants 3
 ```
 
 ---

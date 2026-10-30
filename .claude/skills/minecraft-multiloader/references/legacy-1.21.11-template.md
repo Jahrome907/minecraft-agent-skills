@@ -34,9 +34,10 @@ each loader's metadata in its platform project.
 ## Shared And Loader-Specific Code
 
 The common source set may use vanilla and Architectury APIs. `@ExpectPlatform`
-is appropriate for a small loader boundary, with same-package `*Impl` classes in
-both platform source sets. Keep loader APIs and entrypoints in the matching
-platform source set.
+is appropriate for a small loader boundary. Its `*Impl` classes use the common
+package plus `.fabric` or `.neoforge`, unless the build overrides
+[`platformPackage`](https://docs.architectury.dev/plugin/custom_platform_exp/).
+Keep loader APIs and entrypoints in the matching platform source set.
 
 A loader-neutral Mixin may live in common only when its configuration and
 resources are included for both Fabric and NeoForge by the generated template.

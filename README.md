@@ -69,7 +69,7 @@ IDs or reasoning settings.
 
 Bundled validators check file structure and common mistakes. Test builds and
 in-game behavior in your Minecraft project.
-Reviewed against Minecraft 26.3 / Java 25 on October 11, 2026. See the
+Reviewed against Minecraft 26.3 / Java 25 on October 29, 2026. See the
 [review notes](docs/skill-audit-2026-10.md) for sources and validation limits.
 
 ## Maintaining the bundle

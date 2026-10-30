@@ -24,7 +24,7 @@ and examples. Legacy Minecraft 1.21.x projects stay on Java 21; retain their own
 loader and Gradle conventions instead of mechanically changing their version.
 
 Use an immutable GitHub Action revision in a protected workflow. The following refs
-were verified from the upstream tags on 2026-09-04; refresh them from the upstream
+were verified from the upstream tags on 2026-10-29; refresh them from the upstream
 tag before intentionally upgrading an action:
 
 ```text
@@ -37,7 +37,7 @@ softprops/action-gh-release@v3.0.3  efb35369e0ad2afab669f228072c1b0d510eae64
 
 ## Version and Tag Convention
 
-Minecraft mod versions follow: `{mod_version}+{mc_version}`
+When the project uses a Minecraft-version suffix, follow `{mod_version}+{mc_version}`:
 
 ```
 1.0.0+26.3  ← mod 1.0.0 for MC 26.3
@@ -298,7 +298,7 @@ curseforge_project_id=123456
 | New features, no breaking changes | Minor: `1.1.0` |
 | Bug fixes only | Patch: `1.0.1` |
 | API/config breaking changes | Major: `2.0.0` |
-| Minecraft version update | Keep mod version, change the `+26.3` suffix |
+| Minecraft version update | Follow the project's version policy, update the game suffix when used, and create a new release tag |
 | Pre-release | `1.0.0-beta.1`, `1.0.0-rc.1` |
 
 ---
@@ -443,7 +443,7 @@ workflow diff and configured release destination.
 
 ## References
 
-- [GitHub Actions security hardening](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-your-deployments)
+- [GitHub Actions secure use](https://docs.github.com/en/actions/reference/security/secure-use)
 - [GitHub branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 - [Minotaur](https://github.com/modrinth/minotaur)
 - [CurseForgeGradle](https://github.com/Darkhax/CurseForgeGradle)

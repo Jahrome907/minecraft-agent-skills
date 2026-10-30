@@ -61,7 +61,7 @@ plugin.getServer().getRegionScheduler().run(plugin, location, task -> {
 
 // Global coordination not tied to one region.
 plugin.getServer().getGlobalRegionScheduler().run(plugin, task -> {
-    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "save-all");
+    plugin.getServer().broadcast(Component.text("Maintenance starts in five minutes."));
 });
 
 // Blocking I/O stays async.
@@ -69,6 +69,9 @@ plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
     writeAuditLog();
 });
 ```
+
+Folia [disables `save-all`](https://docs.papermc.io/folia/faq/); use a clean stop
+or a verified platform snapshot for backups.
 
 ## Persistent Data Container
 

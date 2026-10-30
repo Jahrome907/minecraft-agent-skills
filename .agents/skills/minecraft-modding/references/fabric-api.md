@@ -1,7 +1,8 @@
-# Fabric API Patterns (1.21.x)
+# Fabric API Patterns (1.21.11)
 
 Reference for Fabric-specific code patterns. Fabric is a lightweight, stable
-modding platform focused on clean hooks and fast updates. Targets Minecraft 1.21.x with Java 21.
+modding platform. These examples target Minecraft 1.21.11, Yarn mappings, and Java 21.
+Use the exact version's API documentation for 26.x or an earlier 1.21 release.
 
 ---
 
@@ -149,7 +150,7 @@ public class MyBlockEntity extends BlockEntity {
 // ModBlockEntities.java
 public class ModBlockEntities {
     public static final BlockEntityType<MyBlockEntity> MY_BLOCK_ENTITY =
-        BlockEntityType.Builder.create(MyBlockEntity::new, ModBlocks.MY_BLOCK).build();
+        FabricBlockEntityTypeBuilder.create(MyBlockEntity::new, ModBlocks.MY_BLOCK).build();
 
     public static void register() {
         Registry.register(Registries.BLOCK_ENTITY_TYPE,
@@ -161,6 +162,9 @@ public class ModBlockEntities {
 In Yarn 1.21.11, block-entity persistence uses `ReadView` and `WriteView`.
 For compound state such as inventories, use the view's codec/list helpers; do not
 copy the earlier `readNbt` / `writeNbt` overloads into this version.
+`FabricBlockEntityTypeBuilder` is from
+`net.fabricmc.fabric.api.object.builder.v1.block.entity`; see the
+[versioned block-entity guide](https://docs.fabricmc.net/1.21.11/develop/blocks/block-entities).
 
 ---
 
@@ -184,8 +188,6 @@ public abstract class MixinServerPlayer {
     // @ModifyVariable — modify a local variable
     // @Redirect — redirect a method call within a method
 
-    // @Shadow — access a field or method from the target class
-    @Shadow public abstract ServerWorld getServerWorld();
 }
 ```
 
@@ -233,8 +235,7 @@ AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> 
 
 // Item use callback
 UseItemCallback.EVENT.register((player, world, hand) -> {
-    ItemStack stack = player.getStackInHand(hand);
-    return TypedActionResult.pass(stack);
+    return ActionResult.PASS;
 });
 ```
 
@@ -247,12 +248,16 @@ UseItemCallback.EVENT.register((player, world, hand) -> {
 public record MyPayload(int data) implements CustomPayload {
     public static final CustomPayload.Id<MyPayload> ID =
         new CustomPayload.Id<>(Identifier.of(MyMod.MOD_ID, "my_payload"));
-    public static final PacketCodec<PacketByteBuf, MyPayload> CODEC =
+    public static final PacketCodec<RegistryByteBuf, MyPayload> CODEC =
         PacketCodec.tuple(PacketCodecs.INTEGER, MyPayload::data, MyPayload::new);
 
     @Override
     public CustomPayload.Id<? extends CustomPayload> getId() { return ID; }
 }
+
+// Common initializer, before receivers: register each supported direction's codec
+PayloadTypeRegistry.playC2S().register(MyPayload.ID, MyPayload.CODEC);
+PayloadTypeRegistry.playS2C().register(MyPayload.ID, MyPayload.CODEC);
 
 // Server-side: register receiver
 ServerPlayNetworking.registerGlobalReceiver(MyPayload.ID,
@@ -278,6 +283,11 @@ ClientPlayNetworking.registerGlobalReceiver(MyPayload.ID,
 ClientPlayNetworking.send(new MyPayload(42));
 ```
 
+Register a codec only for the directions the protocol actually uses, on both
+physical sides. Keep client receiver registration in the client initializer.
+Validate client-supplied targets, counts, and permissions on the server before
+changing state. See the [Fabric networking guide](https://docs.fabricmc.net/1.21.11/develop/networking).
+
 ---
 
 ## Commands (Fabric)
@@ -287,7 +297,7 @@ ClientPlayNetworking.send(new MyPayload(42));
 CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
     dispatcher.register(
         CommandManager.literal("mycommand")
-            .requires(source -> source.hasPermissionLevel(2))
+            .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
             .then(CommandManager.argument("target", EntityArgumentType.player())
                 .executes(ctx -> {
                     ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "target");
@@ -299,52 +309,24 @@ CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environm
 });
 ```
 
+The [1.21.11 command API](https://maven.fabricmc.net/docs/yarn-1.21.11+build.6/net/minecraft/server/command/CommandManager.html)
+uses permission checks; the older `source.hasPermissionLevel(2)` call is not
+available on this version.
+
 ---
 
 ## Custom Screen / GUI
 
-```java
-// MyScreenHandler.java (server + client logic)
-public class MyScreenHandler extends ScreenHandler {
-    public MyScreenHandler(int syncId, PlayerInventory playerInventory) {
-        super(ModMenuTypes.MY_MENU, syncId);
-        addPlayerInventory(playerInventory);
-        addPlayerHotbar(playerInventory);
-    }
+Use the [versioned container-menu guide](https://docs.fabricmc.net/1.21.11/develop/blocks/container-menus)
+with the project's mappings. Its examples may use Mojang names; this reference
+uses Yarn names, so translate the API names before copying.
 
-    @Override
-    public boolean canUse(PlayerEntity player) { return true; }
-
-    private void addPlayerInventory(PlayerInventory playerInventory) {
-        for (int row = 0; row < 3; row++)
-            for (int col = 0; col < 9; col++)
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
-    }
-
-    private void addPlayerHotbar(PlayerInventory playerInventory) {
-        for (int col = 0; col < 9; col++)
-            addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
-    }
-}
-
-// MyScreen.java (@Environment(EnvType.CLIENT))
-@Environment(EnvType.CLIENT)
-public class MyScreen extends HandledScreen<MyScreenHandler> {
-    private static final Identifier TEXTURE =
-        Identifier.of(MyMod.MOD_ID, "textures/gui/my_gui.png");
-
-    public MyScreen(MyScreenHandler handler, PlayerInventory inventory, Text title) {
-        super(handler, inventory, title);
-        backgroundWidth = 176;
-        backgroundHeight = 166;
-    }
-
-    @Override
-    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        context.drawTexture(TEXTURE, x, y, 0, 0, backgroundWidth, backgroundHeight);
-    }
-}
-```
+- Keep `ScreenHandler` slot order identical on server and client.
+- Implement `quickMove` with explicit ranges for container slots, player
+  inventory, and hotbar; return an empty stack when no transfer is possible.
+- For block-bound menus, make `canUse` verify the block and player distance.
+- Register `HandledScreen` through the client initializer and use that version's
+  draw API.
 
 ---
 
@@ -384,7 +366,7 @@ archives_base_name=mymod
 |Identifier|`Identifier.of("mymod", "thing")`|
 |Map colours|`MapColor.*`|
 |Block sounds|`BlockSoundGroup.*`|
-|Tool materials|`ToolMaterials.*`|
+|Tool materials|`ToolMaterial.*`|
 |Text/chat|`Text.literal("...")`, `Text.translatable("key")`|
 |Block entity persistence|`ReadView`, `WriteView`|
 |NBT values when an API explicitly requires them|`NbtCompound`, `NbtList`|

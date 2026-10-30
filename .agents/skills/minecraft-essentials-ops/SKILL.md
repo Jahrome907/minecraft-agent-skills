@@ -255,7 +255,7 @@ formats chat; it is not a prerequisite for core mute enforcement.
 
 ```text
 /setjail intake
-/jail Alex intake 20m Griefing spawn edge
+/jail Alex intake 20m
 /unjail Alex
 ```
 
@@ -325,8 +325,7 @@ Hardening checklist:
 - https://essentialsx.net/commands
 - https://essentialsx.net/permissions
 - https://essentialsx.net/wiki/modules
-- https://essentialsx.net/wiki/Module-breakdown.html
-- https://essentialsx.net/wiki/Configuration-file.html
-- https://essentialsx.net/wiki/Sign-Tutorial.html
+- [Configuration defaults](https://github.com/EssentialsX/Essentials/blob/2.22.0/Essentials/src/main/resources/config.yml)
+- [Signs](https://wiki.mc-ess.net/wiki/Sign_Tutorial)
 - https://github.com/EssentialsX/Essentials/discussions/6552
 - https://www.spigotmc.org/resources/vault.34315/

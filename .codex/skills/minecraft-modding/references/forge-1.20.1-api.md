@@ -4,6 +4,8 @@ Use this reference only for Minecraft `1.20.1` projects using MinecraftForge
 `47.4.x` and Java 17. Do not apply these snippets to NeoForge 1.21.x projects.
 Forge 1.20.1 and NeoForge 1.21.x share some concepts, but the package names,
 metadata file, event bus access, helper classes, and several data paths differ.
+Sources: [Forge 1.20.1 downloads](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html)
+and [Forge 1.20.x documentation](https://docs.minecraftforge.net/en/1.20.x/).
 
 ## Project Detection
 
@@ -12,7 +14,7 @@ A Forge 1.20.1 project usually has these signatures:
 ```text
 build.gradle: id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 gradle.properties: minecraft_version=1.20.1
-gradle.properties: forge_version=47.4.20
+gradle.properties: forge_version=47.4.28
 src/main/resources/META-INF/mods.toml
 ```
 
@@ -30,7 +32,7 @@ org.gradle.daemon=false
 
 minecraft_version=1.20.1
 minecraft_version_range=[1.20.1,1.21)
-forge_version=47.4.20
+forge_version=47.4.28
 forge_version_range=[47,)
 loader_version_range=[47,)
 mapping_channel=official

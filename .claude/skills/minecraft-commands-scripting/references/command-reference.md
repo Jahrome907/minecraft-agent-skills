@@ -99,7 +99,7 @@ execute positioned 0.0 100.0 0.0 run setblock ~ ~ ~ minecraft:beacon
 # Relative to entity
 execute as @a at @s positioned ~ ~2 ~ run setblock ~ ~ ~ minecraft:glass
 
-# Local coords (^ = forward/up/right relative to rotation)
+# Local coordinates are ^left ^up ^forward relative to rotation
 execute as @a at @s anchored eyes run particle minecraft:end_rod ^ ^ ^1 0 0 0 0 1
 ```
 
@@ -151,7 +151,7 @@ execute store result score @s my_score run data get entity @s Health
 execute store success score @s result_flag run kill @e[type=minecraft:bat,limit=1]
 
 # Store into block entity NBT (example: command block SuccessCount)
-execute store result block 0 64 0 SuccessCount int 1 run data get entity @a 1
+execute store result block 0 64 0 SuccessCount int 1 run data get entity @p Health
 
 # Store into storage
 execute store result storage mypack:data player_count int 1 run execute if entity @a
@@ -201,7 +201,7 @@ scoreboard players add @s points 10
 scoreboard players remove @s points 5
 scoreboard players reset @s points
 # reset all objectives
-scoreboard players reset @s *
+scoreboard players reset @s
 # for trigger objectives
 scoreboard players enable @s ability
 
