@@ -2,6 +2,10 @@
 node_modules/
 npm-debug.log*
 
+# Local audit work and legacy lint exclusions
+/.audit-research/
+/.markdownlintignore
+
 # OS
 .DS_Store
 Thumbs.db
