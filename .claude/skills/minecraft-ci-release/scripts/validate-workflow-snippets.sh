@@ -113,7 +113,22 @@ for (const line of lines) {
 const placeholderRe = /(REPLACE_ME|TODO|<[^>]+>|yourname|your-repo|path\/to\/|example\/repo)/i;
 const badGlobRe = /\*\*\*|\*\*\/\*\*(?=\/|\s|$)|\.\*\*/;
 const mappingLineRe = /^(?:"[^"]+"|'[^']+'|[^:#][^:]*?):(?:\s+.*)?$/;
-const usesLineRe = /^\s*(?:-\s*)?uses:\s*['"]?([^'"#\s]+)['"]?(?:\s+#.*)?$/;
+
+function checkActionRef(location, action) {
+  if (typeof action !== 'string' || !action) {
+    fail(`${location} uses must be a non-empty string`);
+  } else if (action.startsWith('docker://')) {
+    if (!/^docker:\/\/[^@\s]+@sha256:[0-9a-f]{64}$/.test(action)) {
+      fail(`${location} Docker action must be pinned to a SHA-256 digest: ${action}`);
+    }
+  } else if (!action.startsWith('./') && !action.startsWith('$/')) {
+    if (!action.includes('@')) {
+      fail(`${location} action reference is missing a ref: ${action}`);
+    } else if (!/@[0-9a-f]{40}$/.test(action)) {
+      fail(`${location} action must be pinned to a full commit SHA: ${action}`);
+    }
+  }
+}
 
 function inspectBlock(block) {
   const topLevelKeys = new Set();
@@ -178,15 +193,16 @@ blocks.forEach((block, idx) => {
       usedSecrets.add(secretMatch[1]);
     }
 
-    blockLines.forEach((line, lineIdx) => {
-      const action = line.match(usesLineRe)?.[1];
-      if (!action || action.startsWith('./') || action.startsWith('docker://')) return;
-      if (!action.includes('@')) {
-        fail(`${label} line ${lineIdx + 1} action reference is missing a ref: ${action}`);
-      } else if (!/@[0-9a-f]{40}$/.test(action)) {
-        fail(`${label} line ${lineIdx + 1} action must be pinned to a full commit SHA: ${action}`);
-      }
-    });
+    for (const [jobId, job] of Object.entries(parsed.jobs ?? {})) {
+      const location = `${label} jobs.${jobId}`;
+      if (Object.hasOwn(job ?? {}, 'uses')) checkActionRef(`${location}.uses`, job.uses);
+      if (!Array.isArray(job?.steps)) continue;
+      job.steps.forEach((step, index) => {
+        if (Object.hasOwn(step ?? {}, 'uses')) {
+          checkActionRef(`${location}.steps[${index}].uses`, step.uses);
+        }
+      });
+    }
   }
 
   if (placeholderRe.test(block)) {

@@ -21,18 +21,15 @@ Use this file together with `SKILL.md` when you need the quick alignment rules.
 
 ### Minecraft 26.x
 
-- Use the official [Architectury Template Generator](https://generate.architectury.dev/)
-  only when it offers the exact target release with Fabric and NeoForge. Preserve
-  its Minecraft, Java 25, Loom, Fabric API, NeoForge, and Architectury pins as
-  one set.
-- If the generator lacks that target, use a known-working project on the exact
-  line as the starting point. Inspect its Gradle files and resolve its build
-  before changing pins; do not manufacture a current matrix from a 1.21.11
-  example or an older template download.
+- Use the [Architectury 26.3 setup guide](https://docs.architectury.dev/api/getting-started/setup/)
+  for the API 22 toolchain and `dev.architectury.loom-no-remap`. The guide uses
+  `architectury_api_version` in `gradle.properties` and declares Loom in the
+  Gradle build. Keep the pins from the same target version and scaffold.
 
-For both versions, keep `enabled_platforms=fabric,neoforge`, avoid snapshot-only
-pins unless intentionally testing a prerelease, and use the split Architectury
-artifacts (`architectury`, `architectury-fabric`, and `architectury-neoforge`).
+For both versions, keep `enabled_platforms=fabric,neoforge` and use the split
+Architectury artifacts (`architectury`, `architectury-fabric`, and
+`architectury-neoforge`). Check the upstream guide and the resolved project
+build before replacing an existing toolchain pin.
 
 ## Sanity Check Workflow
 
@@ -43,10 +40,14 @@ artifacts (`architectury`, `architectury-fabric`, and `architectury-neoforge`).
 
 The checker performs a static preflight and validates:
 
-- required keys exist in `gradle.properties`
+- required keys exist in `gradle.properties`, including `architectury_api_version`
+  or the older `architectury_version`
 - `enabled_platforms` contains both `fabric` and `neoforge`
-- snapshot versions are flagged
-- NeoForge version family matches the Minecraft patch line for Minecraft 1.21.x
+- snapshot pins in inspected properties are flagged
+- NeoForge version families and Fabric API suffixes match the Minecraft target
+
+When Loom is declared in the Gradle build or version catalog, check that pin
+there. The helper reads `loom_version` only from `gradle.properties`.
 
 It does not download or resolve dependencies, compile the project, or establish
 that a specific Architectury, Fabric API, NeoForge, and Loom combination is

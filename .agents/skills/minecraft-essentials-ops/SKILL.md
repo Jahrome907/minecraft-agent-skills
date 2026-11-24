@@ -44,10 +44,11 @@ Operational install checklist:
 
 Version-alignment rule:
 - update EssentialsX and companion plugins as a tested batch in staging first.
-- verify the exact EssentialsX release or development build supports the target
-  Paper release; 2.22.0 lists 26.1.2 and 1.21.11 support, not blanket 26.x
-  compatibility. Check the [release notes](https://github.com/EssentialsX/Essentials/releases)
-  before using it on 26.3.
+- EssentialsX 2.22.0 lists support for 26.1.2 and 1.21.11 in its
+  [release notes](https://github.com/EssentialsX/Essentials/releases/tag/2.22.0).
+  The [development branch](https://github.com/EssentialsX/Essentials) also lists
+  26.2 and 26.3. Verify the exact release or development build before installing
+  it and keep all EssentialsX modules on the same build.
 
 ---
 

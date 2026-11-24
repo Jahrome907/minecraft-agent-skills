@@ -60,8 +60,8 @@
       <text x="48" y="57" text-anchor="middle" fill="#d8f6a5" font-size="18" font-weight="900">01</text>
       <text class="label" x="24" y="108">Choose install</text>
       <text class="label" x="24" y="135">mode</text>
-      <text class="small" x="24" y="164">Raw folders, submodule,</text>
-      <text class="small" x="24" y="185">release zip, or plugin.</text>
+      <text class="small" x="24" y="164">Workspace skill folders</text>
+      <text class="small" x="24" y="185">or a supported plugin.</text>
     </g>
 
     <g transform="translate(334 168)">
@@ -72,7 +72,7 @@
       <text x="48" y="57" text-anchor="middle" fill="#ffe39a" font-size="18" font-weight="900">02</text>
       <text class="label" x="24" y="108">Load the bundle</text>
       <text class="small" x="24" y="144">Codex, Claude Code,</text>
-      <text class="small" x="24" y="165">or local plugin install.</text>
+      <text class="small" x="24" y="165">Antigravity, or Gemini CLI.</text>
     </g>
 
     <g transform="translate(612 168)">

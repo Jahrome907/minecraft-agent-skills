@@ -109,6 +109,18 @@ provider's `file` is a texture resource location including `.png`.
 Use private-use characters deliberately and keep each bitmap cell consistent
 with its declared height.
 
+## 26.3 model and shader migration
+
+- Replace an element's legacy `shade: false` with
+  `"shade_direction_override": "up"` when porting to 26.3. For default
+  directional shading, omit the override.
+- Remove `minecraft:map_color` item tints when porting to 26.3. The game also
+  removed the item component that supplied that tint.
+- Check the target release's shaders and post effects before porting a custom
+  effect. Mojang treats vanilla core shader overrides as unsupported internals.
+
+[Minecraft Java 26.3 resource pack changes](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3).
+
 ## Client-mod and shader boundaries
 
 OptiFine CIT files under `assets/minecraft/optifine/` are OptiFine-specific and

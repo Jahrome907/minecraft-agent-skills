@@ -141,7 +141,9 @@ const checks = [
   {
     file: ".agents/skills/minecraft-testing/SKILL.md",
     required: [
-      /mockbukkit-v26\.2:4\.116\.1/,
+      /val paperVersion = "26\.3\.build\.200-stable"/,
+      /testImplementation\("io\.papermc\.paper:paper-api:\$paperVersion"\)/,
+      /mockbukkit-v26\.3:4\.124\.0/,
       /data\/<namespace>\/structure\/<path>\.nbt/,
       /25 for 26\.x, 21 for 1\.21\.x/
     ],

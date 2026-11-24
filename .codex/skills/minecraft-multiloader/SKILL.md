@@ -45,21 +45,15 @@ loom_version=<project pin>
 ```
 
 Pin `architectury_version`, the Architectury plugin version, and `loom_version`
-from the same generated or known-working project line. This skill deliberately
-does not publish a copyable dependency matrix: its static helper cannot resolve
-whether a particular set of versions is compatible.
+from the same generated or known-working project line.
 
-For Minecraft 26.x / Java 25, use the official
-[Architectury Template Generator](https://generate.architectury.dev/) only when
-its version selector offers the exact target. Generate a **Multiplatform**
-project with Fabric and NeoForge, then preserve the generated Gradle layout and
-pins as one set. If the generator does not offer the target, begin with an
-already working project on that exact line and inspect its resolved build; do
-not relabel a 1.21.11 template as 26.x. The published template downloads are
-not a substitute for an exact-current scaffold.
-
-Do not mechanically change only `minecraft_version` in the retained example:
-26.x is unobfuscated and its Loom/remapping setup differs from 1.21.11.
+For a new Minecraft 26.3 / Java 25 project, use the official
+[Architectury setup guide](https://docs.architectury.dev/api/getting-started/setup/)
+and choose the exact target in the template generator. Architectury API 22 is the
+26.3 line and uses `dev.architectury.loom-no-remap`. Keep the generated Gradle
+layout and dependency pins together. If the generator lacks the requested
+version, start from a resolved build on that version. For an existing project,
+preserve its pins and read the porting guide only when migration is in scope.
 
 ## Bundled References And Helpers
 
@@ -67,10 +61,8 @@ Do not mechanically change only `minecraft_version` in the retained example:
 - Sanity checker: `./scripts/check-version-sanity.sh --root <project>`
 
 Run the sanity checker after editing `gradle.properties`. It is a static
-syntax-and-version-family preflight: it catches missing keys, snapshot pins,
-missing `fabric` / `neoforge` platforms, and obvious version-family drift. It
-does not resolve dependencies, prove loader compatibility, or replace the
-project's Fabric and NeoForge build and smoke tests.
+preflight for required properties, platform names, and version families. Use
+the project's Fabric and NeoForge builds and smoke tests to verify compatibility.
 
 ---
 
@@ -359,7 +351,7 @@ find fabric/build/libs neoforge/build/libs -maxdepth 1 -type f -name '*.jar' \
 ## References
 
 - Architectury API GitHub: https://github.com/architectury/architectury-api
-- Architectury API 26.2 source branch: https://github.com/architectury/architectury-api/tree/26.2
+- Architectury 26.2 to 26.3 porting guide: https://docs.architectury.dev/api/porting/port-26.2-26.3/
 - Architectury API 1.21.11 source branch: https://github.com/architectury/architectury-api/tree/1.21.11
 - Architectury Loom: https://github.com/architectury/architectury-loom
 - Architectury templates: https://github.com/architectury/architectury-templates

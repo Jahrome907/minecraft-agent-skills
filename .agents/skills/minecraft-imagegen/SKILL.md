@@ -29,9 +29,10 @@ server brand asset.
 ## Default Execution
 
 - If the current host does not expose built-in image generation or an equivalent image-editing tool, stop and tell the user this skill is unavailable on that host; offer prompt/brief preparation or a host with an available image-generation tool.
-- Use the built-in `image_gen` tool by default when the host supports it.
+- Use the host's available image-generation or image-editing tool. In Codex,
+  use `image_gen` when it is available. Check that the tool can generate or edit
+  the requested raster asset and return it at the required size or path.
 - Match the requested deliverable: complete a requested asset, or produce concepts when the user asks for exploration. Do not require a separate concept approval for a clear generation or edit request.
-- The built-in image generation workflow supports fresh generations and edits against existing local/reference images; prefer that over describing a manual paint-over process.
 - Save a requested project asset at the intended workspace path when the host exposes the output file; otherwise return the generated image and state that a local save could not be verified.
 - Preserve existing assets non-destructively by using versioned filenames unless the user explicitly asked to overwrite.
 - If editing a local image, load or attach it first so the image is visible to the agent before requesting an edit.

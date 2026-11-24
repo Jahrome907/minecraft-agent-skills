@@ -6,7 +6,13 @@ version; copying pack metadata alone does not port older data.
 
 ## Advancements
 
-### `data/<namespace>/advancement/my_advancement.json`
+### Visible root advancement (26.3)
+
+Save this as `data/mypack/advancement/my_advancement.json`. A visible root uses
+`display.background` in 26.3. A child uses `parent` and inherits the tab's
+background. Create `data/mypack/function/on_diamond_obtained.mcfunction` for
+the function reward, or remove the `function` entry.
+
 ```json
 {
   "display": {
@@ -15,6 +21,7 @@ version; copying pack metadata alone does not port older data.
     },
     "title": {"text": "Diamond Hunter"},
     "description": {"text": "Obtain your first diamond"},
+    "background": "minecraft:gui/advancements/backgrounds/stone",
     "frame": "task",
     "show_toast": true,
     "announce_to_chat": true,

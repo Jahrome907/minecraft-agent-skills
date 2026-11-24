@@ -143,6 +143,10 @@ adding them.
 
 ## Block Models
 
+When migrating a pack to 26.3, check the
+[model and shader changes](references/conditional-assets.md#263-model-and-shader-migration)
+before reusing custom block elements or item tints.
+
 ### `assets/minecraft/models/block/my_cube.json`
 Full cube — all six faces use the same texture:
 ```json

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import * as yaml from "js-yaml";
 
 const args = process.argv.slice(2);
 let root = path.join(process.cwd(), ".github", "workflows");
@@ -31,20 +32,24 @@ function walk(dir) {
   return out;
 }
 
-function addError(file, lineNumber, message) {
-  errors.push(`${path.relative(process.cwd(), file).replaceAll(path.sep, "/")}:${lineNumber}: ${message}`);
+function addError(file, location, message) {
+  const relativeFile = path.relative(process.cwd(), file).replaceAll(path.sep, "/");
+  errors.push(`${relativeFile}${location ? `:${location}` : ""}: ${message}`);
 }
 
-function validateUse(file, lineNumber, ref) {
-  if (ref.startsWith("./") || ref.startsWith("docker://")) return;
-
-  if (!ref.includes("@")) {
-    addError(file, lineNumber, `action reference is missing a ref: ${ref}`);
-    return;
-  }
-
-  if (!/@[0-9a-f]{40}$/.test(ref)) {
-    addError(file, lineNumber, `action must be pinned to a full commit SHA: ${ref}`);
+function validateUse(file, location, ref) {
+  if (typeof ref !== "string" || !ref) {
+    addError(file, location, "uses must be a non-empty string");
+  } else if (ref.startsWith("docker://")) {
+    if (!/^docker:\/\/[^@\s]+@sha256:[0-9a-f]{64}$/.test(ref)) {
+      addError(file, location, `Docker action must be pinned to a SHA-256 digest: ${ref}`);
+    }
+  } else if (!ref.startsWith("./") && !ref.startsWith("$/")) {
+    if (!ref.includes("@")) {
+      addError(file, location, `action reference is missing a ref: ${ref}`);
+    } else if (!/@[0-9a-f]{40}$/.test(ref)) {
+      addError(file, location, `action must be pinned to a full commit SHA: ${ref}`);
+    }
   }
 }
 
@@ -54,12 +59,22 @@ if (!fs.existsSync(root)) {
 }
 
 for (const file of walk(root)) {
-  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
-  lines.forEach((line, index) => {
-    const match = line.match(/^\s*(?:-\s*)?uses:\s*['"]?([^'"#\s]+)['"]?(?:\s+#.*)?$/);
-    if (!match) return;
-    validateUse(file, index + 1, match[1]);
-  });
+  let workflow;
+  try {
+    workflow = yaml.load(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    addError(file, "", `invalid workflow YAML: ${error.reason ?? error.message}`);
+    continue;
+  }
+  for (const [jobId, job] of Object.entries(workflow?.jobs ?? {})) {
+    if (Object.hasOwn(job ?? {}, "uses")) validateUse(file, `jobs.${jobId}.uses`, job.uses);
+    if (!Array.isArray(job?.steps)) continue;
+    job.steps.forEach((step, index) => {
+      if (Object.hasOwn(step ?? {}, "uses")) {
+        validateUse(file, `jobs.${jobId}.steps[${index}].uses`, step.uses);
+      }
+    });
+  }
 }
 
 if (errors.length > 0) {
