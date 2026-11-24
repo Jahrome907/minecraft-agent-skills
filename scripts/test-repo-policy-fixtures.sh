@@ -50,7 +50,13 @@ expect_pass "workflow pins valid" \
 expect_fail_contains "workflow pins invalid missing ref" "action reference is missing a ref: actions/checkout" \
   node ./scripts/check-workflow-action-pins.mjs \
   --root tests/fixtures/workflow-pins/invalid
-expect_fail_contains "workflow pins invalid" "action must be pinned to a full commit SHA" \
+expect_fail_contains "workflow pins invalid flow-style step" "action must be pinned to a full commit SHA: gitleaks/gitleaks-action@v2" \
+  node ./scripts/check-workflow-action-pins.mjs \
+  --root tests/fixtures/workflow-pins/invalid
+expect_fail_contains "workflow pins invalid Docker action" "Docker action must be pinned to a SHA-256 digest" \
+  node ./scripts/check-workflow-action-pins.mjs \
+  --root tests/fixtures/workflow-pins/invalid
+expect_fail_contains "workflow pins invalid reusable workflow" "action must be pinned to a full commit SHA: owner/repo/.github/workflows/release.yml@main" \
   node ./scripts/check-workflow-action-pins.mjs \
   --root tests/fixtures/workflow-pins/invalid
 

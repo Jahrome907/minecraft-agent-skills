@@ -244,6 +244,9 @@ expect_pass "ci-release secretless strict" \
 expect_fail_contains "ci-release mutable action" "action must be pinned to a full commit SHA" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/mutable-action
+expect_fail_contains "ci-release mutable Docker action" "Docker action must be pinned to a SHA-256 digest" \
+  ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
+  --root tests/fixtures/validators/ci-release/mutable-action
 expect_pass "ci-release multiline flow yaml" \
   ./.agents/skills/minecraft-ci-release/scripts/validate-workflow-snippets.sh \
   --root tests/fixtures/validators/ci-release/multiline-flow
@@ -449,6 +452,9 @@ expect_pass "multiloader valid properties separators" \
 expect_pass "multiloader valid 26.2" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/valid-26.2
+expect_pass "multiloader 26.3 with current API property and no Loom property" \
+  ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
+  --root tests/fixtures/validators/multiloader/valid-26.3 --strict
 expect_fail_contains "multiloader invalid" "enabled_platforms must include fabric and neoforge" \
   ./.agents/skills/minecraft-multiloader/scripts/check-version-sanity.sh \
   --root tests/fixtures/validators/multiloader/invalid

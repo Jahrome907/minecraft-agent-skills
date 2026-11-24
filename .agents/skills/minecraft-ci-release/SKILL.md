@@ -24,15 +24,15 @@ and examples. Legacy Minecraft 1.21.x projects stay on Java 21; retain their own
 loader and Gradle conventions instead of mechanically changing their version.
 
 Use an immutable GitHub Action revision in a protected workflow. The following refs
-were verified from the upstream tags on 2026-10-29; refresh them from the upstream
+were verified from the upstream tags on 2026-11-24; refresh them from the upstream
 tag before intentionally upgrading an action:
 
 ```text
 actions/checkout@v7.0.1             3d3c42e5aac5ba805825da76410c181273ba90b1
-actions/setup-java@v6.0.0           dd06d9cba3e5552c54d9f8ea23572deb30010f7c
-gradle/actions/setup-gradle@v6.3.0  9c971963bec38e04b3d30dcc455b5382be2fdbfb
-actions/upload-artifact@v7.0.1      043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-softprops/action-gh-release@v3.0.3  efb35369e0ad2afab669f228072c1b0d510eae64
+actions/setup-java@v6.3.0           d1374f8ac74474200d16ef8ecee22c7ae7a51880
+gradle/actions/setup-gradle@v6.4.1  8da46b539cd8fe6ab27ca75128919a18d757604c
+actions/upload-artifact@v7.0.2      cf430e030ddbb5b0abf93d22962f4752f3646cd9
+softprops/action-gh-release@v3.0.4  8a0cd651e5b2365bd640854a3fa5dfc70e4875f3
 ```
 
 ## Version and Tag Convention
@@ -53,6 +53,11 @@ mod_version: 1.2.3
 project/artifact version: 1.2.3+26.3
 tag: v1.2.3
 ```
+
+Assign a new `mod_version` for each release under this convention. A game-only
+suffix change still maps to the same Git tag and changelog heading. For projects
+that already use game-qualified tags, validate both version fields against the
+tag using the project's convention.
 
 The release workflow must verify that `v1.2.3` matches `mod_version=1.2.3` before
 building. Do not override `mod_version` from the tag, because that hides a mismatch.
@@ -96,13 +101,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Set up Java 25
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
         with:
           java-version: "25"
           distribution: "temurin"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
@@ -113,7 +118,7 @@ jobs:
         run: ./gradlew :${{ matrix.platform }}:build --no-daemon
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: mod-${{ matrix.platform }}-${{ github.sha }}
           path: ${{ matrix.platform }}/build/libs/*.jar
@@ -126,12 +131,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Set up Java 25
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
         with:
           distribution: temurin
           java-version: "25"
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Run tests
         run: ./gradlew test --no-daemon
 ```
@@ -162,13 +167,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Set up Java 25
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
         with:
           java-version: "25"
           distribution: "temurin"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -201,7 +206,7 @@ jobs:
           select_primary neoforge neoforge/build/libs/*-neoforge.jar
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3
         with:
           files: |
             release-artifacts/fabric-${{ github.ref_name }}.jar
@@ -236,14 +241,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
         with:
           java-version: "25"
           distribution: "temurin"
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - run: chmod +x gradlew
       - run: ./gradlew build --no-daemon
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: plugin-${{ github.sha }}
           path: build/libs/*.jar
@@ -253,11 +258,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
         with:
           java-version: "25"
           distribution: "temurin"
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - run: ./gradlew test --no-daemon
 ```
 
@@ -298,7 +303,7 @@ curseforge_project_id=123456
 | New features, no breaking changes | Minor: `1.1.0` |
 | Bug fixes only | Patch: `1.0.1` |
 | API/config breaking changes | Major: `2.0.0` |
-| Minecraft version update | Follow the project's version policy, update the game suffix when used, and create a new release tag |
+| Minecraft version update | Follow the project's version policy. Update the game suffix and assign a distinct mod version when tags use only `mod_version`. |
 | Pre-release | `1.0.0-beta.1`, `1.0.0-rc.1` |
 
 ---
@@ -357,7 +362,7 @@ updates:
 ```yaml
 # In all workflow jobs:
 - name: Setup Gradle
-  uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+  uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
   with:
     # Read-only cache on PRs, read-write on main
     cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -431,13 +436,13 @@ The validator is bundled and self-contained. Run it from a copied `.agents/`,
 `.codex/`, or `.claude/` `minecraft-ci-release` skill directory without relying
 on repo-root `node_modules`.
 
-It validates workflow-shaped YAML, unresolved placeholders, workflow secret
-documentation, and remote `uses:` references pinned to full commit SHAs. Local
-actions (`./...`) and Docker actions (`docker://...`) are intentionally excluded from
-the SHA requirement. It reads only this skill's `SKILL.md`: it does not validate a
-project's `.github/workflows` files or Gradle tasks. Before a real release, inspect
-the project's generated artifacts, run `verifyReleaseVersion`, and review the exact
-workflow diff and configured release destination.
+It checks workflow-shaped YAML, unresolved placeholders, secret documentation,
+and step and reusable workflow references. Pin remote GitHub references to a
+full commit SHA and `docker://` references to a SHA-256 image digest. `./`
+references resolve from the runner workspace. `$/` same-repository references
+resolve at the workflow's commit. This helper reads only the skill's
+`SKILL.md`. Before a release, check the project's workflow and destination,
+run its release version check, and inspect the generated artifacts.
 
 ---
 

@@ -10,4 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout
-      - uses: gitleaks/gitleaks-action@v2
+      - { uses: gitleaks/gitleaks-action@v2 }
+      - uses: docker://alpine:3.22
+  release:
+    uses: owner/repo/.github/workflows/release.yml@main

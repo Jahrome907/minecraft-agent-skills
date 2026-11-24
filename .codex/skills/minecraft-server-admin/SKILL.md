@@ -391,6 +391,13 @@ max-tick-time=60000
 enable-rcon=false
 ```
 
+On a fresh Java 26.3 server, `white-list` defaults to `true`. If a player cannot
+join, check the active allowlist and the intended access policy before changing
+it. For 26.3 automation that watches server logs, verify its event triggers in
+staging. Mojang removed some log messages and directs integrations to the
+Minecraft Server Management Protocol where it exposes the needed events.
+[Java 26.3 release notes](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3).
+
 ### `bukkit.yml` and `spigot.yml`
 
 Use Spigot/Bukkit docs as authoritative for version-specific defaults and side effects.

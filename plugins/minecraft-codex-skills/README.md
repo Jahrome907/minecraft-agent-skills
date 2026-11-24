@@ -15,8 +15,9 @@ This plugin packages the same 13 Minecraft skills for Codex and Claude Code.
   ```
 
 Use either the plugin or raw skill folders for a host to avoid duplicate skills.
-Choose your model and tools in Codex or Claude Code.
-See [usage examples](../../README.md#usage).
+For Google Antigravity or Gemini CLI, use the
+[workspace skill folders](../../README.md#install). For model documentation and
+example prompts, see the [usage guide](../../README.md#usage).
 
 ## Maintain
 

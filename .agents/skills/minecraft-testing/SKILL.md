@@ -90,9 +90,10 @@ class CooldownManagerTest {
 
 ## MockBukkit (Paper/Bukkit Plugin Tests)
 
-The paired dependencies below are a retained 26.2 example. For 26.3, verify
-a published MockBukkit artifact for that exact Paper line before changing either
-dependency; a 26.2 mock does not establish 26.3 server behavior.
+The example uses the Paper API build named in MockBukkit 4.124.0's JAR manifest.
+Declare the Paper API explicitly on the test classpath so the mock can start.
+When adapting the example, check the MockBukkit build against the project's
+existing Paper pin. Use the target server to verify behavior outside the mock.
 
 ### `build.gradle.kts`
 ```kotlin
@@ -101,10 +102,13 @@ repositories {
     mavenCentral()
 }
 
+val paperVersion = "26.3.build.200-stable"
+
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:$paperVersion")
+    testImplementation("io.papermc.paper:paper-api:$paperVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
-    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.2:4.116.1")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.3:4.124.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -115,6 +119,7 @@ tasks.test {
 
 ### Setup / teardown pattern
 ```java
+import net.kyori.adventure.text.Component;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
@@ -140,13 +145,17 @@ class MyPluginTest {
 ```
 
 ### Testing events
+
+`addPlayer` fires the join event. Assert a direct welcome message on the player.
+When a listener changes `event.joinMessage(...)`, assert the event's component
+instead. MockBukkit does not broadcast that event message to players.
 ```java
 @Test
 void playerJoin_getsWelcomeMessage() {
     PlayerMock player = server.addPlayer("Steve"); // fires PlayerJoinEvent
 
     // Assert the message sent by the plugin's join listener.
-    player.assertSaid("Welcome, Steve!");
+    player.assertSaid(Component.text("Welcome, Steve!"));
 }
 
 @Test
@@ -173,7 +182,7 @@ void mypluginInfo_returnsVersion() {
     boolean result = server.dispatchCommand(player, "myplugin info");
 
     assertTrue(result);
-    player.assertSaid("Version: " + plugin.getDescription().getVersion());
+    player.assertSaid(Component.text("Version: " + plugin.getDescription().getVersion()));
 }
 
 @Test
@@ -183,7 +192,7 @@ void mypluginReload_requiresAdminPermission() {
 
     server.dispatchCommand(player, "myplugin reload");
 
-    player.assertSaid("No permission.");
+    player.assertSaid(Component.text("No permission."));
 }
 ```
 
@@ -477,6 +486,7 @@ server bootstrap.
 
 - MockBukkit GitHub: https://github.com/MockBukkit/MockBukkit
 - MockBukkit docs: https://docs.mockbukkit.org/
+- MockBukkit 26.3 Maven Central artifact: https://central.sonatype.com/artifact/org.mockbukkit.mockbukkit/mockbukkit-v26.3/4.124.0
 - Fabric automated testing: https://docs.fabricmc.net/develop/automatic-testing
 - NeoForge 26.x Game Tests: https://docs.neoforged.net/docs/misc/gametest/
 - NeoForge 1.21.3 Game Tests: https://docs.neoforged.net/docs/1.21.3/misc/gametest/

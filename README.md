@@ -13,10 +13,11 @@ into a Minecraft project.
 
 | Host | Copy or install |
 | --- | --- |
-| Codex | `.agents/skills/` into the project's `.agents/skills/` |
+| Codex, Google Antigravity, or Gemini CLI | `.agents/skills/` into the project's `.agents/skills/` |
 | Older Codex hosts | `.codex/skills/` only if that host uses the legacy location |
 | Claude Code | `.claude/skills/` into the project's `.claude/skills/` |
-| Plugin | `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/` |
+| Codex plugin | `.agents/plugins/marketplace.json` and `plugins/minecraft-codex-skills/` |
+| Claude Code plugin | `plugins/minecraft-codex-skills/` |
 
 For a Codex plugin install, keep the marketplace file and plugin directory under
 the same project root, open the plugins surface, and install
@@ -28,8 +29,11 @@ claude --plugin-dir ./plugins/minecraft-codex-skills
 
 The raw folders and plugin are alternative installation methods. Loading both
 can expose duplicate skills. `minecraft-imagegen` needs an image-generation
-tool supplied by the host or an already connected integration; installing this
-bundle or selecting a model does not add that tool.
+tool supplied by the host or an already connected integration.
+
+In Antigravity CLI, use `/skills` to confirm discovery and
+`/minecraft-datapack` to select that skill explicitly. In Gemini CLI, use
+`/skills list` from the project workspace.
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -64,13 +68,19 @@ Describe the task and Minecraft version. For example:
 - "Review this Velocity configuration and suggest changes."
 
 The agent reads the relevant skill and uses your project's version settings.
-Choose your model and tools in Codex or Claude Code. The skills do not pin model
-IDs or reasoning settings.
+Select the model and reasoning level in your coding agent.
+
+| Coding agent | Current model examples |
+| --- | --- |
+| Codex | [GPT-6.2 Sol and GPT-6.2 Astra](https://developers.openai.com/api/docs/guides/model-selection) |
+| Claude Code | [Claude Opus 5.5 and Claude Fable 5.2](https://platform.claude.com/docs/en/models/overview) |
+| Google Antigravity | [Gemini 4 Neon](https://antigravity.google/blog/gemini-4-neon-in-google-antigravity/) |
 
 Bundled validators check file structure and common mistakes. Test builds and
 in-game behavior in your Minecraft project.
-Reviewed against Minecraft 26.3 / Java 25 on October 29, 2026. See the
-[review notes](docs/skill-audit-2026-10.md) for sources and validation limits.
+Minecraft 26.3 / Java 25 is the current stable baseline. See the
+[November 2026 review](docs/skill-audit-2026-11.md) for sources and validation
+limits.
 
 ## Maintaining the bundle
 

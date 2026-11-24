@@ -27,6 +27,11 @@ non-remapping Loom path and official names; NeoForge 26.x should start from the
 current NeoForge generator. The detailed API references cover legacy 1.21.x
 examples unless a section explicitly says 26.x.
 
+For a 26.2 to 26.3 port, check the [NeoForge migration primer](https://docs.neoforged.net/primer/docs/26.3/)
+or [Fabric 26.3 notes](https://fabricmc.net/2026/09/15/263.html) for the APIs the
+mod uses. Check input and window hooks for the SDL3 transition, and look up
+the replacements for Fabric's removed fuel and composting registries when used.
+
 ### Routing Boundaries
 - `Use when`: the task is Java/Kotlin mod code, registry/event work, networking, datagen wiring, and loader APIs.
 - `Do not use when`: the task is command-only vanilla logic (`minecraft-commands-scripting`) or pure datapacks (`minecraft-datapack`).

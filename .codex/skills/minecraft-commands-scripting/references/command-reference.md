@@ -142,6 +142,15 @@ execute if items entity @s weapon.mainhand minecraft:diamond_sword run say Holdi
 execute if items block 0 64 0 container.0 minecraft:diamond run say Diamond in container slot 0
 ```
 
+In 26.3, `execute if|unless items` accepts an inline or referenced slot source.
+Slot names such as `weapon.mainhand` still work. The new `if|unless slots`
+condition counts available slots on the target, including empty slots when
+selected by the source. Use `if|unless items` to inspect contents.
+
+```mcfunction
+execute if slots block 0 64 0 container.* run say This block has container slots
+```
+
 ### Storing results
 ```mcfunction
 # Store arithmetic result into score

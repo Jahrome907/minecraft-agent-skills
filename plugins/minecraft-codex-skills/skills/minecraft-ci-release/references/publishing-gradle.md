@@ -8,6 +8,8 @@ The examples target Minecraft 26.x on Java 25.
 
 Keep the mod version distinct from the computed project/artifact version. This makes
 `v1.2.3` a reliable tag for an artifact such as `1.2.3+26.3`.
+Each release needs a distinct `mod_version` when the tag and changelog exclude
+the Minecraft version.
 
 ```kotlin
 val modVersion = providers.gradleProperty("mod_version").orNull

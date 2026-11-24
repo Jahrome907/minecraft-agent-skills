@@ -24,9 +24,10 @@ Usage: check-version-sanity.sh [--root <path>] [--strict]
 
 Performs static Architectury multiloader version-alignment preflight:
 - gradle.properties exists with required keys
+- Architectury API pin uses architectury_api_version or architectury_version
 - gradle.properties declares the local mod_version convention used by this helper
 - enabled_platforms includes fabric and neoforge
-- no snapshot-only toolchain pins unless you accept warnings
+- snapshot toolchain pins in gradle.properties are flagged; inspect inline Loom separately
 - NeoForge version family matches the Minecraft release line
 - Fabric API suffix matches the Minecraft patch line
 
@@ -84,13 +85,16 @@ read_prop() {
 
 MINECRAFT_VERSION="$(read_prop minecraft_version)"
 ENABLED_PLATFORMS="$(read_prop enabled_platforms)"
-ARCHITECTURY_VERSION="$(read_prop architectury_version)"
+ARCHITECTURY_VERSION="$(read_prop architectury_api_version)"
+if [[ -z "$ARCHITECTURY_VERSION" ]]; then
+  ARCHITECTURY_VERSION="$(read_prop architectury_version)"
+fi
 FABRIC_LOADER_VERSION="$(read_prop fabric_loader_version)"
 FABRIC_API_VERSION="$(read_prop fabric_api_version)"
 NEOFORGE_VERSION="$(read_prop neoforge_version)"
 LOOM_VERSION="$(read_prop loom_version)"
 
-for key in mod_version minecraft_version enabled_platforms architectury_version fabric_loader_version fabric_api_version neoforge_version loom_version; do
+for key in mod_version minecraft_version enabled_platforms fabric_loader_version fabric_api_version neoforge_version; do
   value="$(read_prop "$key")"
   if [[ -n "$value" ]]; then
     pass "gradle.properties has $key"
@@ -98,6 +102,18 @@ for key in mod_version minecraft_version enabled_platforms architectury_version 
     fail "gradle.properties missing key: $key"
   fi
 done
+
+if [[ -n "$ARCHITECTURY_VERSION" ]]; then
+  pass "gradle.properties has an Architectury API version"
+else
+  fail "gradle.properties missing key: architectury_api_version or architectury_version"
+fi
+
+if [[ -n "$LOOM_VERSION" ]]; then
+  pass "gradle.properties has loom_version"
+else
+  echo "[INFO] loom_version is absent; check the Loom plugin pin in the Gradle build or version catalog"
+fi
 
 NORMALIZED_PLATFORMS="${ENABLED_PLATFORMS//[[:space:]]/}"
 if [[ ",${NORMALIZED_PLATFORMS}," == *,fabric,* && ",${NORMALIZED_PLATFORMS}," == *,neoforge,* ]]; then
